@@ -1,6 +1,6 @@
 import { User } from "./UserEntity";
 
-export class Client {
+export class Concession {
     constructor(
         public readonly id: string,
         public readonly userId: User

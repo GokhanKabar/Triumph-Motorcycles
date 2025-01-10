@@ -1,13 +1,11 @@
-import { Incident } from "./IncidentEntity";
+import { Company } from "./CompanyEntity";
+import { CompanyMotorcycle } from "./CompanyMotorcycleEntity";
 
 export class Driver {
     constructor(
         public readonly id: string,
-        public readonly name: string,
-        public readonly licenseNumber: string,
-        public readonly experienceLevel: "beginner" | "intermediate" | "expert",
-        public readonly motorcycleId: string | null,
-        public readonly incidentHistory: Incident[]
+        public readonly companyMotorcycleId: CompanyMotorcycle,
+        public readonly companyId: Company
     ) {}
 
 }
