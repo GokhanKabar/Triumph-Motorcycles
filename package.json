@@ -1,0 +1,44 @@
+{
+  "name": "triumph-motorcycles",
+  "version": "1.0.0",
+  "description": "Triumph Motorcycles",
+  "main": "src/infrastructure/frameworks/express/server.ts",
+  "scripts": {
+    "start": "ts-node src/infrastructure/frameworks/express/server.ts",
+    "dev": "nodemon",
+    "build": "tsc",
+    "seed:db": "ts-node scripts/seed-database.ts"
+  },
+  "dependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/helmet": "^0.0.48",
+    "@types/sequelize": "^4.28.20",
+    "@types/uuid": "^9.0.8",
+    "argon2": "^0.41.1",
+    "autoprefixer": "^10.4.17",
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.18.2",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1",
+    "postcss": "^8.4.35",
+    "react-toastify": "^11.0.3",
+    "sequelize": "^6.37.5",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "uuid": "^9.0.1",
+    "zod": "^3.24.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.4.0",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/node": "^20.17.16",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0"
+  }
+}

@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import UserList from '../components/users/UserList';
-import UserForm from '../components/users/UserForms';
-import { CreateUserDTO, UserResponseDTO, UpdateUserDTO } from '../../../../../application/user/dtos/UserDTO';
+import { CreateUserDTO, UserResponseDTO, UpdateUserDTO, UserFormDTO } from '@application/user/dtos/UserDTO';
 import { userService } from '../services/api';
 import { authService } from '../services/api';
-
-
-enum UserRole {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
-  DEALER = 'DEALER',
-  MANAGER = 'MANAGER'
-}
+import UserForm from '../components/users/UserForms';
+import { UserRole } from '@domain/enums/UserRole';
+import { toast } from 'react-toastify';
+import { ToastPosition } from 'react-toastify/dist/types';
+import axios from 'axios';
 
 interface SnackbarState {
   open: boolean;
   message: string;
   severity: 'success' | 'error';
+}
+
+interface TempPasswordState {
+  userId: string;
+  password: string;
 }
 
 export default function Users() {
@@ -28,6 +29,7 @@ export default function Users() {
     message: '',
     severity: 'success',
   });
+  const [tempPassword, setTempPassword] = useState<TempPasswordState | null>(null);
 
   const handleCreateUser = () => {
     setSelectedUser(undefined);
@@ -68,7 +70,42 @@ export default function Users() {
     }
   };
 
-  const handleSubmitUser = async (userData: CreateUserDTO | UpdateUserDTO) => {
+  const handleResetPassword = async (userId: string) => {
+    try {
+      // Générer un mot de passe temporaire sécurisé
+      const temporaryPassword = generateSecurePassword();
+      
+      await userService.resetUserPasswordByAdmin(userId, temporaryPassword);
+      
+      // Afficher le mot de passe temporaire à l'administrateur
+      setTempPassword({
+        userId,
+        password: temporaryPassword
+      });
+      
+      toast.success('Mot de passe réinitialisé avec succès', {
+        position: 'top-center' as ToastPosition,
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    } catch (error) {
+      toast.error('Erreur lors de la réinitialisation du mot de passe', {
+        position: 'top-center' as ToastPosition,
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  };
+
+  const handleSubmitUser = async (userData: UserFormDTO) => {
     try {
       if (selectedUser?.id) {
         const updateData: UpdateUserDTO = {
@@ -79,38 +116,70 @@ export default function Users() {
         };
         await userService.updateUser(selectedUser.id, updateData);
       } else {
-        // Check if current user is an admin
+        // Vérifier si l'utilisateur actuel est un admin
         const currentUser = authService.getCurrentUser();
         const isAdmin = currentUser?.role === UserRole.ADMIN;
         
-        // If admin, use admin create route with selected role
-        // Otherwise, default to USER role
-        if (isAdmin) {
-          await userService.createAdminUser(userData as CreateUserDTO);
-        } else {
-          // Ensure non-admin users can only create standard users
-          const standardUserData = {
-            ...userData,
-            role: UserRole.USER
-          } as CreateUserDTO;
-          await userService.createUser(standardUserData);
-        }
+        // Créer un utilisateur avec le mot de passe
+        const createData: CreateUserDTO = {
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          email: userData.email,
+          password: userData.password,
+          role: userData.role || UserRole.USER
+        };
+        
+        // Utiliser la méthode de création admin
+        await userService.createAdminUser(createData);
       }
-      
+
+      // Rafraîchir la liste des utilisateurs
+      const updatedUsers = await userService.getUsers();
       setRefreshKey(prev => prev + 1);
-      setSnackbar({
-        open: true,
-        message: `Utilisateur ${selectedUser ? 'modifié' : 'créé'} avec succès`,
-        severity: 'success',
-      });
+      
+      // Réinitialiser le formulaire
+      setSelectedUser(undefined);
       setOpenForm(false);
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: `Erreur lors de ${selectedUser ? 'la modification' : 'la création'} de l'utilisateur`,
-        severity: 'error',
+      console.error('Erreur lors de la soumission du formulaire:', error);
+      
+      // Log détaillé de l'erreur Axios
+      if (axios.isAxiosError(error)) {
+        console.error('Détails de l\'erreur Axios:', {
+          response: error.response?.data,
+          status: error.response?.status,
+          headers: error.response?.headers
+        });
+      }
+      
+      toast.error('Erreur lors de la création de l\'utilisateur', {
+        position: 'top-center' as ToastPosition,
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
     }
+  };
+
+  // Fonction utilitaire pour générer un mot de passe sécurisé
+  const generateSecurePassword = (): string => {
+    const length = 12;
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
+    let password = '';
+    
+    // S'assurer d'avoir au moins un caractère de chaque type
+    password += 'A1!'; // Majuscule, chiffre, caractère spécial
+    
+    for (let i = 3; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+    
+    // Mélanger le mot de passe
+    return password.split('').sort(() => Math.random() - 0.5).join('');
   };
 
   return (
@@ -144,6 +213,7 @@ export default function Users() {
             key={refreshKey} // Ajout de la clé pour forcer le rafraîchissement
             onEdit={handleEditUser} 
             onDelete={handleDeleteUser} 
+            onResetPassword={handleResetPassword}
           />
         </div>
         <UserForm
@@ -168,6 +238,23 @@ export default function Users() {
               <span className="flex-1">{snackbar.message}</span>
               <button
                 onClick={() => setSnackbar({ ...snackbar, open: false })}
+                className="ml-4 text-xl font-bold focus:outline-none"
+              >
+                &times;
+              </button>
+            </div>
+          </div>
+        )}
+        {tempPassword && (
+          <div
+            className="fixed bottom-6 right-6 p-4 rounded-lg shadow-lg transition-transform transform bg-blue-500 text-white"
+            role="alert"
+          >
+            <div className="flex items-center">
+              <span className="mr-3 text-lg">🔒</span>
+              <span className="flex-1">Mot de passe temporaire pour l'utilisateur {tempPassword.userId} : {tempPassword.password}</span>
+              <button
+                onClick={() => setTempPassword(null)}
                 className="ml-4 text-xl font-bold focus:outline-none"
               >
                 &times;
