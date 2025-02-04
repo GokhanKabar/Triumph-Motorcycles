@@ -1,11 +1,17 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ProtectedRoute } from '../components/ProtectedRoute';
-import { useAuthStore } from '@stores/authStore';
-import Login from '../pages/Login';
-import Dashboard from '../pages/Dashboard';
-import Users from '../pages/Users';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { ProtectedRoute } from "../components/ProtectedRoute";
+import { useAuthStore } from "@stores/authStore";
+import Login from "../pages/Login";
+import Dashboard from "../pages/Dashboard";
+import Users from "../pages/Users";
 import { UserRole } from "@domain/enums/UserRole";
+import Companies from "../pages/Companies";
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -32,13 +38,21 @@ const AppRouter: React.FC = () => {
         {/* Routes protégées */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route 
-            path="/users" 
+          <Route
+            path="/users"
             element={
               <AdminRoute>
                 <Users />
               </AdminRoute>
-            } 
+            }
+          />
+          <Route
+            path="/companies"
+            element={
+              <AdminRoute>
+                <Companies />
+              </AdminRoute>
+            }
           />
         </Route>
 

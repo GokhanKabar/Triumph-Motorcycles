@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { authService } from '../../services/api';
-import { UserResponseDTO } from '../../../../../../application/user/dtos/UserDTO';
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { authService } from "../../services/api";
+import { UserResponseDTO } from "../../../../../../application/user/dtos/UserDTO";
 import { UserRole } from "@domain/enums/UserRole";
-
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -16,7 +15,7 @@ const Navbar: React.FC = () => {
         const userData = await authService.getCurrentUser();
         setUser(userData);
       } catch (error) {
-        console.error('Erreur lors de la récupération du profil:', error);
+        console.error("Erreur lors de la récupération du profil:", error);
       }
     };
     fetchUser();
@@ -24,11 +23,11 @@ const Navbar: React.FC = () => {
 
   const handleLogout = () => {
     authService.logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   const isActive = (path: string) => {
-    return location.pathname === path ? 'bg-gray-900' : '';
+    return location.pathname === path ? "bg-gray-900" : "";
   };
 
   return (
@@ -38,23 +37,39 @@ const Navbar: React.FC = () => {
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Link to="/">
-                <h1 className="text-white text-2xl font-bold">Triumph Motorcycles</h1>
+                <h1 className="text-white text-2xl font-bold">
+                  Triumph Motorcycles
+                </h1>
               </Link>
             </div>
             <div className="ml-10 flex items-baseline space-x-4">
               <Link
                 to="/dashboard"
-                className={`text-white rounded-md px-3 py-2 text-sm font-medium ${isActive('/dashboard')}`}
+                className={`text-white rounded-md px-3 py-2 text-sm font-medium ${isActive(
+                  "/dashboard"
+                )}`}
               >
                 Tableau de bord
               </Link>
               {user?.role === UserRole.ADMIN && (
-                <Link
-                  to="/users"
-                  className={`text-white rounded-md px-3 py-2 text-sm font-medium ${isActive('/users')}`}
-                >
-                  Gestion des utilisateurs
-                </Link>
+                <>
+                  <Link
+                    to="/users"
+                    className={`text-white rounded-md px-3 py-2 text-sm font-medium ${isActive(
+                      "/users"
+                    )}`}
+                  >
+                    Gestion des utilisateurs
+                  </Link>
+                  <Link
+                    to="/companies"
+                    className={`text-white rounded-md px-3 py-2 text-sm font-medium ${isActive(
+                      "/companies"
+                    )}`}
+                  >
+                    Gestion des entreprises
+                  </Link>
+                </>
               )}
             </div>
           </div>
