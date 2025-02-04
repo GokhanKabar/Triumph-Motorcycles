@@ -1,19 +1,21 @@
-import { config } from 'dotenv';
-import { Request, Response, NextFunction } from 'express';
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import { sequelize } from '../postgres/config/database';
-import userRoutes from '../../../interfaces/http/routes/userRoutes';
-import { authRoutes } from '../../../interfaces/http/routes/authRoutes';
-import { errorHandler } from '../../../interfaces/http/middlewares/errorHandler';
-import { JWTTokenService } from '../../services/TokenService';
-import { AuthMiddleware } from '../../../interfaces/http/middlewares/authMiddleware';
-import { GetUserUseCase } from '../../../application/user/use-cases/GetUserUseCase';
-import { PostgreSQLUserRepository } from '../../repositories/PostgreSQLUserRepository';
-import { Argon2PasswordHashingService } from '../../services/Argon2PasswordHashingService';
-import { seedDatabase } from '../postgres/script/seed-database';
-import  UserModel  from '../postgres/models/UserModel';
+import { config } from "dotenv";
+import { Request, Response, NextFunction } from "express";
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import { sequelize } from "../postgres/config/database";
+import userRoutes from "../../../interfaces/http/routes/userRoutes";
+import { authRoutes } from "../../../interfaces/http/routes/authRoutes";
+import companyRoutes from "../../../interfaces/http/routes/companyRoutes";
+import { errorHandler } from "../../../interfaces/http/middlewares/errorHandler";
+import { JWTTokenService } from "../../services/TokenService";
+import { AuthMiddleware } from "../../../interfaces/http/middlewares/authMiddleware";
+import { GetUserUseCase } from "../../../application/user/use-cases/GetUserUseCase";
+import { PostgreSQLUserRepository } from "../../repositories/PostgreSQLUserRepository";
+import { Argon2PasswordHashingService } from "../../services/Argon2PasswordHashingService";
+import { seedDatabase } from "../postgres/script/seed-database";
+import UserModel from "../postgres/models/UserModel";
+import CompanyModel from "../postgres/models/CompanyModel";
 
 // Charger les variables d'environnement
 config();
@@ -38,12 +40,13 @@ const getUserUseCase = new GetUserUseCase(userRepository);
 const authMiddleware = new AuthMiddleware(tokenService, getUserUseCase);
 
 // Montage des routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);  // Route standard
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes); // Route standard
+app.use("/api/companies", companyRoutes); // Route des entreprises
 
 // Gestion des routes 404
 app.use((req: Request, res: Response) => {
-  res.status(404).json({ message: 'Route non trouvée' });
+  res.status(404).json({ message: "Route non trouvée" });
 });
 
 // Middleware de gestion des erreurs
@@ -54,14 +57,15 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 async function initializeDatabase() {
   try {
     if (!sequelize) {
-      throw new Error('Database connection not established');
+      throw new Error("Database connection not established");
     }
 
     await UserModel.initialize(sequelize);
+    await CompanyModel.initialize(sequelize);
     await sequelize.sync({ force: false });
     await seedDatabase(sequelize);
   } catch (error) {
-    console.error('Database initialization failed:', error);
+    console.error("Database initialization failed:", error);
     process.exit(1);
   }
 }
