@@ -33,7 +33,10 @@ export default function Concessions() {
       setRefreshKey((prev) => prev + 1);
       toast.success(result.message || "Concession supprimée avec succès");
     } catch (error) {
-      toast.error("Erreur lors de la suppression de la concession");
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Erreur lors de la suppression de la concession";
+      toast.error(errorMessage);
     }
   };
 

@@ -59,7 +59,7 @@ const Navbar: React.FC = () => {
                       "/users"
                     )}`}
                   >
-                    Gestion des utilisateurs
+                    Utilisateurs
                   </Link>
                   <Link
                     to="/companies"
@@ -67,7 +67,7 @@ const Navbar: React.FC = () => {
                       "/companies"
                     )}`}
                   >
-                    Gestion des entreprises
+                    Entreprises
                   </Link>
                   <Link
                     to="/concessions"
@@ -75,7 +75,15 @@ const Navbar: React.FC = () => {
                       "/concessions"
                     )}`}
                   >
-                    Gestion des Concessions
+                    Concessions
+                  </Link>
+                  <Link
+                    to="/motorcycles"
+                    className={`text-white rounded-md px-3 py-2 text-sm font-medium ${isActive(
+                      "/motorcycles"
+                    )}`}
+                  >
+                    Motos
                   </Link>
                 </>
               )}

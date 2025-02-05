@@ -99,18 +99,15 @@ export class PostgreSQLCompanyRepository implements ICompanyRepository {
   async delete(id: string): Promise<void> {
     try {
       // Vérifier d'abord si l'entreprise existe
-      const company = await CompanyModel.findByPk(id);
+      const company = await this.findById(id);
       if (!company) {
         throw new CompanyNotFoundError();
       }
-
-      // Supprimer l'entreprise
-      await company.destroy();
+      await CompanyModel.destroy({
+        where: { id },
+      });
     } catch (error) {
-      if (error instanceof CompanyNotFoundError) {
-        throw error;
-      }
-      throw new Error(`Erreur lors de la suppression de l'entreprise: ${error.message}`);
+      throw error;
     }
   }
 }
