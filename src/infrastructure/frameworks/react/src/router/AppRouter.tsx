@@ -12,6 +12,7 @@ import Dashboard from "../pages/Dashboard";
 import Users from "../pages/Users";
 import { UserRole } from "@domain/enums/UserRole";
 import Companies from "../pages/Companies";
+import Concessions from "../pages/Concessions";
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -51,6 +52,14 @@ const AppRouter: React.FC = () => {
             element={
               <AdminRoute>
                 <Companies />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/concessions"
+            element={
+              <AdminRoute>
+                <Concessions />
               </AdminRoute>
             }
           />

@@ -12,6 +12,11 @@ import {
   UpdateCompanyDTO,
   CompanyResponseDTO,
 } from "@application/dtos/CompanyDTO";
+import {
+  CreateConcessionDTO,
+  UpdateConcessionDTO,
+  ConcessionResponseDTO,
+} from "@application/dtos/ConcessionDTO";
 
 const API_BASE_URL = "http://localhost:3001/api";
 
@@ -230,6 +235,37 @@ export const companyService = {
   async deleteCompany(id: string): Promise<{ message: string }> {
     const response = await api.delete(`/companies/${id}`);
     return response.data;
+  },
+};
+
+export const concessionService = {
+  getConcessions(): Promise<ConcessionResponseDTO[]> {
+    return api.get("/concessions").then((response) => response.data);
+  },
+
+  getConcession(id: string): Promise<ConcessionResponseDTO> {
+    return api.get(`/concessions/${id}`).then((response) => response.data);
+  },
+
+  createConcession(
+    concession: CreateConcessionDTO
+  ): Promise<ConcessionResponseDTO> {
+    return api
+      .post("/concessions", concession)
+      .then((response) => response.data);
+  },
+
+  updateConcession(
+    id: string,
+    concession: UpdateConcessionDTO
+  ): Promise<ConcessionResponseDTO> {
+    return api
+      .put(`/concessions/${id}`, concession)
+      .then((response) => response.data);
+  },
+
+  deleteConcession(id: string): Promise<{ message: string }> {
+    return api.delete(`/concessions/${id}`).then((response) => response.data);
   },
 };
 

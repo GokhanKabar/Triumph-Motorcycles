@@ -7,6 +7,7 @@ import { sequelize } from "../postgres/config/database";
 import userRoutes from "../../../interfaces/http/routes/userRoutes";
 import { authRoutes } from "../../../interfaces/http/routes/authRoutes";
 import companyRoutes from "../../../interfaces/http/routes/companyRoutes";
+import concessionRoutes from "../../../interfaces/http/routes/concessionRoutes";
 import { errorHandler } from "../../../interfaces/http/middlewares/errorHandler";
 import { JWTTokenService } from "../../services/TokenService";
 import { AuthMiddleware } from "../../../interfaces/http/middlewares/authMiddleware";
@@ -16,6 +17,7 @@ import { Argon2PasswordHashingService } from "../../services/Argon2PasswordHashi
 import { seedDatabase } from "../postgres/script/seed-database";
 import UserModel from "../postgres/models/UserModel";
 import CompanyModel from "../postgres/models/CompanyModel";
+import ConcessionModel from "../postgres/models/ConcessionModel";
 
 // Charger les variables d'environnement
 config();
@@ -42,7 +44,8 @@ const authMiddleware = new AuthMiddleware(tokenService, getUserUseCase);
 // Montage des routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes); // Route standard
-app.use("/api/companies", companyRoutes); // Route des entreprises
+app.use("/api/companies", companyRoutes);
+app.use("/api/concessions", concessionRoutes); // Route des entreprises
 
 // Gestion des routes 404
 app.use((req: Request, res: Response) => {
@@ -62,6 +65,7 @@ async function initializeDatabase() {
 
     await UserModel.initialize(sequelize);
     await CompanyModel.initialize(sequelize);
+    await ConcessionModel.initialize(sequelize);
     await sequelize.sync({ force: false });
     await seedDatabase(sequelize);
   } catch (error) {
