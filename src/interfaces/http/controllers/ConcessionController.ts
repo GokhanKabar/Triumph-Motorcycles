@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PostgreSQLConcessionRepository } from "../../../infrastructure/repositories/PostgreSQLConcessionRepository";
 import Concession from "../../../domain/concession/entities/Concession";
+import { ConcessionHasMotorcyclesError } from "../../../domain/errors/ConcessionHasMotorcyclesError";
 import {
   CreateConcessionDTO,
   UpdateConcessionDTO,
@@ -148,6 +149,11 @@ export class ConcessionController {
         console.log('DEBUG: Concession supprimée avec succès');
         res.json({ message: "Concession supprimée avec succès" });
       } catch (deleteError) {
+        if (deleteError instanceof ConcessionHasMotorcyclesError) {
+          console.error('DEBUG: Impossible de supprimer la concession:', deleteError.message);
+          res.status(400).json({ message: deleteError.message });
+          return;
+        }
         if (deleteError instanceof Error) {
           console.error('DEBUG: Erreur lors de la suppression:', deleteError.message);
           if (deleteError.message.includes("not found")) {

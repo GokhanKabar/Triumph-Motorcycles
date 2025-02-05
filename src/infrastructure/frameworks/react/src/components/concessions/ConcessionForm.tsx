@@ -106,8 +106,8 @@ const ConcessionForm: React.FC<ConcessionFormProps> = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
         <h2 className="text-xl font-bold mb-4">
           {concession ? "Modifier la concession" : "Nouvelle concession"}
         </h2>
@@ -122,7 +122,7 @@ const ConcessionForm: React.FC<ConcessionFormProps> = ({
               name="name"
               value={state.formData.name}
               onChange={handleInputChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white text-gray-900 ${
                 state.errors.name ? "border-red-500" : ""
               }`}
             />
@@ -141,7 +141,7 @@ const ConcessionForm: React.FC<ConcessionFormProps> = ({
               name="address"
               value={state.formData.address}
               onChange={handleInputChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white text-gray-900 ${
                 state.errors.address ? "border-red-500" : ""
               }`}
             />

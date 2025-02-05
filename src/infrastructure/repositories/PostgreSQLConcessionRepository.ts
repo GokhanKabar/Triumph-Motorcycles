@@ -1,8 +1,10 @@
 import { IConcessionRepository } from "../../domain/concession/repositories/IConcessionRepository";
 import Concession from "../../domain/concession/entities/Concession";
 import ConcessionModel from "../frameworks/postgres/models/ConcessionModel";
+import MotorcycleModel from "../frameworks/postgres/models/MotorcycleModel";
 import { MissingRequiredFieldError } from "../../domain/errors/MissingRequiredFieldError";
 import { ConcessionNotFoundError } from "../../domain/errors/ConcessionNotFoundError";
+import { ConcessionHasMotorcyclesError } from "../../domain/errors/ConcessionHasMotorcyclesError";
 
 export class PostgreSQLConcessionRepository implements IConcessionRepository {
   async findAll(): Promise<Concession[]> {
@@ -102,17 +104,27 @@ export class PostgreSQLConcessionRepository implements IConcessionRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      const concession = await ConcessionModel.findByPk(id);
+      // Vérifier si la concession existe
+      const concession = await this.findById(id);
       if (!concession) {
         throw new ConcessionNotFoundError();
       }
 
-      await concession.destroy();
-    } catch (error) {
-      if (error instanceof ConcessionNotFoundError) {
-        throw error;
+      // Vérifier s'il y a des motos associées
+      const motorcycleCount = await MotorcycleModel.count({
+        where: { concessionId: id },
+      });
+
+      if (motorcycleCount > 0) {
+        throw new ConcessionHasMotorcyclesError();
       }
-      throw new Error(`Erreur lors de la suppression de la concession: ${error.message}`);
+
+      // Si pas de motos associées, supprimer la concession
+      await ConcessionModel.destroy({
+        where: { id },
+      });
+    } catch (error) {
+      throw error;
     }
   }
 }

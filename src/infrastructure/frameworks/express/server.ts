@@ -8,6 +8,7 @@ import userRoutes from "../../../interfaces/http/routes/userRoutes";
 import { authRoutes } from "../../../interfaces/http/routes/authRoutes";
 import companyRoutes from "../../../interfaces/http/routes/companyRoutes";
 import concessionRoutes from "../../../interfaces/http/routes/concessionRoutes";
+import motorcycleRoutes from "../../../interfaces/http/routes/motorcycleRoutes";
 import { errorHandler } from "../../../interfaces/http/middlewares/errorHandler";
 import { JWTTokenService } from "../../services/TokenService";
 import { AuthMiddleware } from "../../../interfaces/http/middlewares/authMiddleware";
@@ -18,6 +19,7 @@ import { seedDatabase } from "../postgres/script/seed-database";
 import UserModel from "../postgres/models/UserModel";
 import CompanyModel from "../postgres/models/CompanyModel";
 import ConcessionModel from "../postgres/models/ConcessionModel";
+import MotorcycleModel from "../postgres/models/MotorcycleModel";
 
 // Charger les variables d'environnement
 config();
@@ -46,6 +48,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes); // Route standard
 app.use("/api/companies", companyRoutes);
 app.use("/api/concessions", concessionRoutes); // Route des entreprises
+app.use("/api/motorcycles", motorcycleRoutes); // Route des motos
 
 // Gestion des routes 404
 app.use((req: Request, res: Response) => {
@@ -63,11 +66,25 @@ async function initializeDatabase() {
       throw new Error("Database connection not established");
     }
 
+    // 1. Initialiser les modèles de base
     await UserModel.initialize(sequelize);
     await CompanyModel.initialize(sequelize);
+
+    // 2. Synchroniser pour créer les tables de base
+    await sequelize.sync({ force: true });
+
+    // 3. Initialiser les modèles avec dépendances
     await ConcessionModel.initialize(sequelize);
-    await sequelize.sync({ force: false });
+    await sequelize.sync({ force: false }); // Mise à jour incrémentale
+
+    // 4. Initialiser les modèles qui dépendent des concessions
+    await MotorcycleModel.initialize(sequelize);
+    await sequelize.sync({ force: false }); // Mise à jour incrémentale
+
+    // 5. Seed la base de données
     await seedDatabase(sequelize);
+
+    console.log("✅ Base de données initialisée avec succès");
   } catch (error) {
     console.error("Database initialization failed:", error);
     process.exit(1);

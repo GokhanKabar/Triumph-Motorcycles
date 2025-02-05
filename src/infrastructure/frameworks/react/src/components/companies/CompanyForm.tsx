@@ -116,7 +116,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
       <div className="relative bg-white rounded-lg shadow-xl p-8 m-4 max-w-xl w-full">
         <h2 className="text-2xl font-bold mb-4">
           {company ? "Modifier une entreprise" : "Créer une entreprise"}
@@ -131,7 +131,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
               type="text"
               value={state.formData.name}
               onChange={handleChange("name")}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white text-gray-900"
             />
             {state.errors.name && (
               <p className="mt-1 text-sm text-red-600">{state.errors.name}</p>
@@ -146,7 +146,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
               type="text"
               value={state.formData.address}
               onChange={handleChange("address")}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white text-gray-900"
             />
             {state.errors.address && (
               <p className="mt-1 text-sm text-red-600">

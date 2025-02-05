@@ -238,6 +238,51 @@ export const companyService = {
   },
 };
 
+import {
+  CreateMotorcycleDTO,
+  UpdateMotorcycleDTO,
+  MotorcycleResponseDTO,
+} from "@/application/dtos/MotorcycleDTO";
+
+export const motorcycleService = {
+  getMotorcycles: async (): Promise<MotorcycleResponseDTO[]> => {
+    const response = await api.get("/motorcycles");
+    return response.data;
+  },
+
+  getMotorcycle: async (id: string): Promise<MotorcycleResponseDTO> => {
+    const response = await api.get(`/motorcycles/${id}`);
+    return response.data;
+  },
+
+  createMotorcycle: async (
+    data: CreateMotorcycleDTO
+  ): Promise<MotorcycleResponseDTO> => {
+    const response = await api.post("/motorcycles", data);
+    return response.data;
+  },
+
+  updateMotorcycle: async (
+    id: string,
+    data: UpdateMotorcycleDTO
+  ): Promise<MotorcycleResponseDTO> => {
+    const response = await api.put(`/motorcycles/${id}`, data);
+    return response.data;
+  },
+
+  deleteMotorcycle: async (id: string): Promise<{ message: string }> => {
+    try {
+      await api.delete(`/motorcycles/${id}`);
+      return { message: "Moto supprimée avec succès" };
+    } catch (error) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw error;
+    }
+  },
+};
+
 export const concessionService = {
   getConcessions(): Promise<ConcessionResponseDTO[]> {
     return api.get("/concessions").then((response) => response.data);
@@ -265,7 +310,15 @@ export const concessionService = {
   },
 
   deleteConcession(id: string): Promise<{ message: string }> {
-    return api.delete(`/concessions/${id}`).then((response) => response.data);
+    return api
+      .delete(`/concessions/${id}`)
+      .then((response) => response.data)
+      .catch((error) => {
+        if (error.response?.data?.message) {
+          throw new Error(error.response.data.message);
+        }
+        throw error;
+      });
   },
 };
 
