@@ -69,6 +69,14 @@ const Navbar: React.FC = () => {
                   >
                     Gestion des entreprises
                   </Link>
+                  <Link
+                    to="/concessions"
+                    className={`text-white rounded-md px-3 py-2 text-sm font-medium ${isActive(
+                      "/concessions"
+                    )}`}
+                  >
+                    Gestion des Concessions
+                  </Link>
                 </>
               )}
             </div>
