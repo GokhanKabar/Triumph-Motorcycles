@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import StatusBadge from "./StatusBadge";
 import {
   IMotorcycleListProps,
   IMotorcycleListState,
@@ -47,14 +48,19 @@ export default function MotorcycleList({
   const fetchMotorcycles = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
-      const [motorcycles, concessions] = await Promise.all([
-        motorcycleService.getMotorcycles(),
-        concessionService.getConcessions()
-      ]);
+      
+      // Récupérer d'abord les concessions
+      const concessions = await concessionService.getConcessions();
       const concessionMap = concessions.reduce((acc, concession) => {
         acc[concession.id] = concession.name;
         return acc;
       }, {} as Record<string, string>);
+      
+      console.log('Concession Map:', concessionMap);
+      
+      // Puis récupérer les motos
+      const motorcycles = await motorcycleService.getMotorcycles();
+      
       setState((prev) => ({
         ...prev,
         motorcycles,
@@ -62,12 +68,13 @@ export default function MotorcycleList({
         isLoading: false,
       }));
     } catch (error) {
+      console.error('Erreur lors de la récupération des données:', error);
       setState((prev) => ({
         ...prev,
         error:
           error instanceof Error
             ? error
-            : new Error("Failed to fetch motorcycles"),
+            : new Error("Impossible de récupérer les données"),
         isLoading: false,
       }));
     }
@@ -112,6 +119,12 @@ export default function MotorcycleList({
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
+              Année
+            </th>
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               VIN
             </th>
             <th
@@ -119,6 +132,12 @@ export default function MotorcycleList({
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Kilométrage
+            </th>
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Statut
             </th>
             <th
               scope="col"
@@ -144,15 +163,27 @@ export default function MotorcycleList({
                 <div className="text-sm text-gray-900">{motorcycle.model}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
+                <div className="text-sm text-gray-500">{motorcycle.year}</div>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm text-gray-500">{motorcycle.vin}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm text-gray-500">
-                  {motorcycle.currentMileage} km
+                  {motorcycle.mileage} km
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-500">{state.concessions[motorcycle.concessionId] || 'Concession inconnue'}</div>
+                <StatusBadge status={motorcycle.status} />
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="text-sm text-gray-500">
+                  {(() => {
+                    console.log('Motorcycle Concession ID:', motorcycle.concessionId);
+                    console.log('Concession Name:', state.concessions[motorcycle.concessionId]);
+                    return state.concessions[motorcycle.concessionId] || "Concession inconnue";
+                  })()}
+                </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <button

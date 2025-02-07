@@ -1,5 +1,6 @@
 import Motorcycle from "../../../domain/motorcycle/entities/Motorcycle";
 import { IMotorcycleRepository } from "../../../domain/motorcycle/repositories/IMotorcycleRepository";
+import { MotorcycleStatus } from "../../../domain/motorcycle/enums/MotorcycleStatus";
 
 export class CreateMotorcycleUseCase {
   constructor(
@@ -9,19 +10,23 @@ export class CreateMotorcycleUseCase {
   async execute(
     brand: string,
     model: string,
+    year: number,
     vin: string,
-    currentMileage: number,
-    concessionId: string,
-    year?: number
+    mileage: number,
+    status: MotorcycleStatus,
+    concessionId: string
   ): Promise<Motorcycle | Error> {
     const motorcycle = Motorcycle.from(
       undefined,
       brand,
       model,
+      year,
       vin,
-      currentMileage,
+      mileage,
+      status,
       concessionId,
-      year
+      undefined,
+      undefined
     );
 
     if (motorcycle instanceof Error) {

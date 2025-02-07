@@ -22,10 +22,11 @@ import CompanyModel from "../postgres/models/CompanyModel";
 import ConcessionModel from "../postgres/models/ConcessionModel";
 import MotorcycleModel from "../postgres/models/MotorcycleModel";
 import InventoryPartModel from "../postgres/models/InventoryPartModel";
-import inventoryPartRoutes from '../../../interfaces/http/routes/inventoryPartRoutes';
-import { CreateInventoryPartUseCase } from '@application/inventory/use-cases/CreateInventoryPartUseCase';
-import { PostgreSQLInventoryPartRepository } from '../../repositories/PostgreSQLInventoryPartRepository';
-import driverRoutes from '../../../interfaces/http/routes/driverRoutes';
+import inventoryPartRoutes from "../../../interfaces/http/routes/inventoryPartRoutes";
+import { CreateInventoryPartUseCase } from "@application/inventory/use-cases/CreateInventoryPartUseCase";
+import { PostgreSQLInventoryPartRepository } from "../../repositories/PostgreSQLInventoryPartRepository";
+import driverRoutes from "../../../interfaces/http/routes/driverRoutes";
+import companyMotorcycleRouter from "../../../interfaces/http/routes/companyMotorcycleRoutes";
 
 // Charger les variables d'environnement
 config();
@@ -49,12 +50,15 @@ app.use(express.urlencoded({ extended: true }));
 // Configuration du middleware d'authentification
 const getUserUseCase = new GetUserUseCase(userRepository);
 const authMiddleware = new AuthMiddleware(tokenService, getUserUseCase);
-const createInventoryPartUseCase = new CreateInventoryPartUseCase(inventoryPartRepository);
+const createInventoryPartUseCase = new CreateInventoryPartUseCase(
+  inventoryPartRepository
+);
 
 // Montage des routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes); // Route standard
 app.use("/api/companies", companyRoutes);
+app.use("/api", companyMotorcycleRouter); // Routes pour l'association company-motorcycle
 app.use("/api/concessions", concessionRoutes); // Route des entreprises
 app.use("/api/motorcycles", motorcycleRoutes); // Route des motos
 app.use("/api/maintenances", maintenanceRoutes); // Route des maintenances
@@ -63,7 +67,7 @@ app.use("/api/drivers", driverRoutes); // Route des conducteurs
 
 // Gestion des routes 404
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.status(404).json({ message: 'Route non trouvée' });
+  res.status(404).json({ message: "Route non trouvée" });
 });
 
 // Middleware de gestion des erreurs

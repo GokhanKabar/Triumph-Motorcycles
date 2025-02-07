@@ -27,9 +27,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
 }) => {
   const validationService = new ValidationService();
 
-  const createInitialState = (
-    existingMotorcycle?: Motorcycle
-  ): MotorcycleFormState => ({
+  const createInitialState = (existingMotorcycle?: Motorcycle): MotorcycleFormState => ({
     formData: existingMotorcycle
       ? {
           id: existingMotorcycle.id,
@@ -78,9 +76,9 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
   const fetchConcessions = async () => {
     try {
       const concessions = await concessionService.getConcessions();
-      setState((prev) => ({
+      setState(prev => ({
         ...prev,
-        concessions: concessions.map((c) => ({ id: c.id, name: c.name })),
+        concessions: concessions.map(c => ({ id: c.id, name: c.name }))
       }));
     } catch (error) {
       console.error("Failed to fetch concessions:", error);
@@ -94,6 +92,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
       model: "",
       year: "",
       vin: "",
+      color: "",
       mileage: "",
       status: "",
       concessionId: "",
@@ -120,11 +119,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
     }
 
     const currentYear = new Date().getFullYear();
-    if (
-      !state.formData.year ||
-      state.formData.year < 1990 ||
-      state.formData.year > currentYear
-    ) {
+    if (!state.formData.year || state.formData.year < 1990 || state.formData.year > currentYear) {
       newErrors.year = `L'année doit être comprise entre 1990 et ${currentYear}`;
     }
 
@@ -148,17 +143,14 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setState((prev) => ({
       ...prev,
       formData: {
         ...prev.formData,
-        [name]:
-          name === "mileage" || name === "year" ? parseInt(value) || 0 : value,
+        [name]: name === "currentMileage" ? parseInt(value) || 0 : value,
       },
       errors: { ...prev.errors, [name]: "" },
     }));
@@ -174,10 +166,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="brand"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="brand" className="block text-sm font-medium text-gray-700">
               Marque
             </label>
             <input
@@ -196,10 +185,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
           </div>
 
           <div>
-            <label
-              htmlFor="model"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="model" className="block text-sm font-medium text-gray-700">
               Modèle
             </label>
             <input
@@ -218,10 +204,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
           </div>
 
           <div>
-            <label
-              htmlFor="year"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="year" className="block text-sm font-medium text-gray-700">
               Année
             </label>
             <input
@@ -242,10 +225,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
           </div>
 
           <div>
-            <label
-              htmlFor="vin"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="vin" className="block text-sm font-medium text-gray-700">
               Numéro VIN
             </label>
             <input
@@ -265,10 +245,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
           </div>
 
           <div>
-            <label
-              htmlFor="mileage"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="mileage" className="block text-sm font-medium text-gray-700">
               Kilométrage
             </label>
             <input
@@ -283,17 +260,12 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
               }`}
             />
             {state.errors.mileage && (
-              <p className="mt-1 text-sm text-red-500">
-                {state.errors.mileage}
-              </p>
+              <p className="mt-1 text-sm text-red-500">{state.errors.mileage}</p>
             )}
           </div>
 
           <div>
-            <label
-              htmlFor="status"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700">
               Statut
             </label>
             <select
@@ -317,10 +289,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
           </div>
 
           <div>
-            <label
-              htmlFor="concessionId"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="concessionId" className="block text-sm font-medium text-gray-700">
               Concession
             </label>
             <select
@@ -329,6 +298,44 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
               value={state.formData.concessionId}
               onChange={handleInputChange}
               className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white text-gray-900 ${
+                state.errors.vin ? "border-red-500" : ""
+              }`}
+            />
+            {state.errors.vin && (
+              <p className="mt-1 text-sm text-red-500">{state.errors.vin}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="currentMileage" className="block text-sm font-medium text-gray-700">
+              Kilométrage actuel
+            </label>
+            <input
+              type="number"
+              id="currentMileage"
+              name="currentMileage"
+              value={state.formData.currentMileage}
+              onChange={handleInputChange}
+              min="0"
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white text-gray-900 ${
+                state.errors.currentMileage ? "border-red-500" : ""
+              }`}
+            />
+            {state.errors.currentMileage && (
+              <p className="mt-1 text-sm text-red-500">{state.errors.currentMileage}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="concessionId" className="block text-sm font-medium text-gray-700">
+              Concession
+            </label>
+            <select
+              id="concessionId"
+              name="concessionId"
+              value={state.formData.concessionId}
+              onChange={handleInputChange}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white text-gray-900 bg-white text-gray-900 ${
                 state.errors.concessionId ? "border-red-500" : ""
               }`}
             >
@@ -340,9 +347,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
               ))}
             </select>
             {state.errors.concessionId && (
-              <p className="mt-1 text-sm text-red-500">
-                {state.errors.concessionId}
-              </p>
+              <p className="mt-1 text-sm text-red-500">{state.errors.concessionId}</p>
             )}
           </div>
 
