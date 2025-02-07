@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ICompanyListProps,
   ICompanyListState,
@@ -68,6 +69,7 @@ export default function CompanyList({
   }, [fetchCompanies, refreshKey]);
 
   const handlers = useCompanyListHandlers(state, setState, fetchCompanies);
+  const navigate = useNavigate();
 
   if (state.isLoading) {
     return (
@@ -124,9 +126,15 @@ export default function CompanyList({
                 </button>
                 <button
                   onClick={() => onDelete(company.id)}
-                  className="text-red-600 hover:text-red-900 focus:outline-none"
+                  className="text-red-600 hover:text-red-900 focus:outline-none mr-4"
                 >
                   Supprimer
+                </button>
+                <button
+                  onClick={() => navigate(`/company-motorcycles/${company.id}`)}
+                  className="text-green-600 hover:text-green-900 focus:outline-none"
+                >
+                  Gérer les motos
                 </button>
               </td>
             </tr>

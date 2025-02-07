@@ -41,11 +41,10 @@ export default function Companies() {
   const handleDeleteCompany = async (companyId: string) => {
     try {
       const result = await companyService.deleteCompany(companyId);
-
       setRefreshKey((prev) => prev + 1);
       toast.success(result.message || "Entreprise supprimée avec succès");
-    } catch (error) {
-      toast.error("Erreur lors de la suppression de l'entreprise");
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de la suppression de l'entreprise");
     }
   };
 

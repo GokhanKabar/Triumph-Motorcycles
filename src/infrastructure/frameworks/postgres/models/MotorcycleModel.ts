@@ -8,7 +8,6 @@ class MotorcycleModel extends Model {
   public model!: string;
   public year!: number;
   public vin!: string;
-  public color!: string;
   public mileage!: number;
   public status!: MotorcycleStatus;
   public concessionId!: string;
@@ -41,10 +40,6 @@ class MotorcycleModel extends Model {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true
-      },
-      color: {
-        type: DataTypes.STRING,
-        allowNull: true
       },
       mileage: {
         type: DataTypes.INTEGER,

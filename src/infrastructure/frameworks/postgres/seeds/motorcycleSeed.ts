@@ -2,6 +2,7 @@ import { sequelize } from "../config/database";
 import { PostgreSQLMotorcycleRepository } from "../../../repositories/PostgreSQLMotorcycleRepository";
 import { PostgreSQLConcessionRepository } from "../../../repositories/PostgreSQLConcessionRepository";
 import { CreateMotorcycleUseCase } from "../../../../application/motorcycle/use-cases/CreateMotorcycleUseCase";
+import { MotorcycleStatus } from "../../../../domain/motorcycle/enums/MotorcycleStatus";
 
 export class MotorcycleSeed {
   private static motorcycleRepository: PostgreSQLMotorcycleRepository;
@@ -122,10 +123,11 @@ export class MotorcycleSeed {
               await this.createMotorcycleUseCase.execute(
                 model.brand,
                 model.model,
+                year,
                 vin,
                 currentMileage,
-                concession.id,
-                year
+                MotorcycleStatus.AVAILABLE,
+                concession.id
               );
               console.log(
                 `✓ ${model.brand} ${model.model} créée (VIN: ${vin}, km: ${currentMileage}, année: ${year})`

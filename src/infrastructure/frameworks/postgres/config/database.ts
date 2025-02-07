@@ -1,10 +1,12 @@
-import { Sequelize } from "sequelize";
+import { Sequelize, DataTypes } from "sequelize";
 import { seedDatabase } from "../script/seed-database";
 import UserModel from "../models/UserModel";
 import MaintenanceModel from "../models/MaintenanceModel";
 import InventoryPartModel from "../models/InventoryPartModel";
 import DriverModel from "../models/DriverModel";
 import MotorcycleModel from "../models/MotorcycleModel";
+import CompanyModel from "../models/CompanyModel";
+import CompanyMotorcycleModel from "../models/CompanyMotorcycleModel";
 
 const sequelize = new Sequelize({
   dialect: "postgres",
@@ -21,16 +23,79 @@ async function initializeDatabase() {
     await sequelize.authenticate();
     console.log("✅ Connection to the database established successfully.");
 
-    // Initialize models
-    UserModel.initialize(sequelize);
-    MaintenanceModel.initialize(sequelize);
-    InventoryPartModel.initialize(sequelize);
-    DriverModel.initialize(sequelize);
-    MotorcycleModel.initialize(sequelize);
+    console.log("Starting model initialization...");
 
-    // Sync models
-    await sequelize.sync({ alter: true });
+    try {
+      console.log("Initializing models and associations...");
+
+      // Initialize base models first
+      UserModel.initialize(sequelize);
+
+      // Initialize Company and its associations
+      CompanyModel.initialize(sequelize);
+      CompanyModel.belongsTo(UserModel, { foreignKey: "userId", as: "user" });
+
+      // Initialize Motorcycle
+      MotorcycleModel.initialize(sequelize);
+
+      // Initialize CompanyMotorcycle and its associations
+      console.log('Initializing CompanyMotorcycleModel...');
+      try {
+        CompanyMotorcycleModel.initialize(sequelize);
+        console.log('CompanyMotorcycleModel initialized successfully');
+
+        console.log('Setting up CompanyMotorcycle associations...');
+        CompanyModel.hasMany(CompanyMotorcycleModel, {
+          foreignKey: "companyId",
+          as: "companyMotorcycles",
+        });
+
+        // Synchroniser tous les modèles avec la base de données
+        console.log('Synchronizing all models with database...');
+        await sequelize.sync();
+        console.log('Database synchronization complete');
+        CompanyMotorcycleModel.belongsTo(CompanyModel, {
+          foreignKey: "companyId",
+          as: "company",
+        });
+        MotorcycleModel.hasMany(CompanyMotorcycleModel, {
+          foreignKey: "motorcycleId",
+          as: "companyMotorcycles",
+        });
+        CompanyMotorcycleModel.belongsTo(MotorcycleModel, {
+          foreignKey: "motorcycleId",
+          as: "motorcycle",
+        });
+        console.log('CompanyMotorcycle associations set up successfully');
+      } catch (error) {
+        console.error('Error initializing CompanyMotorcycleModel:', error);
+        throw error;
+      }
+
+      // Initialize remaining models
+      MaintenanceModel.initialize(sequelize);
+      InventoryPartModel.initialize(sequelize);
+      DriverModel.initialize(sequelize);
+
+      console.log("All models and associations initialized successfully");
+    } catch (error) {
+      console.error("Error during model initialization:", error);
+      throw error;
+    }
+
+    // Force sync models to recreate tables
+    console.log("Starting database synchronization...");
+    await sequelize.sync({ force: true });
     console.log("✅ Models synchronized successfully.");
+    
+    // Verify CompanyMotorcycle table creation
+    const tables = await sequelize.getQueryInterface().showAllTables();
+    console.log("Available tables:", tables);
+    if (tables.includes('company_motorcycles')) {
+      console.log("✅ CompanyMotorcycle table created successfully");
+    } else {
+      console.log("❌ CompanyMotorcycle table not found");
+    }
 
     // Seed database in development
     if (process.env.NODE_ENV === "development") {

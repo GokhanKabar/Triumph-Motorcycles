@@ -1,32 +1,35 @@
-import { v4 as uuidv4 } from 'uuid';
-import { MotorcycleValidationError } from '../errors/MotorcycleValidationError';
-import { InvalidVinError } from '../errors/InvalidVinError';
-import { InvalidMileageError } from '../errors/InvalidMileageError';
-import { MissingRequiredFieldError } from '../../errors/MissingRequiredFieldError';
+import { v4 as uuidv4 } from "uuid";
+import { MotorcycleValidationError } from "../errors/MotorcycleValidationError";
+import { InvalidVinError } from "../errors/InvalidVinError";
+import { InvalidMileageError } from "../errors/InvalidMileageError";
+import { MissingRequiredFieldError } from "../../errors/MissingRequiredFieldError";
+import { MotorcycleStatus } from "../enums/MotorcycleStatus";
 
 export default class Motorcycle {
   private constructor(
     public readonly id: string,
     public readonly brand: string,
     public readonly model: string,
-    public readonly vin: string,
-    public readonly currentMileage: number,
-    public readonly concessionId: string,
     public readonly year: number,
+    public readonly vin: string,
+    public readonly mileage: number,
+    public readonly status: MotorcycleStatus,
+    public readonly concessionId: string,
     public readonly createdAt: Date,
-    public readonly updatedAt: Date,
+    public readonly updatedAt: Date
   ) {}
 
   public static from(
     id: string | undefined,
     brand: string,
     model: string,
+    year: number,
     vin: string,
-    currentMileage: number,
+    mileage: number,
+    status: MotorcycleStatus,
     concessionId: string,
-    year?: number,
     createdAt?: Date,
-    updatedAt?: Date,
+    updatedAt?: Date
   ) {
     if (!brand || !model) {
       return new MissingRequiredFieldError();
@@ -42,7 +45,7 @@ export default class Motorcycle {
     }
 
     // Validation du kilométrage
-    if (currentMileage < 0) {
+    if (mileage < 0) {
       return new InvalidMileageError();
     }
 
@@ -56,14 +59,20 @@ export default class Motorcycle {
       year = currentYear;
     }
 
+    // Validation du statut
+    if (!status) {
+      status = MotorcycleStatus.AVAILABLE;
+    }
+
     return new Motorcycle(
       id || uuidv4(),
       brand,
       model,
-      vin,
-      currentMileage,
-      concessionId,
       year,
+      vin,
+      mileage,
+      status,
+      concessionId,
       createdAt || new Date(),
       updatedAt || new Date()
     );

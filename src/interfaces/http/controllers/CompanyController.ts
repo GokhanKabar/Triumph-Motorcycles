@@ -150,23 +150,40 @@ export class CompanyController {
         await this.companyRepository.delete(req.params.id);
         console.log('DEBUG: Entreprise supprimée avec succès');
         res.json({ message: "Entreprise supprimée avec succès" });
-      } catch (deleteError) {
-        if (deleteError instanceof Error) {
-          console.error('DEBUG: Erreur lors de la suppression:', deleteError.message);
-          if (deleteError.message.includes("not found")) {
-            res.status(404).json({ message: "Entreprise non trouvée" });
-          } else {
-            throw deleteError; // Relancer l'erreur pour le catch externe
-          }
-        } else {
-          throw deleteError;
+      } catch (deleteError: any) {
+        console.error('DEBUG: Erreur lors de la suppression:', deleteError);
+        
+        if (deleteError.name === 'CompanyHasMotorcyclesError') {
+          const motorcycles = await this.companyRepository.getCompanyMotorcycles(req.params.id);
+          res.status(400).json({
+            message: "Impossible de supprimer l'entreprise car elle possède des motos.",
+            details: "Veuillez d'abord retirer toutes les motos associées à cette entreprise.",
+            motorcycleCount: motorcycles.length
+          });
+          return;
         }
+        
+        if (deleteError.message.includes("not found")) {
+          res.status(404).json({ message: "Entreprise non trouvée" });
+          return;
+        }
+        
+        throw deleteError;
       }
     } catch (error) {
       console.error("Error deleting company:", error);
-      res
-        .status(500)
-        .json({ message: "Erreur lors de la suppression de l'entreprise" });
+      if (error instanceof Error && error.name === 'CompanyHasMotorcyclesError') {
+        const motorcycles = await this.companyRepository.getCompanyMotorcycles(req.params.id);
+        res.status(400).json({
+          message: "Impossible de supprimer l'entreprise car elle possède des motos.",
+          details: "Veuillez d'abord retirer toutes les motos associées à cette entreprise.",
+          motorcycleCount: motorcycles.length
+        });
+        return;
+      }
+      res.status(500).json({ 
+        message: "Une erreur inattendue est survenue lors de la suppression de l'entreprise" 
+      });
     }
   };
 }
