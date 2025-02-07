@@ -115,16 +115,20 @@ export class MotorcycleSeed {
 
             const vin = this.generateVIN();
 
+            // Année de fabrication basée sur l'année courante ou précédente
+            const year = new Date().getFullYear() - (Math.random() < 0.3 ? 1 : 0);
+
             try {
               await this.createMotorcycleUseCase.execute(
                 model.brand,
                 model.model,
                 vin,
                 currentMileage,
-                concession.id
+                concession.id,
+                year
               );
               console.log(
-                `✓ ${model.brand} ${model.model} créée (VIN: ${vin}, km: ${currentMileage})`
+                `✓ ${model.brand} ${model.model} créée (VIN: ${vin}, km: ${currentMileage}, année: ${year})`
               );
             } catch (error) {
               console.error(

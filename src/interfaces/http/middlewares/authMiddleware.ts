@@ -23,7 +23,7 @@ export class AuthMiddleware {
 
   authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      console.log('DEBUG: Requête reçue:', {
+      console.log('DEBUG: Middleware d\'authentification - Requête reçue:', {
         path: req.path,
         method: req.method,
         headers: req.headers,
@@ -50,6 +50,7 @@ export class AuthMiddleware {
 
       // Si c'est une route publique, autoriser sans vérification de token
       if (isPublicRoute) {
+        console.log('DEBUG: Route publique, passage autorisé');
         return next();
       }
 
@@ -58,7 +59,7 @@ export class AuthMiddleware {
       console.log('DEBUG: Header Authorization:', authHeader);
 
       if (!authHeader) {
-        console.error('Aucun header Authorization trouvé');
+        console.error('DEBUG: Aucun header Authorization trouvé');
         res.status(401).json({ message: 'Non authentifié' });
         return;
       }
@@ -67,7 +68,7 @@ export class AuthMiddleware {
       console.log('DEBUG: Token parts:', tokenParts);
 
       if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
-        console.error('Format du token incorrect');
+        console.error('DEBUG: Format du token incorrect');
         res.status(401).json({ message: 'Non authentifié' });
         return;
       }
@@ -76,7 +77,7 @@ export class AuthMiddleware {
       console.log('DEBUG: Token extrait:', token);
 
       if (!token) {
-        console.error('Token invalide');
+        console.error('DEBUG: Token invalide');
         res.status(401).json({ message: 'Non authentifié' });
         return;
       }
@@ -87,7 +88,7 @@ export class AuthMiddleware {
         payload = await this.tokenService.verifyToken(token);
         console.log('DEBUG: Payload du token:', payload);
       } catch (verifyError) {
-        console.error('Token verification error:', verifyError);
+        console.error('DEBUG: Token verification error:', verifyError);
         res.status(401).json({ message: 'Non authentifié' });
         return;
       }
@@ -98,12 +99,12 @@ export class AuthMiddleware {
         console.log('DEBUG: Utilisateur récupéré:', userResult);
         
         if (userResult instanceof Error) {
-          console.warn('Erreur lors de la récupération de l\'utilisateur:', userResult);
+          console.warn('DEBUG: Erreur lors de la récupération de l\'utilisateur:', userResult);
           res.status(401).json({ message: 'Non authentifié' });
           return;
         }
       } catch (userError) {
-        console.error('Erreur lors de la récupération de l\'utilisateur:', userError);
+        console.error('DEBUG: Erreur lors de la récupération de l\'utilisateur:', userError);
         res.status(401).json({ message: 'Non authentifié' });
         return;
       }
@@ -119,7 +120,7 @@ export class AuthMiddleware {
 
       next();
     } catch (error) {
-      console.error('Erreur middleware authentification:', error);
+      console.error('DEBUG: Erreur middleware authentification:', error);
       res.status(401).json({ message: 'Non authentifié' });
     }
   };

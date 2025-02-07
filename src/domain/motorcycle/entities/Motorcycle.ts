@@ -12,6 +12,7 @@ export default class Motorcycle {
     public readonly vin: string,
     public readonly currentMileage: number,
     public readonly concessionId: string,
+    public readonly year: number,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
   ) {}
@@ -23,6 +24,7 @@ export default class Motorcycle {
     vin: string,
     currentMileage: number,
     concessionId: string,
+    year?: number,
     createdAt?: Date,
     updatedAt?: Date,
   ) {
@@ -48,6 +50,12 @@ export default class Motorcycle {
       return new MissingRequiredFieldError();
     }
 
+    // Validation de l'année
+    const currentYear = new Date().getFullYear();
+    if (!year || year < 1990 || year > currentYear) {
+      year = currentYear;
+    }
+
     return new Motorcycle(
       id || uuidv4(),
       brand,
@@ -55,8 +63,9 @@ export default class Motorcycle {
       vin,
       currentMileage,
       concessionId,
+      year,
       createdAt || new Date(),
-      updatedAt || new Date(),
+      updatedAt || new Date()
     );
   }
 }
