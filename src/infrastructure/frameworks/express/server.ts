@@ -22,6 +22,7 @@ import CompanyModel from "../postgres/models/CompanyModel";
 import ConcessionModel from "../postgres/models/ConcessionModel";
 import MotorcycleModel from "../postgres/models/MotorcycleModel";
 import InventoryPartModel from "../postgres/models/InventoryPartModel";
+import CompanyMotorcycleModel from "../postgres/models/CompanyMotorcycleModel";
 import inventoryPartRoutes from "../../../interfaces/http/routes/inventoryPartRoutes";
 import { CreateInventoryPartUseCase } from "@application/inventory/use-cases/CreateInventoryPartUseCase";
 import { PostgreSQLInventoryPartRepository } from "../../repositories/PostgreSQLInventoryPartRepository";
@@ -98,6 +99,10 @@ async function initializeDatabase() {
 
     // 5. Initialiser le modèle des pièces d'inventaire
     await InventoryPartModel.initialize(sequelize);
+    await sequelize.sync({ force: false }); // Mise à jour incrémentale
+
+    // 6. Initialiser le modèle CompanyMotorcycle
+    await CompanyMotorcycleModel.initialize(sequelize);
     await sequelize.sync({ force: false }); // Mise à jour incrémentale
 
     // 6. Seed la base de données
