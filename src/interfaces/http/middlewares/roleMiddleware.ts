@@ -33,4 +33,3 @@ export const requireRole = (allowedRoles: UserRole[]) => {
 
 // Exemples de middlewares préconfigurés
 export const adminOnly = requireRole([UserRole.ADMIN]);
-export const adminAndManagerOnly = requireRole([UserRole.ADMIN, UserRole.MANAGER]);

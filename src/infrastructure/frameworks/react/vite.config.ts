@@ -14,7 +14,8 @@ export default defineConfig({
       '@infrastructure': '/usr/src/infrastructure',
       '@interfaces': '/usr/src/interfaces',
       '@app': '/usr/src/app',
-      '@stores': path.resolve(__dirname, 'src/stores')
+      '@stores': path.resolve(__dirname, 'src/stores'),
+      'uuid': path.resolve(__dirname, 'node_modules/uuid')
     }
   },
   server: {

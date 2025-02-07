@@ -5,6 +5,7 @@ import { Name } from '../../domain/user/valueObjects/Name';
 import { Password } from '../../domain/user/valueObjects/Password';
 import { CreateUserValidationResult, UpdateUserValidationResult, LoginValidationResult, ForgotPasswordValidationResult, ResetPasswordValidationResult, UpdatePasswordValidationResult } from '../../domain/types/validation.types';
 import { UpdateUserPasswordDTO } from '../../application/user/dtos/UserDTO';
+import { PartCategory } from '../../domain/inventory/entities/InventoryPart';
 
 export class ValidationError extends Error {
   constructor(public readonly errors: string[]) {
@@ -14,7 +15,7 @@ export class ValidationError extends Error {
 }
 
 class ValidationService implements IValidationService {
-  async validate<T>(data: unknown, type: 'createUser' | 'updateUser' | 'login' | 'forgotPassword' | 'resetPassword' | 'updatePassword'): Promise<T> {
+  async validate<T>(data: unknown, type: 'createUser' | 'updateUser' | 'login' | 'forgotPassword' | 'resetPassword' | 'updatePassword' | 'createInventoryPart' | 'updateInventoryPart' | 'manageStock'): Promise<T> {
     switch (type) {
       case 'createUser':
         return this.validateCreateUser(data) as T;
@@ -29,6 +30,24 @@ class ValidationService implements IValidationService {
       case 'updatePassword':
         const passwordData = data as UpdateUserPasswordDTO;
         return this.validateUpdatePassword(passwordData) as T;
+      case 'createInventoryPart':
+        const validationResult = this.validateCreateInventoryPart(data);
+        if (!validationResult.success) {
+          throw new ValidationError(validationResult.errors || []);
+        }
+        return data as T;
+      case 'updateInventoryPart':
+        const updateValidationResult = this.validateUpdateInventoryPart(data);
+        if (!updateValidationResult.success) {
+          throw new ValidationError(updateValidationResult.errors || []);
+        }
+        return data as T;
+      case 'manageStock':
+        const stockValidationResult = this.validateManageStock(data);
+        if (!stockValidationResult.success) {
+          throw new ValidationError(stockValidationResult.errors || []);
+        }
+        return data as T;
       default:
         throw new ValidationError(['Type de validation invalide']);
     }
@@ -223,6 +242,132 @@ class ValidationService implements IValidationService {
     return {
       currentPassword: data.currentPassword,
       ...(newPasswordResult instanceof Error ? {} : { newPassword: newPasswordResult as Password })
+    };
+  }
+
+  private validateCreateInventoryPart(data: unknown): { success: boolean; errors?: string[] } {
+    const errors: string[] = [];
+    const typedData = data as any;
+
+    // Validation du nom
+    if (!typedData.name || typeof typedData.name !== 'string' || typedData.name.trim() === '') {
+      errors.push('Le nom de la pièce est requis');
+    }
+
+    // Validation de la catégorie
+    if (!typedData.category || !Object.values(PartCategory).includes(typedData.category)) {
+      errors.push('Une catégorie valide est requise');
+    }
+
+    // Validation du numéro de référence
+    if (!typedData.referenceNumber || typeof typedData.referenceNumber !== 'string' || typedData.referenceNumber.trim() === '') {
+      errors.push('Le numéro de référence est requis');
+    }
+
+    // Validation du stock actuel
+    if (typedData.currentStock === undefined || typeof typedData.currentStock !== 'number' || typedData.currentStock < 0) {
+      errors.push('Le stock actuel est requis et doit être un nombre positif');
+    }
+
+    // Validation du seuil de stock minimum
+    if (typedData.minStockThreshold === undefined || typeof typedData.minStockThreshold !== 'number' || typedData.minStockThreshold < 0) {
+      errors.push('Le seuil de stock minimum est requis et doit être un nombre positif');
+    }
+
+    // Validation du prix unitaire
+    if (typedData.unitPrice === undefined || typeof typedData.unitPrice !== 'number' || typedData.unitPrice < 0) {
+      errors.push('Le prix unitaire est requis et doit être un nombre positif');
+    }
+
+    // Validation des modèles de motos
+    if (!typedData.motorcycleModels || !Array.isArray(typedData.motorcycleModels) || typedData.motorcycleModels.length === 0) {
+      errors.push('Au moins un modèle de moto est requis');
+    }
+
+    return {
+      success: errors.length === 0,
+      errors: errors.length > 0 ? errors : undefined
+    };
+  }
+
+  private validateUpdateInventoryPart(data: unknown): { success: boolean; errors?: string[] } {
+    const errors: string[] = [];
+    const typedData = data as any;
+
+    // Validation du nom
+    if (typedData.name && (typeof typedData.name !== 'string' || typedData.name.trim().length === 0)) {
+      errors.push('Le nom de la pièce doit être une chaîne non vide');
+    }
+
+    // Validation du numéro de référence
+    if (typedData.referenceNumber && (typeof typedData.referenceNumber !== 'string' || typedData.referenceNumber.trim().length === 0)) {
+      errors.push('Le numéro de référence doit être une chaîne non vide');
+    }
+
+    // Validation de la catégorie
+    if (typedData.category && (typeof typedData.category !== 'string' || typedData.category.trim().length === 0)) {
+      errors.push('La catégorie doit être une chaîne non vide');
+    }
+
+    // Validation du prix unitaire
+    if (typedData.unitPrice !== undefined && (typeof typedData.unitPrice !== 'number' || typedData.unitPrice < 0)) {
+      errors.push('Le prix unitaire doit être un nombre positif');
+    }
+
+    // Validation du seuil de stock minimum
+    if (typedData.minStockThreshold !== undefined && (typeof typedData.minStockThreshold !== 'number' || typedData.minStockThreshold < 0)) {
+      errors.push('Le seuil de stock minimum doit être un nombre positif');
+    }
+
+    // Validation des modèles de moto compatibles
+    if (typedData.motorcycleModels !== undefined) {
+      if (!Array.isArray(typedData.motorcycleModels)) {
+        errors.push('Les modèles de moto doivent être un tableau');
+      } else {
+        typedData.motorcycleModels.forEach((model: any, index: number) => {
+          if (typeof model !== 'string' || model.trim().length === 0) {
+            errors.push(`Le modèle de moto à l'index ${index} doit être une chaîne non vide`);
+          }
+        });
+      }
+    }
+
+    return {
+      success: errors.length === 0,
+      errors: errors.length > 0 ? errors : undefined
+    };
+  }
+
+  private validateManageStock(data: unknown): { success: boolean; errors?: string[] } {
+    const errors: string[] = [];
+    const typedData = data as any;
+
+    // Validation de l'ID de la pièce
+    if (!typedData.partId || typeof typedData.partId !== 'string') {
+      errors.push('L\'ID de la pièce est requis');
+    }
+
+    // Validation de la quantité
+    if (typedData.quantityChange === undefined || typeof typedData.quantityChange !== 'number') {
+      errors.push('La quantité doit être un nombre');
+    }
+
+    // Validation de l'action
+    if (!typedData.action || !['add', 'remove'].includes(typedData.action)) {
+      errors.push('L\'action doit être "add" ou "remove"');
+    }
+
+    // Validation de la quantité en fonction de l'action
+    if (typedData.action === 'add' && typedData.quantityChange <= 0) {
+      errors.push('La quantité à ajouter doit être un nombre positif');
+    }
+    if (typedData.action === 'remove' && typedData.quantityChange >= 0) {
+      errors.push('La quantité à retirer doit être un nombre négatif');
+    }
+
+    return {
+      success: errors.length === 0,
+      errors: errors.length > 0 ? errors : undefined
     };
   }
 }

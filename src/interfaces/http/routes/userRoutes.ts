@@ -25,8 +25,11 @@ const validationService = new ValidationService();
 const getAllUsersUseCase = new GetAllUsersUseCase(userRepository);
 const deleteUserUseCase = new DeleteUserUseCase(userRepository);
 const updateUserPasswordUseCase = new UpdateUserPasswordUseCase(userRepository, passwordHashingService);
+
+// Création des instances de services et use cases pour le middleware
 const tokenService = new JWTTokenService();
-const authMiddleware = new AuthMiddleware(tokenService, getUserUseCase);
+const getUserUseCaseForAuth = new GetUserUseCase(userRepository);
+const authMiddleware = new AuthMiddleware(tokenService, getUserUseCaseForAuth);
 
 // Création du contrôleur avec injection des dépendances
 const userController = new UserController(
@@ -54,7 +57,7 @@ router.get('/all',
 );
 
 router.get('/users/:id', 
-  adminAndManagerOnly, 
+  adminOnly, 
   userController.getById.bind(userController)
 );
 

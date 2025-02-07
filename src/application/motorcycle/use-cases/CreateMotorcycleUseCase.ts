@@ -11,7 +11,8 @@ export class CreateMotorcycleUseCase {
     model: string,
     vin: string,
     currentMileage: number,
-    concessionId: string
+    concessionId: string,
+    year?: number
   ): Promise<Motorcycle | Error> {
     const motorcycle = Motorcycle.from(
       undefined,
@@ -19,7 +20,8 @@ export class CreateMotorcycleUseCase {
       model,
       vin,
       currentMileage,
-      concessionId
+      concessionId,
+      year
     );
 
     if (motorcycle instanceof Error) {

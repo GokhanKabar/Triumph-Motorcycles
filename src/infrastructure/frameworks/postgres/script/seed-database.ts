@@ -4,6 +4,9 @@ import { UserSeed } from '../seeds/userSeed';
 import { CompanySeed } from '../seeds/companySeed';
 import { ConcessionSeed } from '../seeds/concessionSeed';
 import { MotorcycleSeed } from '../seeds/motorcycleSeed';
+import { MaintenanceSeed } from '../seeds/maintenanceSeed';
+import { InventoryPartSeed } from '../seeds/inventoryPartSeed';
+import { DriverSeed } from '../seeds/driverSeed';
 
 export async function seedDatabase(sequelize?: Sequelize, force: boolean = false): Promise<void> {
   try {
@@ -33,6 +36,18 @@ export async function seedDatabase(sequelize?: Sequelize, force: boolean = false
       // 4. Seed Motorcycles
       console.log('🏍 Seeding motorcycles...');
       await MotorcycleSeed.seed(force);
+      
+      // 5. Seed Drivers
+      console.log('🚚 Seeding drivers...');
+      await DriverSeed.seed(sequelize, force);
+      
+      // 6. Seed Maintenances
+      console.log('🔧 Seeding maintenances...');
+      await MaintenanceSeed.seed(force, sequelize);
+      
+      // 7. Seed Inventory Parts
+      console.log('🛠️ Seeding inventory parts...');
+      await InventoryPartSeed.seed(force, sequelize);
       
       console.log('✅ Database seeded successfully.');
     } else {

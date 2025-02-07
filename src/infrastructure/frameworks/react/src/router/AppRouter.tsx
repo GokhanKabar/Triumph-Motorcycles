@@ -14,6 +14,9 @@ import { UserRole } from "@domain/enums/UserRole";
 import Companies from "../pages/Companies";
 import Concessions from "../pages/Concessions";
 import Motorcycles from "../pages/Motorcycles";
+import Maintenances from "../pages/Maintenances";
+import InventoryParts from "../pages/InventoryParts";
+import Drivers from "../pages/Drivers";
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -69,6 +72,30 @@ const AppRouter: React.FC = () => {
             element={
               <AdminRoute>
                 <Concessions />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/maintenances"
+            element={
+              <AdminRoute>
+                <Maintenances />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/inventory-parts"
+            element={
+              <AdminRoute>
+                <InventoryParts />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/drivers"
+            element={
+              <AdminRoute>
+                <Drivers />
               </AdminRoute>
             }
           />

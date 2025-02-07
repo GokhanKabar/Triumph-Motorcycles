@@ -6,6 +6,7 @@ import { GetUserUseCase } from "../../../application/user/use-cases/GetUserUseCa
 import { PostgreSQLUserRepository } from "../../../infrastructure/repositories/PostgreSQLUserRepository";
 import { Argon2PasswordHashingService } from "../../../infrastructure/services/Argon2PasswordHashingService";
 import MotorcycleModel from "../../../infrastructure/frameworks/postgres/models/MotorcycleModel";
+import { PostgreSQLMotorcycleRepository } from "../../../infrastructure/repositories/PostgreSQLMotorcycleRepository";
 
 const router = express.Router();
 
@@ -18,13 +19,16 @@ const getUserUseCase = new GetUserUseCase(userRepository);
 // Création du middleware d'authentification
 const authMiddleware = new AuthMiddleware(tokenService, getUserUseCase);
 
+// Création du repository de motos
+const motorcycleRepository = new PostgreSQLMotorcycleRepository();
+
 // Routes protégées par authentification
 router.use(authMiddleware.authenticate);
 
-// GET /api/motorcycles - Récupérer toutes les motos
+// GET /api/motorcycles - Récupérer toutes les motos pour l'admin
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const motorcycles = await MotorcycleModel.findAll();
+    const motorcycles = await motorcycleRepository.findAll();
     res.json(motorcycles);
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la récupération des motos" });

@@ -1,6 +1,10 @@
 import { Sequelize } from "sequelize";
 import { seedDatabase } from "../script/seed-database";
 import UserModel from "../models/UserModel";
+import MaintenanceModel from "../models/MaintenanceModel";
+import InventoryPartModel from "../models/InventoryPartModel";
+import DriverModel from "../models/DriverModel";
+import MotorcycleModel from "../models/MotorcycleModel";
 
 const sequelize = new Sequelize({
   dialect: "postgres",
@@ -19,6 +23,10 @@ async function initializeDatabase() {
 
     // Initialize models
     UserModel.initialize(sequelize);
+    MaintenanceModel.initialize(sequelize);
+    InventoryPartModel.initialize(sequelize);
+    DriverModel.initialize(sequelize);
+    MotorcycleModel.initialize(sequelize);
 
     // Sync models
     await sequelize.sync({ alter: true });

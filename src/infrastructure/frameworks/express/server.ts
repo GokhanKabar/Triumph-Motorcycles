@@ -9,6 +9,7 @@ import { authRoutes } from "../../../interfaces/http/routes/authRoutes";
 import companyRoutes from "../../../interfaces/http/routes/companyRoutes";
 import concessionRoutes from "../../../interfaces/http/routes/concessionRoutes";
 import motorcycleRoutes from "../../../interfaces/http/routes/motorcycleRoutes";
+import maintenanceRoutes from "../../../interfaces/http/routes/maintenanceRoutes";
 import { errorHandler } from "../../../interfaces/http/middlewares/errorHandler";
 import { JWTTokenService } from "../../services/TokenService";
 import { AuthMiddleware } from "../../../interfaces/http/middlewares/authMiddleware";
@@ -20,6 +21,11 @@ import UserModel from "../postgres/models/UserModel";
 import CompanyModel from "../postgres/models/CompanyModel";
 import ConcessionModel from "../postgres/models/ConcessionModel";
 import MotorcycleModel from "../postgres/models/MotorcycleModel";
+import InventoryPartModel from "../postgres/models/InventoryPartModel";
+import inventoryPartRoutes from '../../../interfaces/http/routes/inventoryPartRoutes';
+import { CreateInventoryPartUseCase } from '@application/inventory/use-cases/CreateInventoryPartUseCase';
+import { PostgreSQLInventoryPartRepository } from '../../repositories/PostgreSQLInventoryPartRepository';
+import driverRoutes from '../../../interfaces/http/routes/driverRoutes';
 
 // Charger les variables d'environnement
 config();
@@ -32,6 +38,7 @@ const passwordHashingService = new Argon2PasswordHashingService();
 
 // Initialisation des repositories
 const userRepository = new PostgreSQLUserRepository(passwordHashingService);
+const inventoryPartRepository = new PostgreSQLInventoryPartRepository();
 
 // Middlewares de sécurité et configuration
 app.use(helmet());
@@ -42,6 +49,7 @@ app.use(express.urlencoded({ extended: true }));
 // Configuration du middleware d'authentification
 const getUserUseCase = new GetUserUseCase(userRepository);
 const authMiddleware = new AuthMiddleware(tokenService, getUserUseCase);
+const createInventoryPartUseCase = new CreateInventoryPartUseCase(inventoryPartRepository);
 
 // Montage des routes
 app.use("/api/auth", authRoutes);
@@ -49,10 +57,13 @@ app.use("/api/users", userRoutes); // Route standard
 app.use("/api/companies", companyRoutes);
 app.use("/api/concessions", concessionRoutes); // Route des entreprises
 app.use("/api/motorcycles", motorcycleRoutes); // Route des motos
+app.use("/api/maintenances", maintenanceRoutes); // Route des maintenances
+app.use("/api/inventory-parts", inventoryPartRoutes); // Route des pièces d'inventaire
+app.use("/api/drivers", driverRoutes); // Route des conducteurs
 
 // Gestion des routes 404
-app.use((req: Request, res: Response) => {
-  res.status(404).json({ message: "Route non trouvée" });
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.status(404).json({ message: 'Route non trouvée' });
 });
 
 // Middleware de gestion des erreurs
@@ -81,7 +92,11 @@ async function initializeDatabase() {
     await MotorcycleModel.initialize(sequelize);
     await sequelize.sync({ force: false }); // Mise à jour incrémentale
 
-    // 5. Seed la base de données
+    // 5. Initialiser le modèle des pièces d'inventaire
+    await InventoryPartModel.initialize(sequelize);
+    await sequelize.sync({ force: false }); // Mise à jour incrémentale
+
+    // 6. Seed la base de données
     await seedDatabase(sequelize);
 
     console.log("✅ Base de données initialisée avec succès");
