@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/api';
+import { authService, motorcycleService, maintenanceService } from '../services/api';
 
 interface User {
   firstName: string;
@@ -8,35 +8,74 @@ interface User {
   email: string;
 }
 
+interface DashboardStats {
+  totalBikes: number;
+  activeMaintenance: number;
+  upcomingServices: number;
+  availableBikes: number;
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  
-  const stats = {
-    totalBikes: 156,
-    activeMaintenance: 8,
-    upcomingServices: 12,
-    availableBikes: 134,
-  };
-
+  const [stats, setStats] = useState<DashboardStats>({
+    totalBikes: 0,
+    activeMaintenance: 0,
+    upcomingServices: 0,
+    availableBikes: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const fetchDashboardData = async () => {
       try {
+        // Check authentication
         if (!authService.isAuthenticated()) {
           navigate('/login');
           return;
         }
+
+        // Fetch user data
         const userData = await authService.getCurrentUser();
-        setUser(userData);
+        if (userData) {
+          setUser(userData);
+        }
+
+        // Fetch motorcycles
+        const motorcycles = await motorcycleService.getAllMotorcycles();
+        const totalBikes = motorcycles.length;
+        const availableBikes = motorcycles.filter(m => m.status === 'AVAILABLE').length;
+
+        // Fetch maintenances
+        const maintenances = await maintenanceService.getAllMaintenances();
+        const activeMaintenance = maintenances.filter(m => m.status === 'IN_PROGRESS').length;
+        const upcomingServices = maintenances.filter(m => m.status === 'SCHEDULED').length;
+
+        // Update stats
+        setStats({
+          totalBikes,
+          activeMaintenance,
+          upcomingServices,
+          availableBikes
+        });
+
+        setIsLoading(false);
       } catch (error) {
-        console.error('Erreur lors de la récupération du profil:', error);
+        console.error('Erreur lors de la récupération des données:', error);
         navigate('/login');
       }
     };
 
-    checkAuth();
+    fetchDashboardData();
   }, [navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -107,7 +146,7 @@ export default function Dashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
                   </svg>
                 </div>
-                <p className="ml-16 truncate text-sm font-medium text-gray-400">Maintenance Active</p>
+                <p className="ml-16 truncate text-sm font-medium text-gray-400">Total Maintenance Active</p>
               </dt>
               <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
                 <p className="text-2xl font-semibold text-white">{stats.activeMaintenance}</p>
@@ -119,45 +158,8 @@ export default function Dashboard() {
               </dd>
             </div>
 
-            {/* Services à venir */}
-            <div className="relative overflow-hidden rounded-lg bg-gray-800 px-4 pb-12 pt-5 shadow sm:px-6 sm:pt-6">
-              <dt>
-                <div className="absolute rounded-md bg-blue-500 p-3">
-                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                  </svg>
-                </div>
-                <p className="ml-16 truncate text-sm font-medium text-gray-400">Services à venir</p>
-              </dt>
-              <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-                <p className="text-2xl font-semibold text-white">{stats.upcomingServices}</p>
-                <div className="absolute inset-x-0 bottom-0 bg-gray-700/50 px-4 py-4 sm:px-6">
-                  <div className="text-sm">
-                    <a href="#" className="font-medium text-blue-400 hover:text-blue-300">Voir le calendrier<span className="sr-only"> Services à venir</span></a>
-                  </div>
-                </div>
-              </dd>
-            </div>
 
-            {/* Motos Disponibles */}
-            <div className="relative overflow-hidden rounded-lg bg-gray-800 px-4 pb-12 pt-5 shadow sm:px-6 sm:pt-6">
-              <dt>
-                <div className="absolute rounded-md bg-green-500 p-3">
-                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="ml-16 truncate text-sm font-medium text-gray-400">Motos Disponibles</p>
-              </dt>
-              <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-                <p className="text-2xl font-semibold text-white">{stats.availableBikes}</p>
-                <div className="absolute inset-x-0 bottom-0 bg-gray-700/50 px-4 py-4 sm:px-6">
-                  <div className="text-sm">
-                    <a href="#" className="font-medium text-green-400 hover:text-green-300">Voir les disponibilités<span className="sr-only"> Motos Disponibles</span></a>
-                  </div>
-                </div>
-              </dd>
-            </div>
+           
           </div>
 
         </div>
