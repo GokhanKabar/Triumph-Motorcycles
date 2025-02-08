@@ -32,8 +32,8 @@ const Navbar: React.FC = () => {
   };
 
   const isActive = (path: string) => {
-    return location.pathname === path 
-      ? "bg-gray-900 text-white ring-2 ring-offset-2 ring-offset-gray-800 ring-white" 
+    return location.pathname === path
+      ? "bg-gray-900 text-white ring-2 ring-offset-2 ring-offset-gray-800 ring-white"
       : "text-gray-300 hover:bg-gray-700 hover:text-white";
   };
 
@@ -54,8 +54,8 @@ const Navbar: React.FC = () => {
         <div className="relative flex items-center justify-between h-20">
           {/* Logo et titre */}
           <div className="flex items-center flex-shrink-0">
-            <Link 
-              to="/" 
+            <Link
+              to="/dashboard"
               className="flex items-center space-x-3 group transition-transform duration-300 hover:scale-105"
             >
               <h1 className="text-white text-xl sm:text-2xl lg:text-3xl font-bold tracking-wider">
@@ -67,17 +67,20 @@ const Navbar: React.FC = () => {
           {/* Menu desktop */}
           <div className="hidden lg:block flex-1 ml-8">
             <div className="flex justify-center space-x-1">
-              {menuItems.map((item) => (
-                (!item.adminOnly || user?.role === UserRole.ADMIN) && (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105 ${isActive(item.path)}`}
-                  >
-                    {item.label}
-                  </Link>
-                )
-              ))}
+              {menuItems.map(
+                (item) =>
+                  (!item.adminOnly || user?.role === UserRole.ADMIN) && (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105 ${isActive(
+                        item.path
+                      )}`}
+                    >
+                      {item.label}
+                    </Link>
+                  )
+              )}
             </div>
           </div>
 
@@ -102,12 +105,34 @@ const Navbar: React.FC = () => {
             >
               <span className="sr-only">Ouvrir le menu</span>
               {!isMenuOpen ? (
-                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                <svg
+                  className="block h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               ) : (
-                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="block h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               )}
             </button>
@@ -118,22 +143,27 @@ const Navbar: React.FC = () => {
       {/* Menu mobile avec animation */}
       <div
         className={`lg:hidden transition-all duration-300 ease-in-out ${
-          isMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0 overflow-hidden"
+          isMenuOpen
+            ? "max-h-screen opacity-100"
+            : "max-h-0 opacity-0 overflow-hidden"
         }`}
       >
         <div className="px-2 pt-2 pb-3 space-y-1 bg-gray-800 shadow-lg">
-          {menuItems.map((item) => (
-            (!item.adminOnly || user?.role === UserRole.ADMIN) && (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`block px-4 py-3 rounded-md text-base font-medium transition-all duration-300 ${isActive(item.path)}`}
-                onClick={toggleMenu}
-              >
-                {item.label}
-              </Link>
-            )
-          ))}
+          {menuItems.map(
+            (item) =>
+              (!item.adminOnly || user?.role === UserRole.ADMIN) && (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`block px-4 py-3 rounded-md text-base font-medium transition-all duration-300 ${isActive(
+                    item.path
+                  )}`}
+                  onClick={toggleMenu}
+                >
+                  {item.label}
+                </Link>
+              )
+          )}
           <div className="border-t border-gray-700 mt-4 pt-4">
             <button
               onClick={handleLogout}
