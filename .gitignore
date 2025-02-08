@@ -37,3 +37,6 @@ out/
 .DS_Store
 .DS_Store?
 Thumbs.db
+
+# Package
+package-lock.json
