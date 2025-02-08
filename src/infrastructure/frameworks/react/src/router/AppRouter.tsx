@@ -18,6 +18,7 @@ import Maintenances from "../pages/Maintenances";
 import InventoryParts from "../pages/InventoryParts";
 import Drivers from "../pages/Drivers";
 import { CompanyMotorcycles } from "../pages/CompanyMotorcycles";
+import Home from "../pages/Home";
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -39,6 +40,7 @@ const AppRouter: React.FC = () => {
     <Router>
       <Routes>
         {/* Route publique */}
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
 
         {/* Routes protégées */}
