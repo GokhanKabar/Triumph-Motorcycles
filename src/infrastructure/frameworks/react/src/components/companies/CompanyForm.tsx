@@ -2,6 +2,7 @@ import React, { useState, useEffect, FormEvent } from "react";
 import { CompanyFormDTO } from "../../../../../../application/dtos/CompanyDTO";
 import Company from "../../../../../../domain/company/entities/Company";
 import { ValidationService } from "@infrastructure/services/ValidationService";
+import { toast } from "react-toastify";
 
 interface CompanyFormProps {
   open: boolean;
@@ -94,6 +95,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
       await onSubmit(state.formData);
       onClose();
     } catch (error) {
+      toast.error("Erreur lors de l'envoi du formulaire.");
     } finally {
       setState((prev) => ({ ...prev, isSubmitting: false }));
     }

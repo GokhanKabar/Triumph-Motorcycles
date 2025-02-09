@@ -4,6 +4,7 @@ import InventoryPartList from '../components/inventory/InventoryPartList';
 import InventoryPartForm from '../components/inventory/InventoryPartForm';
 import { inventoryPartService } from '../services/api';
 import { CreateInventoryPartDTO } from '@application/inventory/dtos/CreateInventoryPartDTO';
+import { toast } from 'react-toastify';
 
 export default function InventoryPage() {
   const [isCreating, setIsCreating] = useState(false);
@@ -13,6 +14,7 @@ export default function InventoryPage() {
       await inventoryPartService.createInventoryPart(partData);
       setIsCreating(false);
     } catch (error) {
+      toast.error('Erreur lors de la création de la pièce.');
     }
   };
 

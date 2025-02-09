@@ -4,6 +4,7 @@ import Motorcycle from "@domain/motorcycle/entities/Motorcycle";
 import { ValidationService } from "@infrastructure/services/ValidationService";
 import { concessionService } from "../../services/api";
 import { MotorcycleStatus } from "@domain/motorcycle/enums/MotorcycleStatus";
+import { toast } from "react-toastify";
 
 interface MotorcycleFormProps {
   open: boolean;
@@ -146,6 +147,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
       await onSubmit(state.formData);
       onClose();
     } catch (error) {
+      toast.error("Erreur lors de l'envoi du formulaire.");
     } finally {
       setState((prev) => ({ ...prev, isSubmitting: false }));
     }

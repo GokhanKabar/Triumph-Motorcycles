@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { CompanyMotorcycleList } from "../components/company/CompanyMotorcycleList";
 import { companyService } from "../services/api";
 import { CompanyResponseDTO } from "@/application/dtos/CompanyDTO";
+import { toast } from "react-toastify";
 
 export const CompanyMotorcycles: React.FC = () => {
   const { companyId } = useParams<{ companyId: string }>();
@@ -20,6 +21,7 @@ export const CompanyMotorcycles: React.FC = () => {
           setSelectedCompany(response[0].id);
         }
       } catch (error) {
+        toast.error('Erreur lors du chargement des entreprises.');
       }
     };
 

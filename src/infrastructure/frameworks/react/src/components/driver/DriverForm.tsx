@@ -4,6 +4,7 @@ import { DriverStatus } from '@domain/driver/entities/Driver';
 import { driverService, companyService, motorcycleService } from '../../services/api';
 import { CompanyResponseDTO } from '@application/dtos/CompanyDTO';
 import { MotorcycleResponseDTO } from '@application/dtos/MotorcycleDTO';
+import { toast } from "react-toastify";
 
 interface DriverFormProps {
   onDriverAdded?: (driver: DriverDTO) => void;
@@ -75,7 +76,7 @@ export const DriverForm: React.FC<DriverFormProps> = ({
           }));
         }
       } catch (error) {
-        alert('Impossible de charger les données');
+        toast.error('Impossible de charger les données');
       }
     };
 
@@ -156,7 +157,7 @@ export const DriverForm: React.FC<DriverFormProps> = ({
         result = await driverService.createDriver(driverData);
       }
       
-      alert(driverToEdit ? 'Conducteur mis à jour avec succès' : 'Conducteur ajouté avec succès');
+      toast.success(driverToEdit ? 'Conducteur mis à jour avec succès' : 'Conducteur ajouté avec succès');
 
       // Appeler les callbacks
       if (onDriverAdded) onDriverAdded(result);
@@ -181,7 +182,7 @@ export const DriverForm: React.FC<DriverFormProps> = ({
         });
       }
     } catch (error) {
-      alert(driverToEdit ? 'Erreur lors de la mise à jour du conducteur' : 'Erreur lors de l\'ajout du conducteur');
+      toast.error(driverToEdit ? 'Erreur lors de la mise à jour du conducteur' : 'Erreur lors de l\'ajout du conducteur');
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);

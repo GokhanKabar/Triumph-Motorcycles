@@ -3,6 +3,7 @@ import { UserFormDTO } from '../../../../../../application/user/dtos/UserDTO';
 import User from '../../../../../../domain/user/entities/User';
 import { ValidationService } from "@infrastructure/services/ValidationService";
 import { UserRole } from "@domain/enums/UserRole";
+import { toast } from 'react-toastify';
 
 interface UserFormProps {
   open: boolean;
@@ -114,6 +115,7 @@ const UserForm: React.FC<UserFormProps> = ({ open, user, onClose, onSubmit }) =>
         onClose();
       }
     } catch (error) {
+      toast.error("Erreur lors de l'envoi du formulaire.");
     } finally {
       setState(prev => ({ ...prev, isSubmitting: false }));
     }

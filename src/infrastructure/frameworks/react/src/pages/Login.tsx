@@ -47,51 +47,48 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <div className="w-full max-w-md p-8 space-y-8 bg-gray-800 rounded-lg">
-        <div>
-          <h2 className="mt-6 text-3xl font-extrabold text-center text-white">
-            Connexion
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="-space-y-px rounded-md shadow-sm">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="w-full max-w-md p-8 space-y-6 bg-gray-900 border border-gray-700 shadow-lg rounded-2xl">
+        <h2 className="text-3xl font-bold text-center text-gray-200">Connexion</h2>
+
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          <div className="space-y-4">
             <div>
+              <label className="block text-sm font-medium text-gray-400">Adresse email</label>
               <input
                 type="email"
                 required
-                className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Adresse email"
+                className="w-full px-4 py-3 mt-1 text-white placeholder-gray-500 bg-gray-800 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Entrer votre email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+
             <div>
+              <label className="block text-sm font-medium text-gray-400">Mot de passe</label>
               <input
                 type="password"
                 required
-                className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Mot de passe"
+                className="w-full px-4 py-3 mt-1 text-white placeholder-gray-500 bg-gray-800 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Entrer votre mot de passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>
 
-          {error && (
-            <div className="text-sm text-center text-red-500">
-              {error}
-            </div>
-          )}
+          {error && <div className="text-sm text-center text-red-500">{error}</div>}
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md group hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
-              {loading ? 'Connexion...' : 'Se connecter'}
-            </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full px-4 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50"
+          >
+            {loading ? 'Connexion...' : 'Se connecter'}
+          </button>
+          <div className="text-sm text-center text-gray-500">
+            Mot de passe oublié ? <span className="text-gray-600">Indisponible pour le moment</span>
           </div>
         </form>
       </div>

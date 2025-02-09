@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { testRideService } from '../services/api';
 import { TestRideDto } from '@/application/testRide/dtos/TestRideDto';
 import { TestRideStatus } from '@domain/testRide/entities/TestRide';
+import { toast } from 'react-toastify';
 
 const formatDate = (dateString: string | Date | undefined): string => {
   if (!dateString) return 'Date non disponible';
@@ -20,6 +21,7 @@ const formatDate = (dateString: string | Date | undefined): string => {
       year: 'numeric'
     });
   } catch (error) {
+    toast.error('Erreur de formatage de date.');
     return 'Date non formatée';
   }
 };

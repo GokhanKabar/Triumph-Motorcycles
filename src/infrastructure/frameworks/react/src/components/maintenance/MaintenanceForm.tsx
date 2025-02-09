@@ -6,6 +6,7 @@ import { motorcycleService } from '../../services/api';
 import { MotorcycleResponseDTO } from '@application/motorcycle/dtos/MotorcycleResponseDTO';
 import { inventoryPartService } from '../../services/api';
 import { InventoryPartResponseDTO } from '@application/inventory/dtos/InventoryPartResponseDTO';
+import { toast } from 'react-toastify';
 
 interface MaintenanceFormProps {
   onSubmit: (maintenanceData: CreateMaintenanceDTO) => void;
@@ -41,11 +42,12 @@ export function MaintenanceForm({
       try {
         const [motorcycleData, inventoryData] = await Promise.all([
           motorcycleService.getAllMotorcycles(),
-          inventoryPartService.getAllParts() // Modification ici
+          inventoryPartService.getAllParts()
         ]);
         setMotorcycles(motorcycleData);
         setInventoryParts(inventoryData);
       } catch (error) {
+        toast.error('Erreur lors de la récupération des données');
       }
     }
     fetchData();

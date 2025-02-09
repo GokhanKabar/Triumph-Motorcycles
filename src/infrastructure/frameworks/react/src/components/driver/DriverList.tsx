@@ -1,7 +1,8 @@
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { DriverDTO } from '@application/driver/dtos/DriverDTO';
 import { driverService } from '../../services/api';
 import { DriverStatus } from '@domain/driver/entities/Driver';
+import { toast } from "react-toastify";
 
 interface DriverListProps {
   onEditDriver?: (driver: DriverDTO) => void;
@@ -57,7 +58,7 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
         await fetchDrivers();
         setConfirmDeleteDriver(null);
       } catch (error) {
-        alert('Impossible de supprimer le conducteur');
+        toast.error('Impossible de supprimer le conducteur');
       }
     };
 
@@ -66,7 +67,7 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
         await driverService.changeDriverStatus(driver.id, newStatus);
         await fetchDrivers();
       } catch (error) {
-        alert('Impossible de changer le statut du conducteur');
+        toast.error('Impossible de changer le statut du conducteur');
       }
     };
 

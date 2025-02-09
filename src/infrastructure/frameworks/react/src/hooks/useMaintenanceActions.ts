@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { maintenanceService, motorcycleService } from '../services/api';
 import { MaintenanceResponseDTO } from '@application/maintenance/dtos/MaintenanceResponseDTO';
-import { MaintenanceStatus } from '@domain/maintenance/entities/Maintenance';
 
 interface UseMaintenanceActionsParams {
   onComplete?: (maintenanceId: string) => void;
@@ -46,7 +45,7 @@ export const useMaintenanceActions = () => {
           const motorcycle = await motorcycleService.getMotorcycle(completedMaintenance.motorcycleId);
           completedMaintenance.motorcycle = motorcycle;
         } catch (motorcycleError) {
-          console.warn(`Impossible de charger les détails de la moto ${completedMaintenance.motorcycleId}:`, motorcycleError);
+          toast.error('Une erreur est survenu lors de la récupération des données de la moto associée à la maintenance.');
         }
       }
       

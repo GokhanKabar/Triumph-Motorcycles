@@ -4,6 +4,7 @@ import { CreateInventoryPartDTO } from '@application/inventory/dtos/CreateInvent
 import { motorcycleService } from '../../services/api';
 import { MotorcycleResponseDTO } from '@application/motorcycle/dtos/MotorcycleResponseDTO';
 import { InventoryPartResponseDTO } from '@application/inventory/dtos/InventoryPartResponseDTO';
+import { toast } from "react-toastify";
 
 interface InventoryPartFormProps {
   onSubmit: (partData: Partial<CreateInventoryPartDTO>) => void;
@@ -38,6 +39,7 @@ export default function InventoryPartForm({
         const data = await motorcycleService.getAllMotorcycles();
         setMotorcycles(data);
       } catch (error) {
+        toast.error('Erreur lors de la récupération des motos');
       }
     }
     fetchMotorcycles();
