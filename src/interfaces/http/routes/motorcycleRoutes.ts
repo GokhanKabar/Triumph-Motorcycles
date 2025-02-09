@@ -20,7 +20,7 @@ router.get("/", async (req: Request, res: Response) => {
 
     const motorcycles = await MotorcycleModel.findAll({
       where: whereCondition,
-      attributes: ['id', 'brand', 'model', 'concessionId']
+      attributes: ['id', 'brand', 'model', 'year', 'vin', 'mileage', 'status', 'concessionId', 'createdAt', 'updatedAt']
     });
     
     res.json(motorcycles);
