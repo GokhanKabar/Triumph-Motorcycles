@@ -127,4 +127,10 @@ export class PostgreSQLConcessionRepository implements IConcessionRepository {
       throw error;
     }
   }
+
+  async countMotorcycles(concessionId: string): Promise<number> {
+    return await MotorcycleModel.count({
+      where: { concessionId },
+    });
+  }
 }

@@ -8,6 +8,7 @@ import { UserRole } from '@domain/enums/UserRole';
 import { toast } from 'react-toastify';
 import { ToastPosition } from 'react-toastify/dist/types';
 import axios from 'axios';
+import api from '../services/api';
 
 interface SnackbarState {
   open: boolean;
@@ -115,31 +116,29 @@ export default function Users() {
           role: userData.role
         };
         await userService.updateUser(selectedUser.id, updateData);
+        setRefreshKey(prev => prev + 1); // Trigger refresh
       } else {
         // Vérifier si l'utilisateur actuel est un admin
         const currentUser = authService.getCurrentUser();
         const isAdmin = currentUser?.role === UserRole.ADMIN;
         
         // Créer un utilisateur avec le mot de passe
-        const createData: CreateUserDTO = {
+        await userService.createAdminUser({
           firstName: userData.firstName,
           lastName: userData.lastName,
           email: userData.email,
           password: userData.password,
-          role: userData.role || UserRole.USER
-        };
+          role: userData.role || UserRole.ADMIN  // Use provided role or default to ADMIN
+        });
+
+        // Rafraîchir la liste des utilisateurs
+        setRefreshKey(prev => prev + 1);
         
-        // Utiliser la méthode de création admin
-        await userService.createAdminUser(createData);
+        // Réinitialiser le formulaire
+        setSelectedUser(undefined);
+        setOpenForm(false);
       }
 
-      // Rafraîchir la liste des utilisateurs
-      const updatedUsers = await userService.getUsers();
-      setRefreshKey(prev => prev + 1);
-      
-      // Réinitialiser le formulaire
-      setSelectedUser(undefined);
-      setOpenForm(false);
     } catch (error) {
       console.error('Erreur lors de la soumission du formulaire:', error);
       
@@ -150,17 +149,48 @@ export default function Users() {
           status: error.response?.status,
           headers: error.response?.headers
         });
+
+        // Message d'erreur personnalisé
+        const errorMessage = error.response?.data?.message || 
+          error.response?.data?.errors?.map((err: any) => err.message).join(', ') || 
+          'Erreur lors de la création de l\'utilisateur';
+        
+        // Afficher les erreurs spécifiques pour chaque champ
+        if (error.response?.data?.errors) {
+          error.response.data.errors.forEach((err: any) => {
+            toast.error(`${err.field}: ${err.message}`, {
+              position: 'top-center' as ToastPosition,
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+          });
+        } else {
+          toast.error(errorMessage, {
+            position: 'top-center' as ToastPosition,
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        }
+      } else {
+        // Erreur générique
+        toast.error('Erreur lors de la création de l\'utilisateur', {
+          position: 'top-center' as ToastPosition,
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
       }
-      
-      toast.error('Erreur lors de la création de l\'utilisateur', {
-        position: 'top-center' as ToastPosition,
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
     }
   };
 
@@ -210,10 +240,9 @@ export default function Users() {
             </button>
           </div>
           <UserList 
-            key={refreshKey} // Ajout de la clé pour forcer le rafraîchissement
-            onEdit={handleEditUser} 
-            onDelete={handleDeleteUser} 
-            onResetPassword={handleResetPassword}
+            onEdit={handleEditUser}
+            onDelete={handleDeleteUser}
+            refreshKey={refreshKey}  // Pass refreshKey to UserList
           />
         </div>
         <UserForm

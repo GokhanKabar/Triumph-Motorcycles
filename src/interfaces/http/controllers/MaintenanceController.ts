@@ -26,7 +26,7 @@ export class MaintenanceController {
     findAllMaintenancesUseCase: FindAllMaintenancesUseCase,
     deleteMaintenanceUseCase: DeleteMaintenanceUseCase,
     updateMaintenanceUseCase: UpdateMaintenanceUseCase,
-    motorcycleRepository: IMotorcycleRepository
+    private motorcycleRepository: IMotorcycleRepository
   ) {
     this.createMaintenanceUseCase = createMaintenanceUseCase;
     this.completeMaintenanceUseCase = completeMaintenanceUseCase;
@@ -34,7 +34,6 @@ export class MaintenanceController {
     this.findAllMaintenancesUseCase = findAllMaintenancesUseCase;
     this.deleteMaintenanceUseCase = deleteMaintenanceUseCase;
     this.updateMaintenanceUseCase = updateMaintenanceUseCase;
-    this.motorcycleRepository = motorcycleRepository;
   }
 
   async createMaintenance(req: Request, res: Response): Promise<void> {

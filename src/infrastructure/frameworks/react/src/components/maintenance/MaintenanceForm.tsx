@@ -41,7 +41,7 @@ export function MaintenanceForm({
       try {
         const [motorcycleData, inventoryData] = await Promise.all([
           motorcycleService.getAllMotorcycles(),
-          inventoryPartService.getAllInventoryParts()
+          inventoryPartService.getAllParts() // Modification ici
         ]);
         setMotorcycles(motorcycleData);
         setInventoryParts(inventoryData);

@@ -12,7 +12,7 @@ export default function InventoryPartList() {
   const fetchInventoryParts = async () => {
     try {
       setIsLoading(true);
-      const parts = await inventoryPartService.getAllInventoryParts();
+      const parts = await inventoryPartService.getAllParts();
       setInventoryParts(parts);
       setError(null);
     } catch (err) {
@@ -38,7 +38,7 @@ export default function InventoryPartList() {
         )
       );
 
-      const updatedPart = await inventoryPartService.updateInventoryPart(
+      const updatedPart = await inventoryPartService.updatePart(
         selectedPart.id, 
         changedFields
       );
@@ -60,7 +60,10 @@ export default function InventoryPartList() {
 
   const handleStockChange = async (partId: string, quantity: number, action: 'add' | 'remove') => {
     try {
-      const updatedPart = await inventoryPartService.manageInventoryStock(partId, quantity, action);
+      const updatedPart = await inventoryPartService.manageStock(partId, {
+        quantity,
+        action
+      });
       
       setInventoryParts(prevParts => 
         prevParts.map(part => 
@@ -88,7 +91,7 @@ export default function InventoryPartList() {
         return;
       }
 
-      await inventoryPartService.deleteInventoryPart(partId);
+      await inventoryPartService.deletePart(partId);
       
       // Mettre à jour la liste des pièces
       setInventoryParts(prevParts => 

@@ -25,3 +25,18 @@ export interface ConcessionResponseDTO {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface DeleteConcessionResponseDTO {
+  success: boolean;
+  message: string;
+  error?: {
+    code: 'CONCESSION_NOT_FOUND' | 'CONCESSION_HAS_MOTORCYCLES' | 'INTERNAL_SERVER_ERROR';
+    details?: string;
+  };
+}
+
+export interface DeleteConcessionErrorDTO {
+  code: 'CONCESSION_NOT_FOUND' | 'CONCESSION_HAS_MOTORCYCLES' | 'INTERNAL_SERVER_ERROR';
+  message: string;
+  details?: string;
+}

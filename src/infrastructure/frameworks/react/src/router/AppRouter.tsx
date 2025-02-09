@@ -5,12 +5,9 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { ProtectedRoute } from "../components/ProtectedRoute";
-import { useAuthStore } from "@stores/authStore";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import Users from "../pages/Users";
-import { UserRole } from "@domain/enums/UserRole";
 import Companies from "../pages/Companies";
 import Concessions from "../pages/Concessions";
 import Motorcycles from "../pages/Motorcycles";
@@ -20,16 +17,18 @@ import Drivers from "../pages/Drivers";
 import { CompanyMotorcycles } from "../pages/CompanyMotorcycles";
 import Home from "../pages/Home";
 import TestRidePage from "../pages/TestRidePage";
+import ProtectedRoute from '../components/ProtectedRoute';
+import { UserRole } from "@domain/enums/UserRole";
 
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const { user } = useAuthStore();
-  const isAdmin = user?.role === UserRole.ADMIN;
-
-  if (!isAdmin) {
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+  
+  if (!user || user.role !== UserRole.ADMIN) {
     return <Navigate to="/dashboard" replace />;
   }
 

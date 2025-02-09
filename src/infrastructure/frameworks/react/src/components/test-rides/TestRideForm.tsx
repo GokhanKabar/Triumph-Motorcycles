@@ -35,7 +35,7 @@ export const TestRideForm: React.FC = () => {
   useEffect(() => {
     const fetchConcessions = async () => {
       try {
-        const fetchedConcessions = await concessionService.getConcessions();
+        const fetchedConcessions = await concessionService.getAllConcessions();
         console.log('Concessions récupérées:', fetchedConcessions);
         setConcessions(fetchedConcessions);
       } catch (err) {
@@ -139,7 +139,7 @@ export const TestRideForm: React.FC = () => {
     console.log('Données du test ride à soumettre:', testRideData);
 
     try {
-      const response = await testRideService.createTestRide(testRideData);
+      const response = await testRideService.create(testRideData);
       
       // Notification de succès
       setNotification({

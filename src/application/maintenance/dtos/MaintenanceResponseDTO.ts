@@ -18,7 +18,10 @@ export interface MaintenanceResponseDTO {
     id: string;
     brand: string;
     model: string;
-    vin: string;
     year: number;
+    vin: string;
+    mileage: number;
+    status: MotorcycleStatus;
+    concessionId: string;
   };
 }

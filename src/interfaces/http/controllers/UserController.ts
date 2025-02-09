@@ -79,8 +79,20 @@ export class UserController {
 
   async getById(req: Request, res: Response): Promise<void> {
     try {
-      const user = await this.getUserUseCase.getById(req.params.id);
+      const userId = req.params.id;
+      console.log('DEBUG: getById called with id:', userId);
+
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(userId)) {
+        console.log('DEBUG: Invalid UUID format');
+        res.status(400).json({ message: 'ID utilisateur invalide' });
+        return;
+      }
+
+      const user = await this.getUserUseCase.getById(userId);
       if (!user) {
+        console.log('DEBUG: User not found for id:', userId);
         res.status(404).json({ message: 'Utilisateur non trouvé' });
         return;
       }

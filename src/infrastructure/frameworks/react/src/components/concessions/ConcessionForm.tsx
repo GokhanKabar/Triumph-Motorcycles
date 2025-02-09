@@ -1,13 +1,14 @@
 import React, { useState, useEffect, FormEvent } from "react";
-import { ConcessionFormDTO } from "../../../../../../application/dtos/ConcessionDTO";
-import Concession from "../../../../../../domain/concession/entities/Concession";
+import { ConcessionFormDTO, ConcessionResponseDTO } from "../../../../../../application/dtos/ConcessionDTO";
 import { ValidationService } from "@infrastructure/services/ValidationService";
+import { toast } from "react-toastify";
 
 interface ConcessionFormProps {
   open: boolean;
-  concession?: Concession;
+  concession?: ConcessionResponseDTO;
   onClose: () => void;
   onSubmit: (data: ConcessionFormDTO) => Promise<void>;
+  userId: string;
 }
 
 interface ConcessionFormState {
@@ -21,10 +22,11 @@ const ConcessionForm: React.FC<ConcessionFormProps> = ({
   concession,
   onClose,
   onSubmit,
+  userId,
 }) => {
   const validationService = new ValidationService();
 
-  const createInitialState = (existingConcession?: Concession): ConcessionFormState => ({
+  const createInitialState = (existingConcession?: ConcessionResponseDTO): ConcessionFormState => ({
     formData: existingConcession
       ? {
           id: existingConcession.id,
@@ -33,8 +35,8 @@ const ConcessionForm: React.FC<ConcessionFormProps> = ({
           address: existingConcession.address,
         }
       : {
-          id: undefined,
-          userId: "", // This should be set based on the current user
+          id: undefined, // Forcer à undefined lors de la création
+          userId: userId,
           name: "",
           address: "",
         },
@@ -87,6 +89,23 @@ const ConcessionForm: React.FC<ConcessionFormProps> = ({
       onClose();
     } catch (error) {
       console.error("Error submitting form:", error);
+      
+      // Gérer les erreurs de validation côté serveur
+      if (error instanceof Error) {
+        const errorMessage = error.message || "Une erreur est survenue lors de la création de la concession";
+        
+        // Afficher un message d'erreur spécifique
+        setState((prev) => ({
+          ...prev,
+          errors: {
+            ...prev.errors,
+            name: errorMessage
+          }
+        }));
+
+        // Utiliser toast pour une notification plus visible
+        toast.error(errorMessage);
+      }
     } finally {
       setState((prev) => ({ ...prev, isSubmitting: false }));
     }

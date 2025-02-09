@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService, motorcycleService, maintenanceService } from '../services/api';
+import { motorcycleService, maintenanceService } from '../services/api';
 
 interface User {
   firstName: string;
   lastName: string;
   email: string;
+  role: string;
 }
 
 interface DashboardStats {
@@ -15,7 +16,7 @@ interface DashboardStats {
   availableBikes: number;
 }
 
-export default function Dashboard() {
+const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
@@ -25,21 +26,27 @@ export default function Dashboard() {
     availableBikes: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const userStr = localStorage.getItem('user');
+  let storedUser: User | null;
+  try {
+    storedUser = userStr ? JSON.parse(userStr) : null;
+  } catch (error) {
+    storedUser = null;
+  }
+  const isAdmin = storedUser?.role === 'ADMIN';
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         // Check authentication
-        if (!authService.isAuthenticated()) {
+        if (!storedUser) {
           navigate('/login');
           return;
         }
 
-        // Fetch user data
-        const userData = await authService.getCurrentUser();
-        if (userData) {
-          setUser(userData);
-        }
+        setUser(storedUser);
 
         // Fetch motorcycles
         const motorcycles = await motorcycleService.getAllMotorcycles();
@@ -62,6 +69,7 @@ export default function Dashboard() {
         setIsLoading(false);
       } catch (error) {
         console.error('Erreur lors de la récupération des données:', error);
+        setError('Erreur lors de la récupération des données');
         navigate('/login');
       }
     };
@@ -75,6 +83,10 @@ export default function Dashboard() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
       </div>
     );
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
   }
 
   if (!user) {
@@ -158,12 +170,27 @@ export default function Dashboard() {
               </dd>
             </div>
 
-
-           
+            {isAdmin && (
+              <div className="bg-gray-800 p-6 rounded-lg shadow-lg md:col-span-2">
+                <h2 className="text-xl font-semibold text-white mb-4">Statistiques</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-100 p-4 rounded">
+                    <p className="text-2xl font-bold">{stats.totalBikes}</p>
+                    <p className="text-gray-300">Total Motos</p>
+                  </div>
+                  <div className="bg-green-100 p-4 rounded">
+                    <p className="text-2xl font-bold">{stats.activeMaintenance}</p>
+                    <p className="text-gray-300">Total Maintenance Active</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;

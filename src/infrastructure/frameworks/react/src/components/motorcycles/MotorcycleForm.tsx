@@ -17,6 +17,8 @@ interface MotorcycleFormState {
   errors: Record<keyof MotorcycleFormDTO, string>;
   isSubmitting: boolean;
   concessions: { id: string; name: string }[];
+  isLoading: boolean;
+  error?: string;
 }
 
 const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
@@ -62,6 +64,7 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
     },
     isSubmitting: false,
     concessions: [],
+    isLoading: false,
   });
 
   const [state, setState] = useState<MotorcycleFormState>(
@@ -77,13 +80,16 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
 
   const fetchConcessions = async () => {
     try {
-      const concessions = await concessionService.getConcessions();
+      setState((prev) => ({ ...prev, isLoading: true }));
+      const concessions = await concessionService.getAllConcessions();
       setState((prev) => ({
         ...prev,
         concessions: concessions.map((c) => ({ id: c.id, name: c.name })),
+        isLoading: false,
       }));
     } catch (error) {
       console.error("Failed to fetch concessions:", error);
+      setState((prev) => ({ ...prev, error: "Failed to fetch concessions", isLoading: false }));
     }
   };
 
@@ -356,10 +362,10 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
             </button>
             <button
               type="submit"
-              disabled={state.isSubmitting}
+              disabled={state.isSubmitting || state.isLoading}
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {state.isSubmitting
+              {state.isSubmitting || state.isLoading
                 ? "En cours..."
                 : motorcycle
                 ? "Modifier"
@@ -367,6 +373,9 @@ const MotorcycleForm: React.FC<MotorcycleFormProps> = ({
             </button>
           </div>
         </form>
+        {state.error && (
+          <p className="mt-4 text-sm text-red-500">{state.error}</p>
+        )}
       </div>
     </div>
   );

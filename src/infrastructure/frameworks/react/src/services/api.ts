@@ -1,451 +1,851 @@
-import axios from "axios";
-import { CompanyMotorcycleDTO } from "@/application/companyMotorcycle/dtos/CompanyMotorcycleDTO";
-import { useAuthStore } from "@stores/authStore";
-import {
-  CreateUserDTO,
-  UserResponseDTO,
-  UpdateUserDTO,
-  PasswordUpdateRequest,
-  PasswordUpdateResponse,
-} from "@application/user/dtos/UserDTO";
-import {
-  CreateCompanyDTO,
-  UpdateCompanyDTO,
-  CompanyResponseDTO,
-} from "@application/dtos/CompanyDTO";
+import axios from 'axios';
 import {
   CreateConcessionDTO,
-  UpdateConcessionDTO,
   ConcessionResponseDTO,
-} from "@application/dtos/ConcessionDTO";
-import {
-  CreateMaintenanceDTO,
-  MaintenanceResponseDTO,
-} from "@/application/dtos/MaintenanceDTO";
-import {
-  CreateInventoryPartDTO,
-  InventoryPartResponseDTO,
-} from "@/application/dtos/InventoryPartDTO";
-import {
-  CreateDriverDTO,
-  DriverDTO,
-} from "@/application/driver/dtos/DriverDTO";
-import {
-  CreateMotorcycleDTO,
-  UpdateMotorcycleDTO,
-  MotorcycleResponseDTO,
-} from "@/application/dtos/MotorcycleDTO";
-import {
-  CreateTestRideDTO,
-  TestRideResponseDTO
-} from "@/application/dtos/TestRideDTO";
-import TestRide, { TestRideStatus } from '@domain/testRide/entities/TestRide';
+  UpdateConcessionDTO,
+  ConcessionFormDTO,
+  DeleteConcessionResponseDTO
+} from "@/application/dtos/ConcessionDTO";
+import { MotorcycleResponseDTO } from '@application/motorcycle/dtos/MotorcycleDTO';
+import { MotorcycleStatus } from '@domain/motorcycle/enums/MotorcycleStatus';
+import { MaintenanceResponseDTO } from '@application/maintenance/dtos/MaintenanceResponseDTO';
+import { MaintenanceType, MaintenanceStatus } from '@domain/maintenance/entities/Maintenance';
 
-const API_BASE_URL = "http://localhost:3001/api";
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
+// Configuration de l'instance Axios
+export const api = axios.create({
+  baseURL: 'http://localhost:3001/api',
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 
-// Instance Axios sans intercepteur pour les requêtes publiques
-const publicApi = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Intercepteur pour ajouter le token à chaque requête
-api.interceptors.request.use(
-  (config) => {
-    // Routes publiques qui ne nécessitent pas de token
-    const publicRoutes = [
-      '/motorcycles',
-      '/concessions',
-      '/users/users', 
-      '/users', 
-      '/users/all'
-    ];
-
-    // Vérifier si la route est publique et si c'est une requête GET
-    const isPublicRoute = publicRoutes.some(route => 
-      config.url?.includes(route) && config.method === 'get'
-    );
-
-    // Ne pas ajouter de token pour les routes publiques GET
-    if (isPublicRoute) {
-      console.log("DEBUG: Route publique, pas de token requis", {
-        url: config.url,
-        method: config.method,
-      });
-      return config;
-    }
-
-    // Récupérer directement depuis le localStorage
-    const storedAuth = localStorage.getItem("auth-storage");
-    const parsedAuth = storedAuth ? JSON.parse(storedAuth) : null;
-    const token = parsedAuth?.state?.token;
-
-    console.log("DEBUG: Interceptor Request", {
-      url: config.url,
-      method: config.method,
-      token: token ? "Token present" : "No token",
-      parsedAuth: parsedAuth,
-    });
-
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-      console.log("DEBUG: Added Authorization header to request", {
-        url: config.url,
-        method: config.method,
-      });
-    } else {
-      console.warn("DEBUG: No token found in auth store", {
-        url: config.url,
-        method: config.method,
-      });
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+// Intercepteur pour ajouter le token aux requêtes
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+});
 
-// Intercepteur de réponse
+// Intercepteur pour gérer les erreurs d'authentification
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    console.warn("DEBUG: Intercepteur Axios - Erreur détectée", {
-      status: error.response?.status,
-      data: error.response?.data,
-      headers: error.config?.headers,
-    });
+  async (error) => {
+    const originalRequest = error.config;
 
-    // Vérifier si la route est publique
-    const publicRoutes = [
-      '/api/concessions', 
-      '/api/motorcycles', 
-      '/api/users/users', 
-      '/api/users', 
-      '/api/users/all'
-    ];
+    // Vérifier si nous avons une réponse et si c'est une erreur 401
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-    const isPublicRoute = publicRoutes.some(route => 
-      error.config.url.includes(route)
-    );
+      try {
+        // Essayer de rafraîchir le token
+        const response = await authService.refreshToken();
+        const { token } = response;
 
-    // Ne pas déconnecter pour les routes publiques
-    if (error.response && error.response.status === 401 && !isPublicRoute) {
-      console.warn("DEBUG: Unauthorized - Logging out");
-      useAuthStore.getState().logout();
-      window.location.href = "/login";
+        // Mettre à jour le token dans le localStorage
+        localStorage.setItem('token', token);
+
+        // Mettre à jour le header d'autorisation
+        originalRequest.headers.Authorization = `Bearer ${token}`;
+        
+        // Réessayer la requête originale avec le nouveau token
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Si le rafraîchissement échoue, déconnecter l'utilisateur
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
     }
+
     return Promise.reject(error);
   }
 );
 
-export interface AuthResponse {
-  token: string;
-  user: UserResponseDTO;
-}
+// Global error interceptor
+api.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('DEBUG: Global API Error Interceptor', {
+      url: error.config?.url,
+      method: error.config?.method,
+      params: error.config?.params,
+      data: error.config?.data,
+      errorMessage: error.message,
+      errorResponse: error.response?.data
+    });
+    return Promise.reject(error);
+  }
+);
 
+// Global error interceptor
+api.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('DEBUG: Global API Error Interceptor', {
+      url: error.config?.url,
+      method: error.config?.method,
+      params: error.config?.params,
+      data: error.config?.data,
+      errorMessage: error.message,
+      errorResponse: error.response?.data
+    });
+    return Promise.reject(error);
+  }
+);
+
+// Service d'authentification
 export const authService = {
-  login: async (email: string, password: string) => {
+  login: async (credentials: { email: string; password: string }) => {
     try {
-      const response = await api.post("/auth/login", { email, password });
-      const { user, token } = response.data;
-      useAuthStore.getState().login(user, token);
-      return { user, token };
+      const response = await api.post('/auth/login', credentials);
+      
+      // Vérification de la réponse
+      if (!response.data || !response.data.token || !response.data.user) {
+        throw new Error('Réponse du serveur invalide');
+      }
+      
+      return response.data;
     } catch (error) {
-      console.error("Login failed", error);
+      if (axios.isAxiosError(error) && error.response) {
+        // Erreur avec réponse du serveur
+        const message = error.response.data?.message || 'Erreur lors de la connexion';
+        console.error('Erreur lors de la connexion:', message);
+        throw new Error(message);
+      } else {
+        // Erreur sans réponse du serveur
+        console.error('Erreur lors de la connexion:', error);
+        throw new Error('Erreur de connexion au serveur');
+      }
+    }
+  },
+
+  register: async (userData: any) => {
+    try {
+      const response = await api.post('/auth/register', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de l\'inscription:', error);
       throw error;
     }
   },
 
-  logout: () => {
-    useAuthStore.getState().logout();
-  },
-
-  getCurrentUser: (): UserResponseDTO | null => {
-    const user = useAuthStore.getState().user;
-    return user;
-  },
-
-  isAuthenticated: (): boolean => {
-    return !!useAuthStore.getState().token;
-  },
-};
-
-export const userService = {
-  createUser: async (userData: CreateUserDTO): Promise<UserResponseDTO> => {
-    const response = await api.post<UserResponseDTO>("/users", userData);
-    return response.data;
-  },
-
-  updateUser: async (
-    id: string,
-    userData: Partial<UpdateUserDTO>
-  ): Promise<UserResponseDTO> => {
-    // Supprimer les champs de mot de passe s'ils sont présents
-    const dataToUpdate: Partial<UpdateUserDTO> = { ...userData };
-
-    delete dataToUpdate.currentPassword;
-    delete dataToUpdate.newPassword;
-
-    const response = await api.put<UserResponseDTO>(
-      `/users/${id}`,
-      dataToUpdate
-    );
-    return response.data;
-  },
-
-  getUsers: async (): Promise<UserResponseDTO[]> => {
-    const response = await api.get<UserResponseDTO[]>("/users/all");
-    return response.data;
-  },
-
-  deleteUser: async (
-    id: string
-  ): Promise<{ message: string; userId: string }> => {
+  logout: async () => {
     try {
-      const response = await api.delete<{ message: string; userId: string }>(
-        `/users/${id}`
-      );
+      await api.post('/auth/logout');
+      localStorage.removeItem('token');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      throw error;
+    }
+  },
 
-      // Déconnexion uniquement si l'utilisateur supprimé est l'utilisateur connecté
-      const currentUser = useAuthStore.getState().user;
-      if (currentUser && currentUser.id === id) {
-        useAuthStore.getState().logout();
+  refreshToken: async () => {
+    try {
+      const response = await api.post('/auth/refresh-token');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors du rafraîchissement du token:', error);
+      throw error;
+    }
+  },
+
+  getCurrentUser: async () => {
+    try {
+      const response = await api.get('/auth/me');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'utilisateur courant:', error);
+      throw error;
+    }
+  },
+
+  createAdminUser: async (userData: any) => {
+    try {
+      // Vérifier si l'utilisateur actuel est admin
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      if (currentUser?.role !== 'ADMIN') {
+        throw new Error('Accès non autorisé. Seuls les administrateurs peuvent créer des comptes admin.');
       }
 
+      // Vérifier que tous les champs requis sont présents
+      const requiredFields = ['firstName', 'lastName', 'email', 'password', 'role'];
+      const missingFields = requiredFields.filter(field => !userData[field]);
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Champs manquants : ${missingFields.join(', ')}`);
+      }
+
+      // Créer l'utilisateur admin
+      const response = await api.post('/users/admin', userData);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const errorMessage =
-          error.response?.data?.message ||
-          "Une erreur est survenue lors de la suppression du compte.";
-        throw new Error(errorMessage);
-      }
-      throw error;
-    }
-  },
-
-  createAdminUser: async (
-    userData: CreateUserDTO
-  ): Promise<UserResponseDTO> => {
-    const response = await api.post<UserResponseDTO>("/users/admin", userData);
-    return response.data;
-  },
-
-  // Méthode pour réinitialiser le mot de passe par un administrateur
-  resetUserPasswordByAdmin: async (
-    userId: string,
-    password: string
-  ): Promise<{ message: string }> => {
-    try {
-      const response = await api.post<{ message: string }>(
-        `/users/reset-password/${userId}`,
-        {
-          password,
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error resetting user password", error);
-      throw error;
-    }
-  },
-
-  // Méthode pour mettre à jour le mot de passe par l'utilisateur lui-même
-  updateUserPassword: async (
-    currentPassword: string,
-    password: string
-  ): Promise<{ message: string }> => {
-    try {
-      const response = await api.put<{ message: string }>(
-        "/users/update-password",
-        {
-          currentPassword,
-          password,
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error updating user password", error);
-      throw error;
-    }
-  },
-
-  // Méthode pour demander un lien de réinitialisation de mot de passe
-  requestPasswordResetLink: async (
-    email: string
-  ): Promise<{ message: string }> => {
-    const response = await api.post<{ message: string }>(
-      "/users/request-password-reset",
-      { email }
-    );
-    return response.data;
-  },
-
-  // Méthode pour réinitialiser le mot de passe à partir d'un lien de réinitialisation
-  resetPasswordFromLink: async (
-    token: string,
-    newPassword: string
-  ): Promise<{ message: string }> => {
-    const response = await api.post<{ message: string }>(
-      "/users/reset-password-from-link",
-      { token, newPassword }
-    );
-    return response.data;
-  },
-};
-
-export const companyService = {
-  getCompanies(): Promise<CompanyResponseDTO[]> {
-    return api.get("/companies").then((response) => response.data);
-  },
-
-  getCompany(id: string): Promise<CompanyResponseDTO> {
-    return api.get(`/companies/${id}`).then((response) => response.data);
-  },
-
-  createCompany(company: CreateCompanyDTO): Promise<CompanyResponseDTO> {
-    return api.post("/companies", company).then((response) => response.data);
-  },
-
-  updateCompany(
-    id: string,
-    company: UpdateCompanyDTO
-  ): Promise<CompanyResponseDTO> {
-    return api
-      .put(`/companies/${id}`, company)
-      .then((response) => response.data);
-  },
-
-  async deleteCompany(id: string): Promise<{ message: string }> {
-    try {
-      const response = await api.delete(`/companies/${id}`);
-      return response.data;
-    } catch (error: any) {
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
-      }
-      throw new Error("Une erreur est survenue lors de la suppression de l'entreprise");
-    }
-  },
-
-  getAllCompanies(): Promise<CompanyResponseDTO[]> {
-    try {
-      console.log("DEBUG: Calling getAllCompanies API");
-      return api.get("/companies").then((response) => {
-        console.log("DEBUG: getAllCompanies API Response", {
-          status: response.status,
-          dataType: typeof response.data,
-          dataLength: response.data ? response.data.length : "No data",
-          firstCompany:
-            response.data && response.data.length > 0
-              ? {
-                  id: response.data[0].id,
-                  name: response.data[0].name,
-                }
-              : null,
+        // Erreur avec réponse du serveur
+        const errorMessage = error.response?.data?.message || 
+          error.response?.data?.errors?.map((err: any) => err.message).join(', ') || 
+          'Erreur lors de la création de l\'utilisateur admin';
+        
+        console.error('Erreur de création d\'utilisateur admin:', {
+          errorMessage,
+          responseData: error.response?.data,
+          status: error.response?.status
         });
-        return response.data;
-      });
-    } catch (error) {
-      console.error("DEBUG: Error in getAllCompanies", {
-        errorMessage: error.message,
-        errorResponse: error.response
-          ? {
-              status: error.response.status,
-              data: error.response.data,
-            }
-          : "No response",
-      });
-      throw error;
+
+        throw new Error(errorMessage);
+      } else {
+        // Erreur sans réponse du serveur
+        console.error('Erreur lors de la création de l\'utilisateur admin:', error);
+        throw error;
+      }
     }
   },
 };
 
-export const motorcycleService = {
-  getMotorcycles: async () => {
+// Service pour les utilisateurs
+export const userService = {
+  getAllUsers: async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/motorcycles`);
+      const response = await api.get('/users/all');
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération des motos', error);
+      console.error('Erreur lors de la récupération des utilisateurs:', error);
       throw error;
     }
   },
 
-  getMotorcycle: async (id: string): Promise<MotorcycleResponseDTO> => {
+  getUser: async (id: string) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/motorcycles/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error('Erreur lors de la récupération des motos', error);
-      throw error;
-    }
-  },
-
-
-  createMotorcycle: async (data: CreateMotorcycleDTO): Promise<MotorcycleResponseDTO> => {
-    const response = await api.post("/motorcycles", data);
-    return response.data;
-  },
-
-  updateMotorcycle: async (id: string, data: UpdateMotorcycleDTO): Promise<MotorcycleResponseDTO> => {
-    const response = await api.put(`/motorcycles/${id}`, data);
-    return response.data;
-  },
-
-  deleteMotorcycle: async (id: string): Promise<{ message: string }> => {
-    try {
-      await api.delete(`/motorcycles/${id}`);
-      return { message: "Moto supprimée avec succès" };
-    } catch (error) {
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(id)) {
+        console.error(`Erreur: ID utilisateur invalide: ${id}`);
+        throw new Error('ID utilisateur invalide');
       }
+
+      const response = await api.get(`/users/${id}`);
+      if (response.status === 404) {
+        throw new Error(`Utilisateur non trouvé avec l'ID ${id}`);
+      } else if (response.status >= 500) {
+        throw new Error(`Erreur serveur lors de la récupération de l'utilisateur ${id}`);
+      }
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        // Erreur avec réponse du serveur
+        const message = error.response.data?.message || 'Erreur lors de la récupération de l\'utilisateur';
+        console.error('Erreur lors de la récupération de l\'utilisateur:', message);
+        throw new Error(message);
+      } else {
+        // Erreur sans réponse du serveur
+        console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+        throw new Error('Erreur de connexion au serveur');
+      }
+    }
+  },
+
+  createUser: async (userData: any) => {
+    try {
+      const response = await api.post('/users', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la création de l\'utilisateur:', error);
       throw error;
     }
   },
 
-  getAllMotorcycles: async (): Promise<MotorcycleResponseDTO[]> => {
+  updateUser: async (id: string, userData: any) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/motorcycles`);
+      const response = await api.put(`/users/${id}`, userData);
       return response.data;
     } catch (error) {
-      console.error("Error getting all motorcycles", error);
+      console.error(`Erreur lors de la mise à jour de l'utilisateur ${id}:`, error);
+      throw error;
+    }
+  },
+
+  deleteUser: async (id: string) => {
+    try {
+      const response = await api.delete(`/users/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la suppression de l'utilisateur ${id}:`, error);
+      throw error;
+    }
+  },
+
+  resetPassword: async (userId: string) => {
+    try {
+      const response = await api.post(`/users/reset-password/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la réinitialisation du mot de passe:', error);
+      throw error;
+    }
+  },
+
+  updatePassword: async (data: { currentPassword: string; newPassword: string }) => {
+    try {
+      const response = await api.post('/users/update-password', data);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du mot de passe:', error);
+      throw error;
+    }
+  },
+
+  createAdminUser: async (userData: any) => {
+    try {
+      // Vérifier si l'utilisateur actuel est admin
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      if (currentUser?.role !== 'ADMIN') {
+        throw new Error('Accès non autorisé. Seuls les administrateurs peuvent créer des comptes admin.');
+      }
+
+      // Vérifier que tous les champs requis sont présents
+      const requiredFields = ['firstName', 'lastName', 'email', 'password', 'role'];
+      const missingFields = requiredFields.filter(field => !userData[field]);
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Champs manquants : ${missingFields.join(', ')}`);
+      }
+
+      // Créer l'utilisateur admin
+      const response = await api.post('/users/admin', userData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // Erreur avec réponse du serveur
+        const errorMessage = error.response?.data?.message || 
+          error.response?.data?.errors?.map((err: any) => err.message).join(', ') || 
+          'Erreur lors de la création de l\'utilisateur admin';
+        
+        console.error('Erreur de création d\'utilisateur admin:', {
+          errorMessage,
+          responseData: error.response?.data,
+          status: error.response?.status
+        });
+
+        throw new Error(errorMessage);
+      } else {
+        // Erreur sans réponse du serveur
+        console.error('Erreur lors de la création de l\'utilisateur admin:', error);
+        throw error;
+      }
+    }
+  },
+};
+
+// Service pour les motos
+export const motorcycleService = {
+  getAllMotorcycles: async (concessionId?: string): Promise<MotorcycleResponseDTO[]> => {
+    try {
+      const url = concessionId ? `/?concessionId=${concessionId}` : '/';
+      const response = await api.get(`/motorcycles${url}`);
+      
+      // Transformer les données avec le DTO
+      const motorcycles: MotorcycleResponseDTO[] = response.data.map((moto: any) => ({
+        id: moto.id,
+        brand: moto.brand,
+        model: moto.model,
+        year: moto.year,
+        vin: moto.vin,
+        mileage: moto.mileage,
+        status: moto.status || MotorcycleStatus.AVAILABLE, // Forcer le statut
+        concessionId: moto.concessionId,
+        createdAt: new Date(moto.createdAt),
+        updatedAt: new Date(moto.updatedAt)
+      }));
+      
+      // Log détaillé des statuts
+      const statusCounts = motorcycles.reduce((acc: Record<string, number>, moto: MotorcycleResponseDTO) => {
+        console.log('DEBUG: Statut de moto individuel:', {
+          id: moto.id,
+          status: moto.status,
+          statusType: typeof moto.status
+        });
+        
+        acc[moto.status] = (acc[moto.status] || 0) + 1;
+        return acc;
+      }, {});
+      
+      console.log('DEBUG: Répartition des statuts de motos:', JSON.stringify(statusCounts, null, 2));
+      
+      return motorcycles;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des motos:', error);
       throw error;
     }
   },
 
   getMotorcyclesByConcession: async (concessionId: string) => {
     try {
-      const response = await api.get('/motorcycles', {
-        params: { concessionId }
-      });
+      const response = await api.get(`/motorcycles?concessionId=${concessionId}`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération des motos', error);
+      console.error(`Erreur lors de la récupération des motos pour la concession ${concessionId}:`, error);
       throw error;
     }
   },
-};
 
-
-export const concessionService = {
-  getConcessions: async () => {
+  getMotorcycle: async (id: string) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/concessions`);
+      const response = await api.get(`/motorcycles/${id}`);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération des concessions', error);
+      console.error(`Erreur lors de la récupération de la moto ${id}:`, error);
+      throw error;
+    }
+  },
+
+  createMotorcycle: async (motorcycleData: any) => {
+    try {
+      const response = await api.post('/motorcycles', motorcycleData);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la création de la moto:', error);
+      throw error;
+    }
+  },
+
+  updateMotorcycle: async (id: string, motorcycleData: any) => {
+    try {
+      const response = await api.put(`/motorcycles/${id}`, motorcycleData);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la mise à jour de la moto ${id}:`, error);
+      throw error;
+    }
+  },
+
+  deleteMotorcycle: async (id: string) => {
+    try {
+      const response = await api.delete(`/motorcycles/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la suppression de la moto ${id}:`, error);
+      throw error;
+    }
+  }
+};
+
+// Service pour les maintenances
+export const maintenanceService = {
+  getAllMaintenances: async (): Promise<MaintenanceResponseDTO[]> => {
+    try {
+      const response = await api.get('/maintenances/all');
+      
+      // Log détaillé des statuts de maintenance
+      const statusCounts = response.data.reduce((acc: Record<string, number>, maintenance: MaintenanceResponseDTO) => {
+        console.log('DEBUG: Statut de maintenance individuel:', {
+          id: maintenance.id,
+          status: maintenance.status,
+          motorcycleId: maintenance.motorcycleId,
+          motorcycleExists: !!maintenance.motorcycle
+        });
+        
+        acc[maintenance.status] = (acc[maintenance.status] || 0) + 1;
+        return acc;
+      }, {});
+      
+      console.log('DEBUG: Répartition des statuts de maintenances:', JSON.stringify(statusCounts, null, 2));
+      
+      // Mapper les données pour s'assurer que le champ motorcycle est correctement peuplé
+      return response.data.map((maintenance: MaintenanceResponseDTO) => ({
+        ...maintenance,
+        motorcycle: maintenance.motorcycle ? {
+          id: maintenance.motorcycle.id,
+          brand: maintenance.motorcycle.brand,
+          model: maintenance.motorcycle.model,
+          year: maintenance.motorcycle.year,
+          vin: maintenance.motorcycle.vin,
+          mileage: maintenance.motorcycle.mileage,
+          status: maintenance.motorcycle.status,
+          concessionId: maintenance.motorcycle.concessionId
+        } : undefined
+      }));
+    } catch (error) {
+      console.error('Erreur lors de la récupération des maintenances:', error);
+      throw error;
+    }
+  },
+
+  getMaintenanceById: async (id: string): Promise<MaintenanceResponseDTO> => {
+    try {
+      const response = await api.get(`/maintenances/${id}`);
+      
+      console.log('DEBUG: Détails de la maintenance:', {
+        id: response.data.id,
+        status: response.data.status,
+        motorcycleId: response.data.motorcycleId,
+        motorcycleExists: !!response.data.motorcycle
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération de la maintenance:', error);
+      throw error;
+    }
+  },
+
+  createMaintenance: async (maintenanceData: Partial<MaintenanceResponseDTO>): Promise<MaintenanceResponseDTO> => {
+    try {
+      const response = await api.post('/maintenances', {
+        ...maintenanceData,
+        status: maintenanceData.status || MaintenanceStatus.SCHEDULED
+      });
+      
+      console.log('DEBUG: Maintenance créée:', {
+        id: response.data.id,
+        status: response.data.status,
+        motorcycleId: response.data.motorcycleId
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la création de la maintenance:', error);
+      throw error;
+    }
+  },
+
+  updateMaintenance: async (id: string, maintenanceData: Partial<MaintenanceResponseDTO>): Promise<MaintenanceResponseDTO> => {
+    try {
+      const response = await api.put(`/maintenances/${id}`, maintenanceData);
+      
+      console.log('DEBUG: Maintenance mise à jour:', {
+        id: response.data.id,
+        status: response.data.status,
+        motorcycleId: response.data.motorcycleId
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la maintenance:', error);
+      throw error;
+    }
+  },
+
+  deleteMaintenance: async (id: string): Promise<void> => {
+    try {
+      await api.delete(`/maintenances/${id}`);
+      
+      console.log('DEBUG: Maintenance supprimée:', { id });
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la maintenance:', error);
+      throw error;
+    }
+  }
+};
+
+// Service pour les pièces d'inventaire
+export const inventoryPartService = {
+  getAllParts: async () => {
+    try {
+      const response = await api.get('/inventory-parts');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des pièces:', error);
+      throw error;
+    }
+  },
+
+  getAllInventoryParts: async () => {
+    return inventoryPartService.getAllParts();
+  },
+
+  getPart: async (id: string) => {
+    try {
+      const response = await api.get(`/inventory-parts/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la récupération de la pièce ${id}:`, error);
+      throw error;
+    }
+  },
+
+  createPart: async (partData: any) => {
+    try {
+      const response = await api.post('/inventory-parts', partData);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la création de la pièce:', error);
+      throw error;
+    }
+  },
+
+  createInventoryPart: async (partData: any) => {
+    return inventoryPartService.createPart(partData);
+  },
+
+  updatePart: async (id: string, partData: any) => {
+    try {
+      const response = await api.put(`/inventory-parts/${id}`, partData);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la mise à jour de la pièce ${id}:`, error);
+      throw error;
+    }
+  },
+
+  updateInventoryPart: async (id: string, partData: any) => {
+    return inventoryPartService.updatePart(id, partData);
+  },
+
+  deletePart: async (id: string) => {
+    try {
+      await api.delete(`/inventory-parts/${id}`);
+    } catch (error) {
+      console.error(`Erreur lors de la suppression de la pièce ${id}:`, error);
+      throw error;
+    }
+  },
+
+  deleteInventoryPart: async (id: string) => {
+    return inventoryPartService.deletePart(id);
+  },
+
+  manageStock: async (id: string, stockData: any) => {
+    try {
+      const response = await api.patch(`/inventory-parts/${id}/stock`, stockData);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la gestion du stock de la pièce ${id}:`, error);
+      throw error;
+    }
+  }
+};
+
+// Service pour les entreprises
+export const companyService = {
+  getAllCompanies: async () => {
+    try {
+      const response = await api.get('/companies');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des entreprises:', error);
+      throw error;
+    }
+  },
+
+  getCompanyById: async (id: string) => {
+    try {
+      const response = await api.get(`/companies/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la récupération de l'entreprise ${id}:`, error);
+      throw error;
+    }
+  },
+
+  createCompany: async (companyData: any) => {
+    try {
+      const response = await api.post('/companies', companyData);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la création de l\'entreprise:', error);
+      throw error;
+    }
+  },
+
+  updateCompany: async (id: string, companyData: any) => {
+    try {
+      const response = await api.put(`/companies/${id}`, companyData);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la mise à jour de l'entreprise ${id}:`, error);
+      throw error;
+    }
+  },
+
+  deleteCompany: async (id: string) => {
+    try {
+      const response = await api.delete(`/companies/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la suppression de l'entreprise ${id}:`, error);
+      throw error;
+    }
+  }
+};
+
+// Service pour les motos d'entreprise
+export const companyMotorcycleService = {
+  assignMotorcycleToCompany: async (companyId: string, motorcycleId: string) => {
+    try {
+      const response = await api.post('/company-motorcycles', { companyId, motorcycleId });
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de l'assignation de la moto ${motorcycleId} à l'entreprise ${companyId}:`, error);
+      throw error;
+    }
+  },
+
+  removeMotorcycleFromCompany: async (companyId: string, motorcycleId: string) => {
+    try {
+      const response = await api.delete(`/company-motorcycles/${companyId}/${motorcycleId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la suppression de la moto ${motorcycleId} de l'entreprise ${companyId}:`, error);
+      throw error;
+    }
+  },
+
+  getCompanyMotorcycles: async (companyId: string) => {
+    try {
+      const response = await api.get(`/company-motorcycles/${companyId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la récupération des motos de l'entreprise ${companyId}:`, error);
+      throw error;
+    }
+  }
+};
+
+// Service pour les conducteurs
+export const driverService = {
+  createDriver: async (driverData: any) => {
+    try {
+      const response = await api.post('/drivers', driverData);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la création du conducteur:', error);
+      throw error;
+    }
+  },
+
+  getAllDrivers: async () => {
+    try {
+      const response = await api.get('/drivers');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des conducteurs:', error);
+      throw error;
+    }
+  },
+
+  updateDriver: async (id: string, driverData: any) => {
+    try {
+      const response = await api.put(`/drivers/${id}`, driverData);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la mise à jour du conducteur ${id}:`, error);
+      throw error;
+    }
+  },
+
+  deleteDriver: async (id: string) => {
+    try {
+      const response = await api.delete(`/drivers/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la suppression du conducteur ${id}:`, error);
+      throw error;
+    }
+  },
+
+  assignMotorcycle: async (driverData: any) => {
+    try {
+      const response = await api.patch('/drivers/assign-motorcycle', driverData);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de l\'assignation de la moto au conducteur:', error);
+      throw error;
+    }
+  },
+
+  recordIncident: async (incidentData: any) => {
+    try {
+      const response = await api.patch('/drivers/record-incident', incidentData);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de l\'enregistrement de l\'incident:', error);
+      throw error;
+    }
+  },
+
+  changeDriverStatus: async (id: string, newStatus: DriverStatus) => {
+    try {
+      const response = await api.patch(`/drivers/${id}/status`, { status: newStatus });
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors du changement de statut du conducteur ${id}:`, error);
+      throw error;
+    }
+  }
+};
+
+// Service pour les essais de moto
+export const testRideService = {
+  create: async (testRideData: any) => {
+    try {
+      const response = await api.post('/test-rides', testRideData);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la création de l\'essai:', error);
+      throw error;
+    }
+  },
+
+  getAll: async () => {
+    try {
+      const response = await api.get('/test-rides');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des essais:', error);
+      throw error;
+    }
+  },
+
+  getById: async (id: string) => {
+    try {
+      const response = await api.get(`/test-rides/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la récupération de l'essai ${id}:`, error);
+      throw error;
+    }
+  },
+
+  getByConcessionId: async (concessionId: string) => {
+    try {
+      const response = await api.get(`/test-rides/concession/${concessionId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la récupération des essais pour la concession ${concessionId}:`, error);
+      throw error;
+    }
+  },
+
+  delete: async (id: string) => {
+    try {
+      const response = await api.delete(`/test-rides/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la suppression de l'essai ${id}:`, error);
+      throw error;
+    }
+  },
+
+  updateStatus: async (id: string, statusData: { status: TestRideStatus }) => {
+    try {
+      const response = await api.patch(`/test-rides/${id}/status`, statusData);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la mise à jour du statut de l'essai ${id}:`, error);
+      throw error;
+    }
+  }
+};
+
+// Service pour les concessions
+export const concessionService = {
+  getAllConcessions: async () => {
+    try {
+      const response = await api.get('/concessions');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des concessions:', error);
       throw error;
     }
   },
@@ -455,556 +855,160 @@ export const concessionService = {
       const response = await api.get(`/concessions/${id}`);
       return response.data;
     } catch (error) {
-      console.error("Erreur lors de la récupération de la concession", error);
+      console.error(`Erreur lors de la récupération de la concession ${id}:`, error);
       throw error;
     }
   },
 
-  createConcession(concession: CreateConcessionDTO): Promise<ConcessionResponseDTO> {
-    return api.post("/concessions", concession)
-      .then((response) => response.data);
-  },
-
-  updateConcession(id: string, concession: UpdateConcessionDTO): Promise<ConcessionResponseDTO> {
-    return api.put(`/concessions/${id}`, concession)
-      .then((response) => response.data);
-  },
-
-  deleteConcession(id: string): Promise<{ message: string }> {
-    return api.delete(`/concessions/${id}`)
-      .then((response) => response.data)
-      .catch((error) => {
-        if (error.response?.data?.message) {
-          throw new Error(error.response.data.message);
-        }
-        throw error;
-      });
-  },
-};
-
-export interface MaintenanceDTO {
-  id: string;
-  motorcycleId: string;
-  type: string;
-  scheduledDate: Date;
-  status: string;
-  mileageAtMaintenance: number;
-  technicianNotes?: string;
-  replacedParts?: string[];
-  totalCost?: number;
-  nextMaintenanceRecommendation?: Date;
-  actualDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export const maintenanceService = {
-  createMaintenance: async (
-    maintenanceData: CreateMaintenanceDTO
-  ): Promise<MaintenanceDTO> => {
+  createConcession: async (concessionData: CreateConcessionDTO): Promise<ConcessionResponseDTO> => {
     try {
-      console.log("Envoi des données de maintenance:", maintenanceData);
-      const response = await api.post<MaintenanceDTO>(
-        "/maintenances",
-        maintenanceData
-      );
-      console.log("Réponse de création de maintenance:", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("Erreur lors de la création de maintenance:", error);
-      throw error;
-    }
-  },
-
-  completeMaintenance(
-    maintenanceId: string,
-    completionDetails: any
-  ): Promise<MaintenanceDTO> {
-    return api
-      .patch(`/maintenances/${maintenanceId}/complete`, completionDetails)
-      .then((response) => response.data);
-  },
-
-  completeMaintenanceWithDetails(
-    maintenanceId: string,
-    maintenanceData: CompleteMaintenanceDTO
-  ): Promise<MaintenanceResponseDTO> {
-    return api
-      .patch(`/maintenances/${maintenanceId}/complete`, maintenanceData)
-      .then(async (response) => {
-        // Récupérer les informations de la moto pour la maintenance
-        try {
-          const motorcycleResponse = await api.get(
-            `/motorcycles/${response.data.motorcycleId}`
-          );
-          return {
-            ...response.data,
-            motorcycle: motorcycleResponse.data,
-          };
-        } catch (error) {
-          console.error(
-            `Erreur lors de la récupération des détails de la moto ${response.data.motorcycleId}:`,
-            error
-          );
-          return response.data;
-        }
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la complétion de maintenance:", error);
-        throw error;
-      });
-  },
-
-  getDueMaintenances(): Promise<MaintenanceDTO[]> {
-    return api.get("/maintenances/due").then((response) => response.data);
-  },
-
-  getAllMaintenances: async (): Promise<MaintenanceResponseDTO[]> => {
-    try {
-      console.log(
-        "DEBUG: Tentative de récupération de toutes les maintenances"
-      );
-      const response = await api.get<MaintenanceResponseDTO[]>(
-        "/maintenances/all"
-      );
-
-      // Récupérer les détails de chaque moto
-      const maintenancesWithMotorcycles = await Promise.all(
-        response.data.map(async (maintenance) => {
-          if (maintenance.motorcycleId) {
-            try {
-              const motorcycleResponse = await api.get(
-                `/motorcycles/${maintenance.motorcycleId}`
-              );
-              return {
-                ...maintenance,
-                motorcycle: motorcycleResponse.data,
-              };
-            } catch (error) {
-              console.error(
-                `Erreur lors de la récupération de la moto ${maintenance.motorcycleId}:`,
-                error
-              );
-              return maintenance;
-            }
-          }
-          return maintenance;
-        })
-      );
-
-      console.log(
-        "DEBUG: Maintenances récupérées avec détails de moto",
-        maintenancesWithMotorcycles
-      );
-      return maintenancesWithMotorcycles;
-    } catch (error) {
-      console.error(
-        "Erreur lors de la récupération de toutes les maintenances:",
-        error
-      );
-      throw error;
-    }
-  },
-
-  deleteMaintenance(maintenanceId: string): Promise<void> {
-    return api
-      .delete(`/maintenances/${maintenanceId}`)
-      .then((response) => response.data);
-  },
-
-  updateMaintenance: async (
-    maintenanceId: string,
-    maintenanceData: CreateMaintenanceDTO
-  ) => {
-    try {
-      const response = await api.put(
-        `/maintenances/${maintenanceId}`,
-        maintenanceData
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de la maintenance:", error);
-      throw error;
-    }
-  },
-
-  createMaintenanceWithDetails(
-    maintenanceData: CreateMaintenanceDTO
-  ): Promise<MaintenanceResponseDTO> {
-    return api
-      .post("/maintenances", maintenanceData)
-      .then(async (response) => {
-        try {
-          const motorcycleResponse = await api.get(
-            `/motorcycles/${response.data.motorcycleId}`
-          );
-          return {
-            ...response.data,
-            motorcycle: motorcycleResponse.data,
-          };
-        } catch (error) {
-          console.error(
-            `Erreur lors de la récupération des détails de la moto ${response.data.motorcycleId}:`,
-            error
-          );
-          return response.data;
-        }
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la création de maintenance:", error);
-        throw error;
-      });
-  },
-
-  deleteMaintenanceWithDetails(
-    maintenanceId: string
-  ): Promise<MaintenanceResponseDTO> {
-    return api
-      .delete(`/maintenances/${maintenanceId}`)
-      .then((response) => response.data)
-      .catch((error) => {
-        console.error("Erreur lors de la suppression de maintenance:", error);
-        throw error;
-      });
-  },
-
-  updateMaintenanceWithDetails(
-    maintenanceId: string,
-    maintenanceData: CreateMaintenanceDTO
-  ): Promise<MaintenanceResponseDTO> {
-    return api
-      .patch(`/maintenances/${maintenanceId}`, maintenanceData)
-      .then(async (response) => {
-        try {
-          const motorcycleResponse = await api.get(
-            `/motorcycles/${response.data.motorcycleId}`
-          );
-          return {
-            ...response.data,
-            motorcycle: motorcycleResponse.data,
-          };
-        } catch (error) {
-          console.error(
-            `Erreur lors de la récupération des détails de la moto ${response.data.motorcycleId}:`,
-            error
-          );
-          return response.data;
-        }
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la mise à jour de maintenance:", error);
-        throw error;
-      });
-  },
-};
-
-export const inventoryPartService = {
-  async createInventoryPart(
-    partData: CreateInventoryPartDTO
-  ): Promise<InventoryPartResponseDTO> {
-    try {
-      console.log("DEBUG: Creating inventory part", {
-        partData,
-        token: useAuthStore.getState().token,
-      });
-      const response = await api.post("/inventory-parts", partData);
-      console.log("DEBUG: Create inventory part response", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("DEBUG: Error creating inventory part", error);
-      throw error;
-    }
-  },
-
-  async updateInventoryPart(
-    partId: string,
-    partData: Partial<CreateInventoryPartDTO>
-  ): Promise<InventoryPartResponseDTO> {
-    try {
-      console.log("DEBUG: Updating inventory part", {
-        partId,
-        partData,
-        token: useAuthStore.getState().token,
-      });
-      const response = await api.put(`/inventory-parts/${partId}`, partData);
-      console.log("DEBUG: Update inventory part response", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("DEBUG: Error updating inventory part", error);
-      throw error;
-    }
-  },
-
-  async manageInventoryStock(
-    partId: string,
-    quantity: number,
-    action: "add" | "remove"
-  ): Promise<InventoryPartResponseDTO> {
-    try {
-      console.log("DEBUG: Managing inventory stock", {
-        partId,
-        quantity,
-        action,
-        token: useAuthStore.getState().token,
-      });
-      const response = await api.patch(`/inventory-parts/${partId}/stock`, {
-        quantity,
-        action,
-      });
-      console.log("DEBUG: Manage inventory stock response", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("DEBUG: Error managing inventory stock", error);
-      throw error;
-    }
-  },
-
-  async getAllInventoryParts(): Promise<InventoryPartResponseDTO[]> {
-    try {
-      console.log("DEBUG: Getting all inventory parts", {
-        token: useAuthStore.getState().token,
-      });
-      const response = await api.get("/inventory-parts");
-      console.log("DEBUG: Get all inventory parts response", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("DEBUG: Error getting all inventory parts", error);
-      throw error;
-    }
-  },
-
-  async deleteInventoryPart(
-    partId: string
-  ): Promise<{ message: string; id: string }> {
-    try {
-      console.log("DEBUG: Suppression de la pièce d'inventaire", {
-        partId,
-        token: useAuthStore.getState().token,
-      });
-      const response = await api.delete(`/inventory-parts/${partId}`);
-      console.log("DEBUG: Suppression de la pièce réussie", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("DEBUG: Erreur lors de la suppression de la pièce", error);
-
-      // Gérer différents types d'erreurs
-      if (error.response) {
-        // L'erreur vient du serveur
-        if (error.response.status === 400) {
-          throw new Error(
-            "Impossible de supprimer une pièce avec du stock en inventaire"
-          );
-        } else if (error.response.status === 404) {
-          throw new Error("Pièce d'inventaire non trouvée");
-        }
+      console.log('Tentative de création de concession:', concessionData);
+      
+      // Validation côté client avant l'envoi
+      if (!concessionData.name || !concessionData.name.trim()) {
+        console.error('Validation error: Name is required');
+        throw new Error("Le nom de la concession est obligatoire");
       }
 
-      throw error;
-    }
-  },
-};
+      if (!concessionData.userId) {
+        console.error('Validation error: User ID is required');
+        throw new Error("L'ID utilisateur est requis");
+      }
 
-export const driverService = {
-  async createDriver(driverData: CreateDriverDTO): Promise<DriverDTO> {
-    const response = await api.post("/drivers", driverData);
-    return response.data;
-  },
+      // Supprimer explicitement l'ID si undefined
+      const { id, ...dataToSend } = concessionData;
+      
+      console.log('Données envoyées:', dataToSend);
 
-  async getAllDrivers(): Promise<DriverDTO[]> {
-    try {
-      console.log("DEBUG: Calling getAllDrivers API");
-      const response = await api.get("/drivers");
-
-      console.log("DEBUG: getAllDrivers API Response", {
-        status: response.status,
-        dataType: typeof response.data,
-        dataLength: response.data ? response.data.length : "No data",
-        firstDriver:
-          response.data && response.data.length > 0
-            ? {
-                id: response.data[0].id,
-                firstName: response.data[0].firstName,
-                lastName: response.data[0].lastName,
-                licenseNumber: response.data[0].licenseNumber,
-                licenseType: response.data[0].licenseType,
-                status: response.data[0].status,
-              }
-            : null,
+      const response = await api.post('/concessions', dataToSend, {
+        // Configuration Axios pour obtenir plus de détails sur l'erreur
+        validateStatus: function (status) {
+          return status >= 200 && status < 500; // Accepter les statuts 2xx et 4xx
+        }
       });
 
-      return response.data;
-    } catch (error) {
-      console.error("DEBUG: Error in getAllDrivers", {
+      console.log('Statut de la réponse:', response.status);
+      console.log('Réponse de création de concession:', response.data);
+      
+      // Gestion des différents codes de statut
+      if (response.status === 400) {
+        console.error('Validation error response:', response.data);
+        throw new Error(response.data.error?.message || "Erreur de validation");
+      }
+
+      if (response.status === 401) {
+        console.error('Unauthorized error');
+        throw new Error("Non autorisé");
+      }
+
+      // Vérifier la structure de la réponse
+      if (!response.data || !response.data.concession) {
+        console.error('Invalid server response structure', response.data);
+        throw new Error("Réponse invalide du serveur");
+      }
+      
+      return response.data.concession;
+    } catch (error: any) {
+      console.error('Erreur lors de la création de la concession:', {
+        errorResponse: error.response?.data,
         errorMessage: error.message,
-        errorResponse: error.response
-          ? {
-              status: error.response.status,
-              data: error.response.data,
-            }
-          : "No response",
+        fullError: error,
+        requestData: concessionData
       });
-      throw error;
-    }
-  },
-
-  async updateDriver(
-    driverId: string,
-    driverData: Partial<CreateDriverDTO>
-  ): Promise<DriverDTO> {
-    try {
-      // Filtrer les champs vides
-      const filteredDriverData = Object.fromEntries(
-        Object.entries(driverData).filter(
-          ([_, value]) => value !== "" && value !== null && value !== undefined
-        )
-      );
-
-      const response = await api.put(
-        `/drivers/${driverId}`,
-        filteredDriverData
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour du conducteur:", error);
-      throw error;
-    }
-  },
-
-  async deleteDriver(driverId: string): Promise<void> {
-    try {
-      await api.delete(`/drivers/${driverId}`);
-    } catch (error) {
-      console.error("Erreur lors de la suppression du conducteur:", error);
-      throw error;
-    }
-  },
-
-  async assignMotorcycleToDriver(
-    driverId: string,
-    motorcycleId: string
-  ): Promise<DriverDTO> {
-    const response = await api.patch("/drivers/assign-motorcycle", {
-      driverId,
-      motorcycleId,
-    });
-    return response.data;
-  },
-
-  async recordDriverIncident(
-    driverId: string,
-    incidentDetails: any
-  ): Promise<DriverDTO> {
-    const response = await api.patch(`/drivers/record-incident`, {
-      driverId,
-      incident: incidentDetails,
-    });
-    return response.data;
-  },
-
-  async changeDriverStatus(
-    driverId: string,
-    status: string
-  ): Promise<DriverDTO> {
-    try {
-      const response = await api.patch(`/drivers/${driverId}/status`, {
-        status,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Erreur lors du changement de statut:", error);
-      throw error;
-    }
-  },
-};
-
-export const companyMotorcycleService = {
-  async getCompanyMotorcycles(
-    companyId: string
-  ): Promise<CompanyMotorcycleDTO[]> {
-    try {
-      const response = await api.get(`/companies/${companyId}/motorcycles`);
-      return response.data || [];
-    } catch (error) {
-      // Si c'est une erreur 404, retourner un tableau vide
-      if (error.response?.status === 404) {
-        return [];
+      
+      // Gestion des différents types d'erreurs
+      if (error.response?.data?.error) {
+        const errorData = error.response.data.error;
+        console.error('Server error details:', errorData);
+        throw new Error(errorData.message || 'Erreur lors de la création de la concession');
       }
-      // Sinon relancer l'erreur
-      throw error;
-    }
-  },
-
-  async assignMotorcycle(
-    companyId: string,
-    motorcycleId: string
-  ): Promise<void> {
-    try {
-      const response = await api.post(`/companies/${companyId}/motorcycles`, {
-        motorcycleId,
-      });
-      console.log("DEBUG: Successful motorcycle assignment:", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("Erreur lors de l'assignation de la moto:", error);
-      if (error.response?.status === 404) {
-        const errorMessage =
-          error.response?.data?.error || "La moto ou l'entreprise n'existe pas";
-        throw new Error(errorMessage);
-      }
-      throw error;
-    }
-  },
-
-  async removeMotorcycle(
-    companyId: string,
-    motorcycleId: string
-  ): Promise<void> {
-    try {
-      const response = await api.delete(
-        `/companies/${companyId}/motorcycles/${motorcycleId}`
+      
+      // Erreur par défaut
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Erreur lors de la création de la concession'
       );
-      return response.data;
-    } catch (error) {
-      console.error("Erreur lors du retrait de la moto:", error);
-      throw error;
     }
   },
-};
 
-import { TestRideDto } from '@/application/testRide/dtos/TestRideDto';
-import { TestRideStatus } from '@domain/testRide/entities/TestRide';
-
-export const testRideService = {
-  createTestRide: async (testRideData: CreateTestRideDTO): Promise<TestRideResponseDTO> => {
-    console.log('Envoi des données de test ride sans authentification:', testRideData);
-    
+  updateConcession: async (id: string, concessionData: UpdateConcessionDTO) => {
     try {
-      const response = await publicApi.post<TestRideResponseDTO>('/test-rides', testRideData);
-      console.log('Réponse de création de test ride:', response.data);
+      // Vérification des données requises
+      if (!concessionData.name?.trim() || !concessionData.address?.trim()) {
+        throw new Error('Le nom et l\'adresse sont requis pour la mise à jour');
+      }
+
+      // Nettoyer et structurer les données
+      const updateData: UpdateConcessionDTO = {
+        name: concessionData.name.trim(),
+        address: concessionData.address.trim()
+      };
+
+      // Log pour le débogage
+      console.log('Envoi de la requête de mise à jour:', {
+        url: `/concessions/${id}`,
+        method: 'PUT',
+        data: updateData
+      });
+
+      const response = await api.put(`/concessions/${id}`, updateData);
       return response.data;
-    } catch (error) {
-      console.error('Erreur lors de la création du test ride:', error);
-      throw error;
+    } catch (error: any) {
+      console.error(`Erreur lors de la mise à jour de la concession ${id}:`, error);
+      
+      // Récupérer le message d'erreur du backend si disponible
+      const errorMessage = error.response?.data?.message || 
+                         error.response?.data?.error || 
+                         error.message || 
+                         'Une erreur est survenue lors de la mise à jour';
+      
+      // Log détaillé pour le débogage
+      console.log('Détails de l\'erreur:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: errorMessage
+      });
+
+      throw new Error(errorMessage);
     }
   },
 
-  getAllTestRides: async (): Promise<TestRideDto[]> => {
-    const response = await api.get<TestRideDto[]>('/test-rides');
-    return response.data;
-  },
-
-  getTestRideById: async (id: string): Promise<TestRideDto> => {
-    const response = await api.get<TestRideDto>(`/test-rides/${id}`);
-    return response.data;
-  },
-
-  deleteTestRide: async (id: string): Promise<void> => {
-    await api.delete(`/test-rides/${id}`);
-  },
-
-  updateTestRideStatus: async (id: string, status: TestRideStatus): Promise<TestRideDto> => {
-    const response = await api.patch<TestRideDto>(`/test-rides/${id}/status`, { status });
-    return response.data;
+  deleteConcession: async (id: string): Promise<DeleteConcessionResponseDTO> => {
+    try {
+      const response = await api.delete(`/concessions/${id}`);
+      return {
+        success: true,
+        message: 'Concession supprimée avec succès'
+      };
+    } catch (error: any) {
+      console.error('Erreur de suppression de concession:', error.response?.data, error);
+      
+      if (error.response?.data?.error) {
+        return {
+          success: false,
+          message: error.response.data.error.message || 
+                   (error.response.data.error.code === 'CONCESSION_HAS_MOTORCYCLES' 
+                    ? `Impossible de supprimer la concession car elle possède des motos.` 
+                    : 'Erreur lors de la suppression de la concession'),
+          error: {
+            code: error.response.data.error.code,
+            details: error.response.data.error.details
+          }
+        };
+      }
+      
+      // Erreur par défaut si la structure n'est pas celle attendue
+      return {
+        success: false,
+        message: 'Impossible de supprimer la concession',
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          details: error.message
+        }
+      };
+    }
   }
 };
 

@@ -2,35 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   IConcessionListProps,
   IConcessionListState,
-  IConcessionListHandlers,
 } from "../../interfaces/components/IConcessionList";
 import { ConcessionResponseDTO } from "../../../../../../application/dtos/ConcessionDTO";
 import { concessionService } from "../../services/api";
-
-const useConcessionListHandlers = (
-  state: IConcessionListState,
-  setState: React.Dispatch<React.SetStateAction<IConcessionListState>>,
-  fetchConcessions: () => Promise<void>
-): IConcessionListHandlers => {
-  const handleDeleteConcession = async (concessionId: string) => {
-    try {
-      await concessionService.deleteConcession(concessionId);
-      fetchConcessions();
-    } catch (error) {
-      setState((prevState) => ({
-        ...prevState,
-        error:
-          error instanceof Error
-            ? error
-            : new Error("Failed to delete concession"),
-      }));
-    }
-  };
-
-  return {
-    handleDeleteConcession,
-  };
-};
 
 export default function ConcessionList({
   onEdit,
@@ -46,7 +20,7 @@ export default function ConcessionList({
   const fetchConcessions = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
-      const concessions = await concessionService.getConcessions();
+      const concessions = await concessionService.getAllConcessions();
       setState((prev) => ({
         ...prev,
         concessions,
@@ -67,8 +41,6 @@ export default function ConcessionList({
   useEffect(() => {
     fetchConcessions();
   }, [fetchConcessions, refreshKey]);
-
-  const handlers = useConcessionListHandlers(state, setState, fetchConcessions);
 
   if (state.isLoading) {
     return (

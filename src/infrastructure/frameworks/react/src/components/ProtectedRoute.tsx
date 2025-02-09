@@ -1,17 +1,37 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from '@stores/authStore';
+import { authService } from '../services/api';
 import Navbar from './navigation/Navbar';
 
-export const ProtectedRoute: React.FC = () => {
-  const { isAuthenticated } = useAuthStore();
-
-  if (!isAuthenticated) {
-    // Rediriger vers la page de connexion si non authentifié
+const ProtectedRoute = () => {
+  // Vérifier d'abord si le token existe
+  const token = localStorage.getItem('token');
+  if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  // Rendre la Navbar et les routes enfants si authentifié
+  // Ensuite vérifier les données utilisateur
+  const userStr = localStorage.getItem('user');
+  let user = null;
+
+  if (userStr) {
+    try {
+      user = JSON.parse(userStr);
+    } catch (error) {
+      console.error('Erreur lors de la vérification de l\'authentification:', error);
+      // En cas d'erreur de parsing, supprimer les données corrompues
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      return <Navigate to="/login" replace />;
+    }
+  }
+
+  // Si pas d'utilisateur valide, rediriger
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Si authentifié, afficher la navbar et les routes protégées
   return (
     <>
       <Navbar />
@@ -19,3 +39,5 @@ export const ProtectedRoute: React.FC = () => {
     </>
   );
 };
+
+export default ProtectedRoute;

@@ -8,7 +8,6 @@ import {
 import { UserResponseDTO } from '../../../../../../application/user/dtos/UserDTO';
 import { UserRole } from "@domain/enums/UserRole";
 
-
 const useUserListHandlers = (
   state: IUserListState,
   setState: React.Dispatch<React.SetStateAction<IUserListState>>,
@@ -45,7 +44,13 @@ const useUserListHandlers = (
   };
 };
 
-export default function UserList({ onEdit, onDelete }: IUserListProps) {
+export default function UserList({ 
+  onEdit, 
+  onDelete, 
+  refreshKey = 0 
+}: IUserListProps & { 
+  refreshKey?: number 
+}) {
   const [state, setState] = useState<IUserListState>({
     users: [],
     isLoading: true,
@@ -55,20 +60,23 @@ export default function UserList({ onEdit, onDelete }: IUserListProps) {
   const fetchUsers = useCallback(async () => {
     setState(prevState => ({ ...prevState, isLoading: true }));
     try {
-      const users = await userService.getUsers();
+      console.log('DEBUG: Fetching users with refreshKey:', refreshKey);
+      const users = await userService.getAllUsers();
+      console.log('DEBUG: Users fetched:', users);
       setState({
         users,
         isLoading: false,
         error: null
       });
     } catch (error) {
+      console.error('DEBUG: Error fetching users:', error);
       setState({
         users: [],
         isLoading: false,
         error: error instanceof Error ? error : new Error('Failed to fetch users')
       });
     }
-  }, []);
+  }, [refreshKey]);
 
   const { handleDeleteUser, getRoleColor } = useUserListHandlers(
     state, 
@@ -77,8 +85,9 @@ export default function UserList({ onEdit, onDelete }: IUserListProps) {
   );
 
   useEffect(() => {
+    console.log('DEBUG: useEffect triggered with refreshKey:', refreshKey);
     fetchUsers();
-  }, [fetchUsers]);
+  }, [fetchUsers, refreshKey]);
 
   const handleDelete = async (userId: string) => {
     await handleDeleteUser(userId);

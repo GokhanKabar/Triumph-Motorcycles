@@ -1,149 +1,104 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/api';
-import { useAuthStore } from '../stores/authStore';
 
-export default function Login() {
+const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [isPasswordUpdateModalOpen, setIsPasswordUpdateModalOpen] = useState(false);
-  const navigate = useNavigate();
-  const { login } = useAuthStore();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
-      const { user, token } = await authService.login(email, password);
-      login(user, token);
-      navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Une erreur est survenue lors de la connexion');
-    }
-  };
-
-  const handlePasswordUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validation côté client
-    if (currentPassword.length < 8) {
-      // toast.error('Le mot de passe actuel doit contenir au moins 8 caractères');
-      return;
-    }
-    
-    if (newPassword.length < 8) {
-      // toast.error('Le nouveau mot de passe doit contenir au moins 8 caractères');
-      return;
-    }
-    
-    try {
-      await authService.updateUserPassword(currentPassword, newPassword);
+      const response = await authService.login({ email, password });
       
-      // toast.success('Mot de passe mis à jour avec succès');
-      
-      // Réinitialiser les champs
-      setCurrentPassword('');
-      setNewPassword('');
-      
-      // Fermer le modal ou naviguer
-      setIsPasswordUpdateModalOpen(false);
-    } catch (error) {
-      // Gestion des erreurs spécifiques
-      if (error instanceof Error) {
-        const errorMessage = error.message || 'Erreur lors de la mise à jour du mot de passe';
-        // toast.error(errorMessage);
-      } else {
-        // toast.error('Une erreur inattendue est survenue');
+      // Vérifier que nous avons bien reçu les données nécessaires
+      if (!response.token || !response.user) {
+        throw new Error('Données de connexion invalides');
       }
+
+      // Stocker les données dans le localStorage
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+
+      // Vérifier que les données ont bien été stockées
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+
+      if (!storedToken || !storedUser) {
+        throw new Error('Erreur lors du stockage des données');
+      }
+
+      // Rediriger vers le dashboard
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Erreur de connexion:', err);
+      setError(err instanceof Error ? err.message : 'Erreur lors de la connexion');
+      
+      // En cas d'erreur, nettoyer le localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="h-screen w-screen bg-gray-900 flex items-center justify-center">
-      <div className="w-full max-w-md bg-gray-800 p-8 rounded-xl shadow-lg">
-        <div className="text-center mb-8">
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-white">
-            Triumph Motorcycles
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="max-w-md w-full space-y-8 p-8 bg-gray-800 rounded-lg">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
+            Connexion
           </h2>
-          <p className="mt-2 text-sm text-gray-400">
-            Gérez votre flotte de motos Triumph
-          </p>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-              Adresse email
-            </label>
-            <div className="mt-2">
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
               <input
-                id="email"
                 type="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Adresse email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-                className="block w-full appearance-none rounded-md border border-gray-700 bg-gray-700 px-4 py-3 text-white placeholder-gray-400 focus:border-red-500 focus:outline-none focus:ring-red-500 sm:text-sm"
-                placeholder="nom@entreprise.com"
               />
             </div>
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-              Mot de passe
-            </label>
-            <div className="mt-2">
+            <div>
               <input
-                id="password"
                 type="password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Mot de passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
-                className="block w-full appearance-none rounded-md border border-gray-700 bg-gray-700 px-4 py-3 text-white placeholder-gray-400 focus:border-red-500 focus:outline-none focus:ring-red-500 sm:text-sm"
-                placeholder="••••••••"
               />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <a href="#" className="font-medium text-red-500 hover:text-red-400">
-                Mot de passe oublié ?
-              </a>
             </div>
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-900/50 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-red-400">{error}</p>
-                </div>
-              </div>
+            <div className="text-red-500 text-sm text-center">
+              {error}
             </div>
           )}
 
-          <button
-            type="submit"
-            className="flex w-full justify-center rounded-md bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 transition-colors duration-200"
-          >
-            Se connecter
-          </button>
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            >
+              {loading ? 'Connexion...' : 'Se connecter'}
+            </button>
+          </div>
         </form>
-
-        <div className="mt-8 text-center text-sm text-gray-400">
-          Triumph Motorcycles 2025
-        </div>
       </div>
     </div>
   );
-}
+};
+
+export default Login;

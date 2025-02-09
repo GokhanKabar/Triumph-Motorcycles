@@ -16,7 +16,6 @@ import { JWTTokenService } from '../../../infrastructure/services/TokenService';
 import { GetUserUseCase } from '../../../application/user/use-cases/GetUserUseCase';
 import { PostgreSQLUserRepository } from '../../../infrastructure/repositories/PostgreSQLUserRepository';
 import { Argon2PasswordHashingService } from '../../../infrastructure/services/Argon2PasswordHashingService';
-import { adminOnly } from '../middlewares/roleMiddleware'; // Importation du middleware de role
 
 const router = express.Router();
 
@@ -40,7 +39,8 @@ const findDueMaintenancesUseCase = new FindDueMaintenancesUseCase(
 );
 
 const findAllMaintenancesUseCase = new FindAllMaintenancesUseCase(
-  maintenanceRepository
+  maintenanceRepository,
+  motorcycleRepository  // Ajout du repository de moto
 );
 
 const deleteMaintenanceUseCase = new DeleteMaintenanceUseCase(
@@ -76,7 +76,7 @@ console.log('DEBUG: Maintenance Controller:', maintenanceController);
 // Routes
 router.post('/', 
   authMiddleware.authenticate.bind(authMiddleware), 
-  adminOnly,   
+  authMiddleware.adminOnly.bind(authMiddleware),   
   (req, res) => maintenanceController.createMaintenance(req, res)
 );
 

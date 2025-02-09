@@ -1,10 +1,16 @@
+import { MotorcycleStatus } from '@domain/motorcycle/enums/MotorcycleStatus';
+
 export interface MotorcycleDTO {
   id: string;
   brand: string;
   model: string;
+  year: number;
   vin: string;
-  currentMileage: number;
+  mileage: number;
+  status: MotorcycleStatus;
   concessionId: string;
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type MotorcycleResponseDTO = MotorcycleDTO;

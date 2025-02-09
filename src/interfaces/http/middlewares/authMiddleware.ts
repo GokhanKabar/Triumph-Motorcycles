@@ -197,4 +197,7 @@ export class AuthMiddleware {
       }
     };
   }
+
+  // Helper pour les routes admin uniquement
+  adminOnly = this.requireRole([UserRole.ADMIN]);
 }

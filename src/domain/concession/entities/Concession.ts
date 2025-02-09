@@ -22,12 +22,12 @@ export default class Concession {
     id: string | undefined,
     userId: string,
     name: string,
-    address: string,
+    address: string = "N/A",
     createdAt?: Date,
     updatedAt?: Date
   ) {
-    if (!name || !address) {
-      return new MissingRequiredFieldError();
+    if (!name) {
+      return new MissingRequiredFieldError("Le nom de la concession est obligatoire");
     }
 
     return new Concession(

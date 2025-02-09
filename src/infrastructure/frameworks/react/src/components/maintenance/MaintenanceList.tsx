@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { toast } from 'react-toastify';
 import { maintenanceService } from '../../services/api';
-import {
-  IMaintenanceListProps,
-  IMaintenanceListState,
-  IMaintenanceListHandlers
-} from '../../interfaces/components/IMaintenanceList';
+import { motorcycleService } from '../../services/api';
 import { MaintenanceResponseDTO } from '@application/maintenance/dtos/MaintenanceResponseDTO';
 import { MaintenanceForm } from './MaintenanceForm';
 import { CreateMaintenanceDTO } from '@application/maintenance/dtos/CreateMaintenanceDTO';
+import { MaintenanceStatus, MaintenanceType } from '@domain/maintenance/entities/Maintenance';
 
 interface MaintenanceListProps {
   maintenances: MaintenanceResponseDTO[];
@@ -16,33 +14,291 @@ interface MaintenanceListProps {
   onEdit?: (maintenance: MaintenanceResponseDTO) => void;
 }
 
-const useMaintenanceListHandlers = (
-  state: IMaintenanceListState,
-  setState: React.Dispatch<React.SetStateAction<IMaintenanceListState>>
-): IMaintenanceListHandlers => {
-  const handleCompleteMaintenance = async (maintenanceId: string) => {
+export function MaintenanceList({ 
+  maintenances, 
+  onComplete, 
+  onDelete, 
+  onEdit 
+}: MaintenanceListProps) {
+  console.log('DEBUG: Rendu MaintenanceList', { 
+    maintenances, 
+    maintenancesCount: maintenances.length 
+  });
+
+  const [extendedMaintenances, setExtendedMaintenances] = useState<MaintenanceResponseDTO[]>(maintenances);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedMaintenance, setSelectedMaintenance] = useState<MaintenanceResponseDTO | null>(null);
+
+  // Fonction utilitaire centralisée pour la gestion des erreurs
+  const handleOperationError = (
+    error: any, 
+    defaultMessage: string, 
+    operationType: 'delete' | 'complete' | 'update'
+  ) => {
+    // Extraire le message d'erreur le plus pertinent
+    const errorMessage = 
+      error.response?.data?.message || 
+      error.message || 
+      defaultMessage;
+
+    // Log détaillé de l'erreur
+    console.error(`Erreur lors de ${operationType} de maintenance:`, error);
+    
+    // Log supplémentaire pour les erreurs de réponse
+    if (error.response) {
+      console.error('Détails de la réponse d\'erreur:', {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+    }
+
+    // Notifications personnalisées selon le type d'opération
+    const notificationMap = {
+      'delete': {
+        404: 'La maintenance a déjà été supprimée ou n\'existe plus.',
+        403: 'Vous n\'avez pas les autorisations nécessaires pour supprimer cette maintenance.',
+        default: 'Impossible de supprimer la maintenance.'
+      },
+      'complete': {
+        404: 'La maintenance ne peut pas être terminée car elle n\'existe plus.',
+        403: 'Vous n\'avez pas les autorisations nécessaires pour terminer cette maintenance.',
+        default: 'Impossible de terminer la maintenance.'
+      },
+      'update': {
+        404: 'La maintenance ne peut pas être mise à jour car elle n\'existe plus.',
+        403: 'Vous n\'avez pas les autorisations nécessaires pour modifier cette maintenance.',
+        default: 'Impossible de mettre à jour la maintenance.'
+      }
+    };
+
+    // Choisir le message de notification
+    const notifications = notificationMap[operationType];
+    const toastMessage = 
+      (error.response && notifications[error.response.status]) || 
+      notifications.default;
+
+    // Afficher la notification
+    toast.error(toastMessage, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+
+    // Retourner le message d'erreur pour une utilisation ultérieure si nécessaire
+    return errorMessage;
+  };
+
+  const handleCompleteMaintenance = async (maintenanceId: string, showToast: boolean = true) => {
     try {
-      const updatedMaintenance = await maintenanceService.completeMaintenanceWithDetails(maintenanceId, {
+      setIsLoading(true);
+      setError(null);
+      
+      // Vérifier si la maintenance existe dans la liste actuelle
+      const existingMaintenance = extendedMaintenances.find(m => m.id === maintenanceId);
+      
+      if (!existingMaintenance) {
+        handleOperationError(
+          new Error('Maintenance non trouvée'), 
+          'Maintenance introuvable', 
+          'complete'
+        );
+        return;
+      }
+      
+      // Tenter de récupérer la maintenance actuelle
+      let currentMaintenance;
+      try {
+        currentMaintenance = await maintenanceService.getMaintenanceById(maintenanceId);
+      } catch (fetchError: any) {
+        // Si 404, utiliser les données de la liste existante
+        if (fetchError.response?.status === 404) {
+          console.warn('Maintenance non trouvée par ID, utilisation des données existantes');
+          currentMaintenance = existingMaintenance;
+        } else {
+          throw fetchError;
+        }
+      }
+      
+      // Mettre à jour la maintenance avec le statut COMPLETED
+      const updatedMaintenance = await maintenanceService.updateMaintenance(maintenanceId, {
+        ...currentMaintenance,
+        status: MaintenanceStatus.COMPLETED,
         actualDate: new Date(),
-        mileageAtMaintenance: 0, // À ajuster selon vos besoins
+        mileageAtMaintenance: currentMaintenance.motorcycle?.mileage || 0,
         technicianNotes: 'Maintenance terminée'
       });
+      
+      // Mettre à jour l'état directement avec le tableau mis à jour
+      setExtendedMaintenances(prevMaintenances => 
+        prevMaintenances.map(m => m.id === maintenanceId ? updatedMaintenance : m)
+      );
+      
+      // Notification de succès conditionnelle
+      if (showToast) {
+        toast.success('Maintenance terminée avec succès', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+      
+      // Déclencher un rafraîchissement global
+      if (onComplete) {
+        onComplete(maintenanceId);
+      }
+      
+      return updatedMaintenance;
+    } catch (error: any) {
+      // Gestion centralisée des erreurs
+      handleOperationError(error, 'Erreur lors de la complétion de maintenance', 'complete');
+      
+      // Retirer la maintenance de la liste en cas d'erreur 404
+      if (error.response?.status === 404) {
+        setExtendedMaintenances(prevMaintenances => 
+          prevMaintenances.filter(m => m.id !== maintenanceId)
+        );
+      }
+      
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      // Mettre à jour directement la liste des maintenances
-      setState(prevState => ({
-        ...prevState,
-        maintenances: prevState.maintenances.map(maintenance => 
-          maintenance.id === maintenanceId ? updatedMaintenance : maintenance
-        )
-      }));
+  const handleDelete = async (maintenanceId: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Vérifier si la maintenance existe dans la liste actuelle
+      const existingMaintenance = extendedMaintenances.find(m => m.id === maintenanceId);
+      
+      if (!existingMaintenance) {
+        handleOperationError(
+          new Error('Maintenance non trouvée'), 
+          'Maintenance introuvable', 
+          'delete'
+        );
+        return;
+      }
+      
+      // Supprimer la maintenance
+      await maintenanceService.deleteMaintenance(maintenanceId);
 
-      toast.success('Maintenance terminée avec succès');
-    } catch (error) {
-      setState(prevState => ({
-        ...prevState,
-        error: error instanceof Error ? error : new Error('Échec de la complétion de maintenance')
-      }));
-      toast.error('Erreur lors de la complétion de maintenance');
+      if (onDelete) {
+        onDelete(maintenanceId);
+      }
+      
+      // Notification de succès
+      toast.success('Maintenance supprimée avec succès', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } catch (error: any) {
+      // Gestion centralisée des erreurs
+      handleOperationError(error, 'Erreur lors de la suppression de maintenance', 'delete');
+      
+      // Retirer la maintenance de la liste en cas d'erreur 404
+      if (error.response?.status === 404) {
+        setExtendedMaintenances(prevMaintenances => 
+          prevMaintenances.filter(m => m.id !== maintenanceId)
+        );
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEditMaintenance = async (maintenance: MaintenanceResponseDTO) => {
+    try {
+      if (onEdit) {
+        onEdit(maintenance);
+      }
+      setSelectedMaintenance(maintenance);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 
+        error.message || 
+        'Erreur lors de l\'édition de la maintenance';
+      
+      console.error('Erreur détaillée lors de l\'édition de la maintenance:', error);
+      
+      // Log l'erreur Axios complète pour le débogage
+      if (error.response) {
+        console.error('Réponse d\'erreur:', error.response.data);
+        console.error('Statut d\'erreur:', error.response.status);
+        console.error('En-têtes d\'erreur:', error.response.headers);
+      }
+      
+      setError(errorMessage);
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleUpdateMaintenance = async (maintenanceData: CreateMaintenanceDTO) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      if (!selectedMaintenance) {
+        toast.error('Aucune maintenance sélectionnée');
+        return;
+      }
+
+      // Validation des données du DTO
+      if (!maintenanceData.motorcycleId) {
+        toast.error('Un identifiant de moto est requis');
+        return;
+      }
+
+      if (!maintenanceData.type) {
+        toast.error('Le type de maintenance est obligatoire');
+        return;
+      }
+
+      if (!maintenanceData.scheduledDate) {
+        toast.error('La date de maintenance est requise');
+        return;
+      }
+
+      // Définir un statut par défaut si non spécifié
+      const maintenanceToUpdate: CreateMaintenanceDTO = {
+        ...maintenanceData,
+        status: maintenanceData.status || 'SCHEDULED',
+        mileageAtMaintenance: maintenanceData.mileageAtMaintenance || 0,
+      };
+
+      if (selectedMaintenance) {
+        await maintenanceService.updateMaintenance(selectedMaintenance.id, maintenanceToUpdate);
+        setSelectedMaintenance(null);
+        
+        // Notification de succès
+        toast.success('Maintenance mise à jour avec succès', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    } catch (error: any) {
+      // Gestion centralisée des erreurs
+      handleOperationError(error, 'Erreur lors de la mise à jour de la maintenance', 'update');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -59,77 +315,22 @@ const useMaintenanceListHandlers = (
     }
   };
 
-  return {
-    handleCompleteMaintenance,
-    getStatusColor
-  };
-};
-
-export function MaintenanceList({ 
-  maintenances, 
-  onComplete, 
-  onDelete, 
-  onEdit 
-}: MaintenanceListProps) {
-  console.log('DEBUG: Rendu MaintenanceList', { 
-    maintenances, 
-    maintenancesCount: maintenances.length 
-  });
-
-  const [state, setState] = useState<IMaintenanceListState>({
-    maintenances: maintenances,
-    isLoading: false,
-    error: null
-  });
-
-  const [selectedMaintenance, setSelectedMaintenance] = useState<MaintenanceResponseDTO | null>(null);
-
-  const { handleCompleteMaintenance, getStatusColor } = useMaintenanceListHandlers(
-    state, 
-    setState
-  );
-
-  useEffect(() => {
-    setState(prevState => ({
-      ...prevState,
-      maintenances: maintenances
-    }));
-  }, [maintenances]);
-
-  const handleComplete = async (maintenanceId: string) => {
-    await handleCompleteMaintenance(maintenanceId);
-    if (onComplete) {
-      onComplete(maintenanceId);
+  const getMotorcycleName = (maintenance: MaintenanceResponseDTO) => {
+    // Vérifier si les informations de la moto sont disponibles
+    if (!maintenance.motorcycle) {
+      return 'Moto non disponible';
     }
-  };
 
-  const handleUpdateMaintenance = async (maintenanceData: CreateMaintenanceDTO) => {
-    try {
-      if (selectedMaintenance) {
-        await maintenanceService.updateMaintenance(selectedMaintenance.id, maintenanceData);
-        setSelectedMaintenance(null);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour de la maintenance:', error);
-      setState(prevState => ({
-        ...prevState,
-        error: error instanceof Error ? error : new Error('Échec de la mise à jour de maintenance')
-      }));
-    }
-  };
+    const { brand, model, year } = maintenance.motorcycle;
 
-  const handleEditMaintenance = async (maintenance: MaintenanceResponseDTO) => {
-    try {
-      if (onEdit) {
-        onEdit(maintenance);
-      }
-    } catch (error) {
-      console.error('Erreur lors de l\'édition de la maintenance:', error);
-      setState(prevState => ({
-        ...prevState,
-        error: error instanceof Error ? error : new Error('Échec de l\'édition de maintenance')
-      }));
-    }
+    // Construire le nom de la moto avec des valeurs par défaut
+    const motorcycleName = [
+      brand || 'Marque inconnue', 
+      model || 'Modèle inconnu', 
+      year ? `(${year})` : ''
+    ].filter(Boolean).join(' ');
+
+    return motorcycleName;
   };
 
   const renderMaintenanceDetails = (maintenance: MaintenanceResponseDTO) => {
@@ -178,7 +379,7 @@ export function MaintenanceList({
       <div className="bg-white shadow-md rounded-lg p-4 mb-4">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-semibold">
-            {maintenance.motorcycle ? `${maintenance.motorcycle.brand} ${maintenance.motorcycle.model}` : 'Moto non disponible'}
+            {getMotorcycleName(maintenance)}
           </h3>
           <div className="flex items-center space-x-2">
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(maintenance.status)}`}>
@@ -197,7 +398,7 @@ export function MaintenanceList({
             )}
             {onDelete && (
               <button
-                onClick={() => onDelete(maintenance.id)}
+                onClick={() => handleDelete(maintenance.id)}
                 className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
               >
                 Supprimer
@@ -256,7 +457,7 @@ export function MaintenanceList({
         <div className="mt-4 flex space-x-2">
           {maintenance.status !== 'COMPLETED' && onComplete && (
             <button
-              onClick={() => onComplete(maintenance.id)}
+              onClick={() => handleCompleteMaintenance(maintenance.id)}
               className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors"
             >
               Terminer
@@ -266,6 +467,70 @@ export function MaintenanceList({
       </div>
     );
   };
+
+  // Charger les informations de la moto pour chaque maintenance
+  const loadMotorcycleDetails = async (maintenances: MaintenanceResponseDTO[]) => {
+    try {
+      const updatedMaintenances = await Promise.all(
+        maintenances.map(async (maintenance) => {
+          if (!maintenance.motorcycle && maintenance.motorcycleId) {
+            try {
+              const motorcycle = await motorcycleService.getMotorcycle(maintenance.motorcycleId);
+              return {
+                ...maintenance,
+                motorcycle: motorcycle
+              };
+            } catch (error) {
+              console.warn(`Impossible de charger les détails de la moto ${maintenance.motorcycleId}:`, error);
+              return maintenance;
+            }
+          }
+          return maintenance;
+        })
+      );
+
+      return updatedMaintenances;
+    } catch (error) {
+      console.error('Erreur lors du chargement des détails des motos:', error);
+      return maintenances;
+    }
+  };
+
+  // Effet pour charger les détails des motos
+  useEffect(() => {
+    const fetchMotorcycleDetails = async () => {
+      setIsLoading(true);
+      try {
+        if (maintenances.length > 0) {
+          const updatedMaintenances = await loadMotorcycleDetails(maintenances);
+          setExtendedMaintenances(updatedMaintenances);
+        }
+      } catch (err) {
+        console.error('Erreur lors du chargement des détails:', err);
+        setError('Impossible de charger les détails des maintenances');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMotorcycleDetails();
+  }, [maintenances]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        {error}
+      </div>
+    );
+  }
 
   // Si une maintenance est sélectionnée pour modification
   if (selectedMaintenance) {
@@ -296,12 +561,11 @@ export function MaintenanceList({
   return (
     <div className="container mx-auto px-4 py-8">
       <h2 className="text-2xl font-bold mb-6">Liste des Maintenances</h2>
-      {state.error ? (
-        <p className="text-red-500">Erreur : {state.error.message}</p>
-      ) : maintenances.length === 0 ? (
-        <p>Aucune maintenance trouvée.</p>
+      
+      {extendedMaintenances.length === 0 ? (
+        <p className="text-gray-500 text-center">Aucune maintenance trouvée.</p>
       ) : (
-        maintenances.map(maintenance => (
+        extendedMaintenances.map(maintenance => (
           <div key={maintenance.id}>
             {renderMaintenanceDetails(maintenance)}
           </div>

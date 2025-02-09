@@ -103,7 +103,7 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
     }
 
     try {
-      await companyMotorcycleService.assignMotorcycle(
+      await companyMotorcycleService.assignMotorcycleToCompany(
         companyId,
         selectedMotorcycleId
       );

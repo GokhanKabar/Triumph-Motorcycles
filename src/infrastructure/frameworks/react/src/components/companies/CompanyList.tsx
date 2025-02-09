@@ -46,7 +46,7 @@ export default function CompanyList({
 
   const fetchCompanies = useCallback(async () => {
     try {
-      const companies = await companyService.getCompanies();
+      const companies = await companyService.getAllCompanies();
       setState((prevState) => ({
         ...prevState,
         companies,

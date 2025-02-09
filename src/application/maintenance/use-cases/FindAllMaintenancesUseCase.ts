@@ -17,52 +17,32 @@ export class FindAllMaintenancesUseCase {
       const maintenances = await this.maintenanceRepository.findAll();
       
       console.log(`DEBUG: Nombre de maintenances trouvées: ${maintenances.length}`);
-      
-      // Si pas de repository de moto, retourner les maintenances sans détails de moto
-      if (!this.motorcycleRepository) {
-        return maintenances.map(maintenance => ({
-          id: maintenance.id,
-          motorcycleId: maintenance.motorcycleId,
-          type: maintenance.type,
-          status: maintenance.status,
-          scheduledDate: maintenance.scheduledDate,
-          mileageAtMaintenance: maintenance.mileageAtMaintenance,
-          actualDate: maintenance.actualDate,
-          technicianNotes: maintenance.technicianNotes,
-          replacedParts: maintenance.replacedParts,
-          totalCost: maintenance.totalCost,
-          nextMaintenanceRecommendation: maintenance.nextMaintenanceRecommendation,
-          createdAt: maintenance.createdAt,
-          updatedAt: maintenance.updatedAt
-        }));
-      }
 
-      // Récupérer les détails des motos en parallèle
-      const motorcyclePromises = maintenances.map(maintenance => 
-        this.motorcycleRepository!.findById(maintenance.motorcycleId)
-      );
-      const motorcycles = await Promise.all(motorcyclePromises);
-
-      return maintenances.map((maintenance, index) => {
-        const motorcycle = motorcycles[index];
-
-        return {
-          id: maintenance.id,
-          motorcycleId: maintenance.motorcycleId,
-          type: maintenance.type,
-          status: maintenance.status,
-          scheduledDate: maintenance.scheduledDate,
-          mileageAtMaintenance: maintenance.mileageAtMaintenance,
-          actualDate: maintenance.actualDate,
-          technicianNotes: maintenance.technicianNotes,
-          replacedParts: maintenance.replacedParts,
-          totalCost: maintenance.totalCost,
-          nextMaintenanceRecommendation: maintenance.nextMaintenanceRecommendation,
-          createdAt: maintenance.createdAt,
-          updatedAt: maintenance.updatedAt,
-          motorcycleDetails: motorcycle
-        };
-      });
+      return maintenances.map(maintenance => ({
+        id: maintenance.id,
+        motorcycleId: maintenance.motorcycleId,
+        type: maintenance.type,
+        status: maintenance.status,
+        scheduledDate: maintenance.scheduledDate,
+        mileageAtMaintenance: maintenance.mileageAtMaintenance,
+        actualDate: maintenance.actualDate,
+        technicianNotes: maintenance.technicianNotes,
+        replacedParts: maintenance.replacedParts,
+        totalCost: maintenance.totalCost,
+        nextMaintenanceRecommendation: maintenance.nextMaintenanceRecommendation,
+        createdAt: maintenance.createdAt,
+        updatedAt: maintenance.updatedAt,
+        motorcycle: maintenance.motorcycle ? {
+          id: maintenance.motorcycle.id,
+          brand: maintenance.motorcycle.brand,
+          model: maintenance.motorcycle.model,
+          year: maintenance.motorcycle.year,
+          vin: maintenance.motorcycle.vin,
+          mileage: maintenance.motorcycle.mileage,
+          status: maintenance.motorcycle.status,
+          concessionId: maintenance.motorcycle.concessionId
+        } : undefined
+      }));
     } catch (error) {
       console.error('DEBUG: Erreur lors de la récupération des maintenances', error);
       throw error;

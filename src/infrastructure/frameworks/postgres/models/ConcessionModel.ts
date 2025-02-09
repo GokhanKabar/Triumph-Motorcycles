@@ -34,7 +34,8 @@ class ConcessionModel extends Model {
           },
           address: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
+            defaultValue: "N/A"
           },
           createdAt: {
             type: DataTypes.DATE,

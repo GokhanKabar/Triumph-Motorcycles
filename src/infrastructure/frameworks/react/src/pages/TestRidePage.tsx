@@ -43,7 +43,7 @@ const TestRidePage: React.FC = () => {
   const fetchTestRides = async () => {
     try {
       setIsLoading(true);
-      const rides = await testRideService.getAllTestRides();
+      const rides = await testRideService.getAll();
       
       // Log détaillé pour le débogage
       console.log('Test Rides récupérés:', rides);
@@ -66,10 +66,10 @@ const TestRidePage: React.FC = () => {
     }
   };
 
-  const handleDeleteTestRide = async () => {
+  const handleDelete = async () => {
     if (selectedTestRide) {
       try {
-        await testRideService.deleteTestRide(selectedTestRide.id);
+        await testRideService.delete(selectedTestRide.id);
         fetchTestRides();
         setIsDeleteModalOpen(false);
       } catch (error) {
@@ -82,7 +82,17 @@ const TestRidePage: React.FC = () => {
   const handleUpdateStatus = async () => {
     if (selectedTestRide && selectedStatus) {
       try {
-        await testRideService.updateTestRideStatus(selectedTestRide.id, selectedStatus);
+        // Vérification que le statut est une valeur valide de l'enum
+        if (!Object.values(TestRideStatus).includes(selectedStatus)) {
+          throw new Error('Statut invalide');
+        }
+
+        const statusData = {
+          status: selectedStatus as TestRideStatus // Cast explicite pour s'assurer que le type est correct
+        };
+        
+        console.log('Envoi du statut:', JSON.stringify(statusData)); // Pour le débogage
+        await testRideService.updateStatus(selectedTestRide.id, statusData);
         fetchTestRides();
         setIsStatusModalOpen(false);
       } catch (error) {
@@ -256,7 +266,7 @@ const TestRidePage: React.FC = () => {
           <div className="bg-white rounded-xl p-8 max-w-md w-full">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Changer le statut</h2>
             <div className="space-y-4">
-              {Object.values(TestRideStatus).map((status) => (
+              {Object.values(TestRideStatus).map((status: TestRideStatus) => (
                 <button
                   key={status}
                   onClick={() => setSelectedStatus(status)}
@@ -279,7 +289,12 @@ const TestRidePage: React.FC = () => {
               </button>
               <button 
                 onClick={handleUpdateStatus}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                disabled={!selectedStatus}
+                className={`px-4 py-2 rounded-md transition-colors ${
+                  selectedStatus
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
                 Confirmer
               </button>
@@ -305,7 +320,7 @@ const TestRidePage: React.FC = () => {
                 Annuler
               </button>
               <button 
-                onClick={handleDeleteTestRide}
+                onClick={handleDelete}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
                 Supprimer

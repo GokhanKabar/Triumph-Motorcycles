@@ -1,53 +1,73 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { authService } from "../../services/api";
-import { UserResponseDTO } from "../../../../../../application/user/dtos/UserDTO";
-import { UserRole } from "@domain/enums/UserRole";
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { UserRole } from '@domain/enums/UserRole';
+import { authService } from '../../services/api';
 
-const Navbar: React.FC = () => {
+const Navbar = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [user, setUser] = useState<UserResponseDTO | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const userStr = localStorage.getItem('user');
+  let user;
+  try {
+    user = userStr ? JSON.parse(userStr) : null;
+  } catch (error) {
+    user = null;
+  }
+  const isAdmin = user?.role === UserRole.ADMIN;
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await authService.getCurrentUser();
-        setUser(userData);
-      } catch (error) {
-        console.error("Erreur lors de la récupération du profil:", error);
-      }
-    };
-    fetchUser();
-  }, []);
+  // Si l'utilisateur n'est pas connecté, rediriger vers la page de connexion
+  React.useEffect(() => {
+    if (!userStr) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   const handleLogout = () => {
     authService.logout();
-    navigate("/login");
+    navigate('/login');
   };
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const isActive = (path: string) => {
-    return location.pathname === path
-      ? "bg-gray-900 text-white ring-2 ring-offset-2 ring-offset-gray-800 ring-white"
-      : "text-gray-300 hover:bg-gray-700 hover:text-white";
-  };
+  // Si l'utilisateur n'est pas connecté, ne pas afficher la navbar
+  if (!user) {
+    return null;
+  }
 
   const menuItems = [
-    { path: "/dashboard", label: "Tableau de bord", adminOnly: false },
-    { path: "/users", label: "Utilisateurs", adminOnly: true },
-    { path: "/companies", label: "Entreprises", adminOnly: true },
-    { path: "/concessions", label: "Concessions", adminOnly: true },
-    { path: "/motorcycles", label: "Motos", adminOnly: true },
-    { path: "/test-rides", label: "Test Rides", adminOnly: true },
-    { path: "/maintenances", label: "Maintenances", adminOnly: true },
-    { path: "/inventory-parts", label: "Stock Pièces", adminOnly: true },
-    { path: "/drivers", label: "Conducteurs", adminOnly: true },
+    { path: '/dashboard', label: 'Tableau de bord', adminOnly: false },
+    { path: '/motorcycles', label: 'Motos', adminOnly: false },
+    { path: '/maintenances', label: 'Maintenances', adminOnly: false },
+    { path: '/users', label: 'Utilisateurs', adminOnly: true },
+    { path: '/companies', label: 'Entreprises', adminOnly: true },
+    { path: '/concessions', label: 'Concessions', adminOnly: true },
+    { path: '/inventory-parts', label: 'Stock Pièces', adminOnly: true },
+    { path: '/drivers', label: 'Conducteurs', adminOnly: true },
+    { path: '/test-rides', label: 'Essais', adminOnly: false }
   ];
+
+  const renderMenuLink = (item: typeof menuItems[0], isMobile: boolean = false) => {
+    if (item.adminOnly && !isAdmin) return null;
+
+    const baseClassName = isMobile
+      ? 'block px-4 py-3 rounded-md text-base font-medium transition-all duration-300'
+      : 'px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105';
+
+    const activeClassName = isMobile
+      ? 'bg-gray-900 text-white'
+      : 'bg-gray-900 text-white ring-2 ring-offset-2 ring-offset-gray-800 ring-white';
+
+    const inactiveClassName = 'text-gray-300 hover:bg-gray-700 hover:text-white';
+
+    return (
+      <Link
+        key={item.path}
+        to={item.path}
+        className={`${baseClassName} ${
+          window.location.pathname === item.path ? activeClassName : inactiveClassName
+        }`}
+      >
+        {item.label}
+      </Link>
+    );
+  };
 
   return (
     <nav className="bg-gray-800 shadow-lg">
@@ -68,20 +88,7 @@ const Navbar: React.FC = () => {
           {/* Menu desktop */}
           <div className="hidden lg:block flex-1 ml-8">
             <div className="flex justify-center space-x-1">
-              {menuItems.map(
-                (item) =>
-                  (!item.adminOnly || user?.role === UserRole.ADMIN) && (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105 ${isActive(
-                        item.path
-                      )}`}
-                    >
-                      {item.label}
-                    </Link>
-                  )
-              )}
+              {menuItems.map(item => renderMenuLink(item))}
             </div>
           </div>
 
@@ -98,73 +105,35 @@ const Navbar: React.FC = () => {
           {/* Bouton menu mobile */}
           <div className="lg:hidden">
             <button
-              onClick={toggleMenu}
               type="button"
               className="inline-flex items-center justify-center p-3 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
               aria-controls="mobile-menu"
-              aria-expanded={isMenuOpen}
+              aria-expanded="false"
             >
               <span className="sr-only">Ouvrir le menu</span>
-              {!isMenuOpen ? (
-                <svg
-                  className="block h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="block h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              )}
+              <svg
+                className="block h-6 w-6"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
             </button>
           </div>
         </div>
       </div>
 
       {/* Menu mobile avec animation */}
-      <div
-        className={`lg:hidden transition-all duration-300 ease-in-out ${
-          isMenuOpen
-            ? "max-h-screen opacity-100"
-            : "max-h-0 opacity-0 overflow-hidden"
-        }`}
-      >
+      <div className="lg:hidden transition-all duration-300 ease-in-out">
         <div className="px-2 pt-2 pb-3 space-y-1 bg-gray-800 shadow-lg">
-          {menuItems.map(
-            (item) =>
-              (!item.adminOnly || user?.role === UserRole.ADMIN) && (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`block px-4 py-3 rounded-md text-base font-medium transition-all duration-300 ${isActive(
-                    item.path
-                  )}`}
-                  onClick={toggleMenu}
-                >
-                  {item.label}
-                </Link>
-              )
-          )}
+          {menuItems.map(item => renderMenuLink(item, true))}
           <div className="border-t border-gray-700 mt-4 pt-4">
             <button
               onClick={handleLogout}

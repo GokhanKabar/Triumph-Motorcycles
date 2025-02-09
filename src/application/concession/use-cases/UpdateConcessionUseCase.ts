@@ -19,9 +19,9 @@ export class UpdateConcessionUseCase {
 
     const updatedConcession = Concession.from(
       id,
+      userId,
       name,
       address,
-      userId,
       existingConcession.createdAt,
       new Date()
     );

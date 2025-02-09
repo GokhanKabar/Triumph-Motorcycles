@@ -3,6 +3,7 @@ import Maintenance, { MaintenanceType, MaintenanceStatus } from '../../domain/ma
 import { MaintenanceNotFoundError } from '../../domain/maintenance/errors/MaintenanceNotFoundError';
 import { MaintenanceValidationError } from '../../domain/maintenance/errors/MaintenanceValidationError';
 import MaintenanceModel from '../frameworks/postgres/models/MaintenanceModel';
+import MotorcycleModel from '../frameworks/postgres/models/MotorcycleModel';
 import { Op } from 'sequelize';
 
 export class PostgreSQLMaintenanceRepository implements IMaintenanceRepository {
@@ -354,18 +355,31 @@ export class PostgreSQLMaintenanceRepository implements IMaintenanceRepository {
     );
   }
 
-  async findAll(userId?: string, userRole?: string): Promise<Maintenance[]> {
-    console.log('DEBUG: findAll - Paramètres reçus', { userId, userRole });
-
+  async findAll(): Promise<Maintenance[]> {
     const maintenances = await MaintenanceModel.findAll({
-      raw: true,
-      order: [['createdAt', 'DESC']]
+      include: [{
+        model: MotorcycleModel,
+        as: 'motorcycle',
+        required: false  // LEFT JOIN
+      }],
+      raw: false  // Garder l'objet Sequelize complet
     });
 
-    console.log('DEBUG: Nombre total de maintenances trouvées:', maintenances.length);
+    return maintenances.map(m => {
+      const motorcycle = m.get('motorcycle');
+      
+      console.log('DEBUG: Maintenance avec moto:', {
+        maintenanceId: m.id,
+        motorcycleId: m.motorcycleId,
+        motorcycleExists: !!motorcycle,
+        motorcycleDetails: motorcycle ? {
+          id: motorcycle.id,
+          brand: motorcycle.brand,
+          model: motorcycle.model
+        } : null
+      });
 
-    return maintenances.map(m => 
-      Maintenance.from(
+      return Maintenance.from(
         m.id,
         m.motorcycleId,
         m.type,
@@ -378,8 +392,18 @@ export class PostgreSQLMaintenanceRepository implements IMaintenanceRepository {
         m.totalCost,
         m.nextMaintenanceRecommendation,
         m.createdAt,
-        m.updatedAt
-      ) as Maintenance
-    );
+        m.updatedAt,
+        motorcycle ? {
+          id: motorcycle.id,
+          brand: motorcycle.brand,
+          model: motorcycle.model,
+          year: motorcycle.year,
+          vin: motorcycle.vin,
+          mileage: motorcycle.mileage,
+          status: motorcycle.status,
+          concessionId: motorcycle.concessionId
+        } : undefined
+      ) as Maintenance;
+    });
   }
 }

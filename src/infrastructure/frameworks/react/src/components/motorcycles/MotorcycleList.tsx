@@ -14,16 +14,43 @@ const useMotorcycleListHandlers = (
   fetchMotorcycles: () => Promise<void>
 ): IMotorcycleListHandlers => {
   const handleDeleteMotorcycle = async (motorcycleId: string) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette moto ?')) {
+      return;
+    }
+
     try {
+      setState((prev) => ({
+        ...prev,
+        isLoading: true,
+        error: null,
+      }));
+
       await motorcycleService.deleteMotorcycle(motorcycleId);
-      fetchMotorcycles();
-    } catch (error) {
-      setState((prevState) => ({
-        ...prevState,
-        error:
-          error instanceof Error
-            ? error
-            : new Error("Failed to delete motorcycle"),
+
+      // Mettre à jour la liste des motos après la suppression
+      const updatedMotorcycles = state.motorcycles.filter(
+        (moto) => moto.id !== motorcycleId
+      );
+
+      setState((prev) => ({
+        ...prev,
+        motorcycles: updatedMotorcycles,
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      console.error('Erreur lors de la suppression:', error);
+
+      // Message d'erreur personnalisé en fonction du type d'erreur
+      let errorMessage = 'Une erreur est survenue lors de la suppression';
+
+      if (error.response?.status === 500) {
+        errorMessage = 'Impossible de supprimer cette moto car elle a des maintenances associées';
+      }
+
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: errorMessage,
       }));
     }
   };
@@ -48,19 +75,19 @@ export default function MotorcycleList({
   const fetchMotorcycles = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
-      
+
       // Récupérer d'abord les concessions
-      const concessions = await concessionService.getConcessions();
+      const concessions = await concessionService.getAllConcessions();
       const concessionMap = concessions.reduce((acc, concession) => {
         acc[concession.id] = concession.name;
         return acc;
       }, {} as Record<string, string>);
-      
+
       console.log('Concession Map:', concessionMap);
-      
+
       // Puis récupérer les motos
-      const motorcycles = await motorcycleService.getMotorcycles();
-      
+      const motorcycles = await motorcycleService.getAllMotorcycles();
+
       setState((prev) => ({
         ...prev,
         motorcycles,
@@ -95,7 +122,7 @@ export default function MotorcycleList({
   }
 
   if (state.error) {
-    return <div className="text-red-600 p-4">{state.error.message}</div>;
+    return <div className="text-red-600 p-4">{state.error}</div>;
   }
 
   return (
@@ -193,7 +220,7 @@ export default function MotorcycleList({
                   Modifier
                 </button>
                 <button
-                  onClick={() => onDelete(motorcycle.id)}
+                  onClick={() => handlers.handleDeleteMotorcycle(motorcycle.id)}
                   className="text-red-600 hover:text-red-900 focus:outline-none"
                 >
                   Supprimer

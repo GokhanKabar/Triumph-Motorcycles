@@ -10,7 +10,6 @@ import { Argon2PasswordHashingService } from '../../../infrastructure/services/A
 import { GetAllUsersUseCase } from '../../../application/user/use-cases/GetAllUsersUseCase';
 import { DeleteUserUseCase } from '../../../application/user/use-cases/DeleteUserUseCase';
 import { AuthMiddleware } from '../middlewares/authMiddleware';
-import { adminOnly, adminAndManagerOnly } from '../middlewares/roleMiddleware';
 import { JWTTokenService } from '../../../infrastructure/services/TokenService';
 
 const router = express.Router();
@@ -52,38 +51,48 @@ router.get('/all',
     console.log('DEBUG: Utilisateur connecté:', req.user);
     next();
   },
-  adminOnly, 
+  authMiddleware.adminOnly.bind(authMiddleware), 
   userController.getAll.bind(userController)
 );
 
-router.get('/users/:id', 
-  adminOnly, 
+router.get('/', 
+  (req, res, next) => {
+    console.log('DEBUG: Route / appelée');
+    console.log('DEBUG: Utilisateur connecté:', req.user);
+    next();
+  },
+  authMiddleware.adminOnly.bind(authMiddleware), 
+  userController.getAll.bind(userController)
+);
+
+router.get('/:id', 
+  authMiddleware.adminOnly.bind(authMiddleware), 
   userController.getById.bind(userController)
 );
 
-router.post('/users', 
+router.post('/', 
   userController.create.bind(userController)
 );
 
 router.put('/:id', 
-  adminOnly, 
+  authMiddleware.adminOnly.bind(authMiddleware), 
   userController.update.bind(userController)
 );
 
 router.delete('/:id', 
-  adminOnly, 
+  authMiddleware.adminOnly.bind(authMiddleware), 
   userController.delete.bind(userController)
 );
 
 router.post(
   '/admin', 
-  adminOnly,
+  authMiddleware.adminOnly.bind(authMiddleware),
   userController.createAdminUser.bind(userController)
 );
 
 router.post(
   '/reset-password/:userId', 
-  adminOnly,
+  authMiddleware.adminOnly.bind(authMiddleware),
   userController.resetUserPasswordByAdmin.bind(userController)
 );
 
