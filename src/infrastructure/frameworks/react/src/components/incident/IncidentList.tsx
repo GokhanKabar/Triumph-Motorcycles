@@ -48,6 +48,7 @@ export const IncidentList = forwardRef<{ refreshIncidents: () => void }, Inciden
     // Nouvelle fonction pour récupérer les détails du test ride
     const getTestRideDetails = async (testRideId: string) => {
       try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
         const response = await fetch(`${apiBaseUrl}/test-rides/${testRideId}/details`, {
           method: 'GET',
@@ -70,7 +71,6 @@ export const IncidentList = forwardRef<{ refreshIncidents: () => void }, Inciden
         }
 
         const details = await response.json();
-        console.log('Détails du test ride :', details);
         return details;
       } catch (err) {
         console.error('Erreur lors de la récupération des détails du test ride :', err);
