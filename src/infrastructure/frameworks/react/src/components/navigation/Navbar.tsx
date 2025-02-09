@@ -4,6 +4,7 @@ import { UserRole } from '@domain/enums/UserRole';
 import { authService } from '../../services/api';
 
 const Navbar = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const navigate = useNavigate();
   const userStr = localStorage.getItem('user');
   let user;
@@ -47,8 +48,8 @@ const Navbar = () => {
     if (item.adminOnly && !isAdmin) return null;
 
     const baseClassName = isMobile
-      ? 'block px-4 py-3 rounded-md text-base font-medium transition-all duration-300'
-      : 'px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105';
+      ? 'block px-4 py-3 rounded-md text-center text-base font-medium transition-all duration-300'
+      : 'px-3 py-2 rounded-md text-sm font-medium text-center transition-all duration-300 ease-in-out transform hover:scale-105';
 
     const activeClassName = isMobile
       ? 'bg-gray-900 text-white'
@@ -71,78 +72,49 @@ const Navbar = () => {
 
   return (
     <nav className="bg-gray-800 shadow-lg">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
-        <div className="relative flex items-center justify-between h-20">
-          {/* Logo et titre */}
-          <div className="flex items-center flex-shrink-0">
-            <Link
-              to="/dashboard"
-              className="flex items-center space-x-3 group transition-transform duration-300 hover:scale-105"
-            >
-              <h1 className="text-white text-xl sm:text-2xl lg:text-3xl font-bold tracking-wider">
-                Triumph Motorcycles
-              </h1>
+      <div className="container px-4 mx-auto">
+        <div className="flex items-center justify-between h-20">
+          <div className="flex items-center space-x-2">
+            <img src="/triumph_logo.png" alt="Triumph Motorcycle" className="h-10" />
+            <Link to="/dashboard" className="text-2xl font-bold text-white transition-transform duration-300 hover:scale-105">
+              Triumph Motorcycles
             </Link>
           </div>
-
-          {/* Menu desktop */}
-          <div className="hidden lg:block flex-1 ml-8">
-            <div className="flex justify-center space-x-1">
-              {menuItems.map(item => renderMenuLink(item))}
-            </div>
+          <div className="items-center hidden space-x-8 lg:flex">
+            {menuItems.map(item => renderMenuLink(item))}
           </div>
-
-          {/* Bouton de déconnexion desktop */}
-          <div className="hidden lg:flex items-center">
+          <div className="flex items-center hidden ml-4 lg:block">
             <button
               onClick={handleLogout}
-              className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-red-500 transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+              className="px-5 py-3 text-sm font-semibold text-white transition-all duration-300 bg-red-600 rounded-md hover:bg-red-500 hover:scale-105"
             >
               Déconnexion
             </button>
           </div>
-
-          {/* Bouton menu mobile */}
           <div className="lg:hidden">
             <button
               type="button"
-              className="inline-flex items-center justify-center p-3 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-              aria-controls="mobile-menu"
-              aria-expanded="false"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-3 text-gray-400 transition-colors duration-300 rounded-md hover:text-white hover:bg-gray-700"
             >
               <span className="sr-only">Ouvrir le menu</span>
-              <svg
-                className="block h-6 w-6"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Menu mobile avec animation */}
-      <div className="lg:hidden transition-all duration-300 ease-in-out">
-        <div className="px-2 pt-2 pb-3 space-y-1 bg-gray-800 shadow-lg">
-          {menuItems.map(item => renderMenuLink(item, true))}
-          <div className="border-t border-gray-700 mt-4 pt-4">
+        {isMobileMenuOpen && (
+          <div className="flex flex-col items-center py-4 space-y-2 bg-gray-800 shadow-lg lg:hidden">
+            {menuItems.map(item => renderMenuLink(item, true))}
             <button
               onClick={handleLogout}
-              className="w-full text-left px-4 py-3 rounded-md text-base font-medium text-red-500 hover:bg-red-100 hover:text-red-700 transition-colors duration-300"
+              className="w-full px-5 py-3 text-red-500 rounded-md hover:bg-red-100 hover:text-red-700"
             >
               Déconnexion
             </button>
           </div>
-        </div>
+        )}
       </div>
     </nav>
   );
