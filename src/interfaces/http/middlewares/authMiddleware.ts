@@ -19,7 +19,7 @@ export class AuthMiddleware {
   constructor(
     private readonly tokenService: ITokenService,
     private readonly getUserUseCase: { count: () => Promise<number>; getById: (id: string) => Promise<any> }
-  ) {}
+  ) { }
 
   authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -30,13 +30,14 @@ export class AuthMiddleware {
         { path: '/api/users/all', method: 'GET' },
         { path: '/api/concessions', method: '*' },
         { path: '/api/motorcycles', method: '*' },
-        { path: '/api/test-rides', method: '*' }
+        { path: '/api/test-rides', method: '*' },
+        { path: '/api/part-orders', method: '*' },
       ];
 
       // Vérifier si la route est publique
       const isPublicRoute = publicRoutes.some(
-        route => 
-          req.path.startsWith(route.path) && 
+        route =>
+          req.path.startsWith(route.path) &&
           (route.method === req.method || route.method === '*')
       );
 
@@ -152,8 +153,8 @@ export class AuthMiddleware {
         const userRole = decoded.role as UserRole;
 
         if (!allowedRoles.includes(userRole)) {
-          return res.status(403).json({ 
-            message: 'Accès refusé. Vous n\'avez pas les permissions nécessaires.' 
+          return res.status(403).json({
+            message: 'Accès refusé. Vous n\'avez pas les permissions nécessaires.'
           });
         }
 

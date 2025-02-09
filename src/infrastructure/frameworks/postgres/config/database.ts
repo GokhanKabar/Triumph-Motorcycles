@@ -9,6 +9,7 @@ import CompanyModel from "../models/CompanyModel";
 import CompanyMotorcycleModel from "../models/CompanyMotorcycleModel";
 import ConcessionModel from "../models/ConcessionModel";
 import TestRideModel from "../models/TestRideModel";
+import PartOrderModel from "../models/PartOrderModel";
 
 const sequelize = new Sequelize({
   dialect: "postgres",
@@ -46,13 +47,13 @@ async function initializeDatabase() {
 
       // Initialize TestRide
       TestRideModel.initialize(sequelize);
-      TestRideModel.belongsTo(ConcessionModel, { 
-        foreignKey: 'concessionId', 
-        as: 'concession' 
+      TestRideModel.belongsTo(ConcessionModel, {
+        foreignKey: 'concessionId',
+        as: 'concession'
       });
-      ConcessionModel.hasMany(TestRideModel, { 
-        foreignKey: 'concessionId', 
-        as: 'testRides' 
+      ConcessionModel.hasMany(TestRideModel, {
+        foreignKey: 'concessionId',
+        as: 'testRides'
       });
 
       // Initialize CompanyMotorcycle and its associations
@@ -93,6 +94,7 @@ async function initializeDatabase() {
       MaintenanceModel.initialize(sequelize);
       InventoryPartModel.initialize(sequelize);
       DriverModel.initialize(sequelize);
+      PartOrderModel.initialize(sequelize);
 
       console.log("All models and associations initialized successfully");
     } catch (error) {
@@ -104,7 +106,7 @@ async function initializeDatabase() {
     console.log("Starting database synchronization...");
     await sequelize.sync({ force: true });
     console.log("✅ Models synchronized successfully.");
-    
+
     const tables = await sequelize.getQueryInterface().showAllTables();
     console.log("Available tables:", tables);
 

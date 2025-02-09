@@ -31,6 +31,9 @@ import companyMotorcycleRouter from "../../../interfaces/http/routes/companyMoto
 import TestRideModel from "../postgres/models/TestRideModel";
 import { testRideRoutes } from "../../../interfaces/http/routes/testRideRoutes";
 import { PostgreSQLTestRideRepository } from "../../repositories/PostgreSQLTestRideRepository";
+import PartOrderModel from "../postgres/models/PartOrderModel";
+import { partOrderRoutes } from "../../../interfaces/http/routes/partOrderRoutes";
+import { PostgreSQLPartOrderRepository } from "../../repositories/PostgreSQLPartOrderRepository";
 
 // Charger les variables d'environnement
 config();
@@ -45,6 +48,7 @@ const passwordHashingService = new Argon2PasswordHashingService();
 const userRepository = new PostgreSQLUserRepository(passwordHashingService);
 const inventoryPartRepository = new PostgreSQLInventoryPartRepository();
 const testRideRepository = new PostgreSQLTestRideRepository();
+const partOrderRepository = new PostgreSQLPartOrderRepository();
 
 // Middlewares de sécurité et configuration
 app.use(helmet());
@@ -70,6 +74,7 @@ app.use("/api/maintenances", maintenanceRoutes); // Route des maintenances
 app.use("/api/inventory-parts", inventoryPartRoutes); // Route des pièces d'inventaire
 app.use("/api/drivers", driverRoutes); // Route des conducteurs
 app.use("/api/test-rides", testRideRoutes(testRideRepository)); // Route des réservations d'essai
+app.use("/api/part-orders", partOrderRoutes(partOrderRepository)); // Route des commandes de pièces
 
 // Gestion des routes 404
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -114,7 +119,11 @@ async function initializeDatabase() {
     await TestRideModel.initialize(sequelize);
     await sequelize.sync({ force: false }); // Mise à jour incrémentale
 
-    // 8. Seed la base de données
+    // 8. Initialiser le modèle PartOrder
+    await PartOrderModel.initialize(sequelize);
+    await sequelize.sync({ force: false }); // Mise à jour incrémentale
+
+    // 9. Seed la base de données
     await seedDatabase(sequelize);
 
     console.log("✅ Base de données initialisée avec succès");

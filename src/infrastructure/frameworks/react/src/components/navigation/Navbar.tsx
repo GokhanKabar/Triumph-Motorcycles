@@ -33,15 +33,16 @@ const Navbar = () => {
   }
 
   const menuItems = [
-    { path: "/dashboard", label: "Tableau de bord", adminOnly: false },
-    { path: "/motorcycles", label: "Motos", adminOnly: false },
-    { path: "/maintenances", label: "Maintenances", adminOnly: true },
-    { path: "/users", label: "Utilisateurs", adminOnly: true },
-    { path: "/companies", label: "Entreprises", adminOnly: true },
-    { path: "/concessions", label: "Concessions", adminOnly: true },
-    { path: "/inventory-parts", label: "Stock Pièces", adminOnly: true },
-    { path: "/drivers", label: "Conducteurs", adminOnly: true },
-    { path: "/test-rides", label: "Essais", adminOnly: true },
+    { path: '/dashboard', label: 'Tableau de bord', adminOnly: false },
+    { path: '/motorcycles', label: 'Motos', adminOnly: false },
+    { path: '/maintenances', label: 'Maintenances', adminOnly: false },
+    { path: '/users', label: 'Utilisateurs', adminOnly: true },
+    { path: '/companies', label: 'Entreprises', adminOnly: true },
+    { path: '/concessions', label: 'Concessions', adminOnly: true },
+    { path: '/inventory-parts', label: 'Stock Pièces', adminOnly: true },
+    { path: '/part-orders', label: 'Commandes Pièces', adminOnly: true },
+    { path: '/drivers', label: 'Conducteurs', adminOnly: true },
+    { path: '/test-rides', label: 'Essais', adminOnly: false }
   ];
 
   const renderMenuLink = (
@@ -65,11 +66,10 @@ const Navbar = () => {
       <Link
         key={item.path}
         to={item.path}
-        className={`${baseClassName} ${
-          window.location.pathname === item.path
+        className={`${baseClassName} ${window.location.pathname === item.path
             ? activeClassName
             : inactiveClassName
-        }`}
+          }`}
       >
         {item.label}
       </Link>

@@ -9,6 +9,7 @@ import { InventoryPartSeed } from "../seeds/inventoryPartSeed";
 import { DriverSeed } from "../seeds/driverSeed";
 import { seedCompanyMotorcycles } from "../seeds/companyMotorcycleSeed";
 import { TestRideSeed } from '../seeds/testRideSeed';
+import { PartOrderSeed } from '../seeds/partOrderSeed';
 
 export async function seedDatabase(
   sequelize?: Sequelize,
@@ -64,6 +65,10 @@ export async function seedDatabase(
       // 9. Seed Test Rides
       console.log("🏁 Seeding test rides...");
       await TestRideSeed.seed(force);
+
+      // 9. Seed Part Order
+      console.log("🏁 Seeding part orders...");
+      await PartOrderSeed.seed(force);
 
       console.log("✅ Database seeded successfully.");
     } else {
