@@ -63,7 +63,7 @@ const createInventoryPartUseCase = new CreateInventoryPartUseCase(
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes); // Route standard
 app.use("/api/companies", companyRoutes);
-app.use("/api", companyMotorcycleRouter); // Routes pour l'association company-motorcycle
+app.use("/api/company-motorcycles", companyMotorcycleRouter); // Routes pour l'association company-motorcycle
 app.use("/api/concessions", concessionRoutes); // Route des concessions
 app.use("/api/motorcycles", motorcycleRoutes); // Route des motos
 app.use("/api/maintenances", maintenanceRoutes); // Route des maintenances

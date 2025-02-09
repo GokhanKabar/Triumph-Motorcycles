@@ -51,17 +51,17 @@ const companyMotorcycleController = new CompanyMotorcycleController(
 
 
 router.post(
-  "/companies/:companyId/motorcycles",
+  "/:companyId",
   companyMotorcycleController.assignMotorcycle.bind(companyMotorcycleController)
 );
 
 router.delete(
-  "/companies/:companyId/motorcycles/:motorcycleId",
+  "/:companyId/:motorcycleId",
   companyMotorcycleController.removeMotorcycle.bind(companyMotorcycleController)
 );
 
 router.get(
-  "/companies/:companyId/motorcycles",
+  "/:companyId",
   companyMotorcycleController.getCompanyMotorcycles.bind(
     companyMotorcycleController
   )

@@ -3,12 +3,12 @@ import {
   CreateConcessionDTO,
   ConcessionResponseDTO,
   UpdateConcessionDTO,
-  DeleteConcessionResponseDTO
+  DeleteConcessionResponseDTO,
 } from "@/application/dtos/ConcessionDTO";
-import { MotorcycleResponseDTO } from '@application/motorcycle/dtos/MotorcycleDTO';
-import { MotorcycleStatus } from '@domain/motorcycle/enums/MotorcycleStatus';
-import { MaintenanceResponseDTO } from '@application/maintenance/dtos/MaintenanceResponseDTO';
-import { MaintenanceStatus } from '@domain/maintenance/entities/Maintenance';
+import { MotorcycleResponseDTO } from "@application/motorcycle/dtos/MotorcycleDTO";
+import { MotorcycleStatus } from "@domain/motorcycle/enums/MotorcycleStatus";
+import { MaintenanceResponseDTO } from "@application/maintenance/dtos/MaintenanceResponseDTO";
+import { MaintenanceStatus } from "@domain/maintenance/entities/Maintenance";
 
 // Configuration de l'instance Axios
 export const api = axios.create({
@@ -68,16 +68,16 @@ api.interceptors.response.use(
 
 // Global error interceptor
 api.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  (error) => {
     return Promise.reject(error);
   }
 );
 
 // Global error interceptor
 api.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  (error) => {
     return Promise.reject(error);
   }
 );
@@ -97,11 +97,12 @@ export const authService = {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         // Erreur avec réponse du serveur
-        const message = error.response.data?.message || 'Erreur lors de la connexion';
+        const message =
+          error.response.data?.message || "Erreur lors de la connexion";
         throw new Error(message);
       } else {
         // Erreur sans réponse du serveur
-        throw new Error('Erreur de connexion au serveur');
+        throw new Error("Erreur de connexion au serveur");
       }
     }
   },
@@ -172,9 +173,12 @@ export const authService = {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // Erreur avec réponse du serveur
-        const errorMessage = error.response?.data?.message || 
-          error.response?.data?.errors?.map((err: any) => err.message).join(', ') || 
-          'Erreur lors de la création de l\'utilisateur admin';
+        const errorMessage =
+          error.response?.data?.message ||
+          error.response?.data?.errors
+            ?.map((err: any) => err.message)
+            .join(", ") ||
+          "Erreur lors de la création de l'utilisateur admin";
 
         throw new Error(errorMessage);
       } else {
@@ -201,7 +205,7 @@ export const userService = {
       const uuidRegex =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(id)) {
-        throw new Error('ID utilisateur invalide');
+        throw new Error("ID utilisateur invalide");
       }
 
       const response = await api.get(`/users/${id}`);
@@ -216,11 +220,13 @@ export const userService = {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         // Erreur avec réponse du serveur
-        const message = error.response.data?.message || 'Erreur lors de la récupération de l\'utilisateur';
+        const message =
+          error.response.data?.message ||
+          "Erreur lors de la récupération de l'utilisateur";
         throw new Error(message);
       } else {
         // Erreur sans réponse du serveur
-        throw new Error('Erreur de connexion au serveur');
+        throw new Error("Erreur de connexion au serveur");
       }
     }
   },
@@ -303,9 +309,12 @@ export const userService = {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // Erreur avec réponse du serveur
-        const errorMessage = error.response?.data?.message || 
-          error.response?.data?.errors?.map((err: any) => err.message).join(', ') || 
-          'Erreur lors de la création de l\'utilisateur admin';
+        const errorMessage =
+          error.response?.data?.message ||
+          error.response?.data?.errors
+            ?.map((err: any) => err.message)
+            .join(", ") ||
+          "Erreur lors de la création de l'utilisateur admin";
 
         throw new Error(errorMessage);
       } else {
@@ -317,6 +326,29 @@ export const userService = {
 
 // Service pour les motos
 export const motorcycleService = {
+  getUnassignedMotorcycles: async (): Promise<MotorcycleResponseDTO[]> => {
+    try {
+      const response = await api.get("/motorcycles/unassigned");
+      return response.data.map((moto: any) => ({
+        id: moto.id,
+        brand: moto.brand || "",
+        model: moto.model || "",
+        year: moto.year ? parseInt(moto.year) : new Date().getFullYear(),
+        vin: moto.vin || "",
+        mileage: moto.mileage ? parseInt(moto.mileage) : 0,
+        status: moto.status || MotorcycleStatus.AVAILABLE,
+        concessionId: moto.concessionId || "",
+        createdAt: new Date(moto.createdAt),
+        updatedAt: new Date(moto.updatedAt),
+      }));
+    } catch (error) {
+      console.error(
+        "Erreur lors de la récupération des motos non assignées:",
+        error
+      );
+      throw error;
+    }
+  },
   getAllMotorcycles: async (
     concessionId?: string
   ): Promise<MotorcycleResponseDTO[]> => {
@@ -334,9 +366,7 @@ export const motorcycleService = {
           const year = moto.year
             ? parseInt(moto.year)
             : new Date().getFullYear();
-          const mileage = moto.mileage
-            ? parseInt(moto.mileage)
-            : 0;
+          const mileage = moto.mileage ? parseInt(moto.mileage) : 0;
 
           return {
             id: moto.id,
@@ -411,7 +441,7 @@ export const motorcycleService = {
 export const maintenanceService = {
   getAllMaintenances: async (): Promise<MaintenanceResponseDTO[]> => {
     try {
-      const response = await api.get('/maintenances/all');
+      const response = await api.get("/maintenances/all");
       return response.data.map((maintenance: MaintenanceResponseDTO) => ({
         ...maintenance,
         motorcycle: maintenance.motorcycle
@@ -594,6 +624,10 @@ export const companyService = {
       const response = await api.delete(`/companies/${id}`);
       return response.data;
     } catch (error) {
+      console.error(
+        `Erreur lors de la suppression de l'entreprise ${id}:`,
+        error
+      );
       throw error;
     }
   },
@@ -606,7 +640,7 @@ export const companyMotorcycleService = {
     motorcycleId: string
   ) => {
     try {
-      const response = await api.post("/company-motorcycles", {
+      const response = await api.post(`/company-motorcycles/${companyId}`, {
         companyId,
         motorcycleId,
       });
@@ -806,7 +840,7 @@ export const concessionService = {
 
       // Supprimer explicitement l'ID si undefined
       const { id, ...dataToSend } = concessionData;
-      const response = await api.post('/concessions', dataToSend, {
+      const response = await api.post("/concessions", dataToSend, {
         // Configuration Axios pour obtenir plus de détails sur l'erreur
         validateStatus: function (status) {
           return status >= 200 && status < 500; // Accepter les statuts 2xx et 4xx
@@ -831,7 +865,9 @@ export const concessionService = {
       // Gestion des différents types d'erreurs
       if (error.response?.data?.error) {
         const errorData = error.response.data.error;
-        throw new Error(errorData.message || 'Erreur lors de la création de la concession');
+        throw new Error(
+          errorData.message || "Erreur lors de la création de la concession"
+        );
       }
 
       // Erreur par défaut
@@ -860,10 +896,11 @@ export const concessionService = {
       return response.data;
     } catch (error: any) {
       // Récupérer le message d'erreur du backend si disponible
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          error.message || 
-                          'Une erreur est survenue lors de la mise à jour';
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Une erreur est survenue lors de la mise à jour";
 
       throw new Error(errorMessage);
     }
@@ -879,27 +916,34 @@ export const concessionService = {
         message: "Concession supprimée avec succès",
       };
     } catch (error: any) {
+      console.error(
+        "Erreur de suppression de concession:",
+        error.response?.data,
+        error
+      );
+
       if (error.response?.data?.error) {
         return {
           success: false,
-          message: error.response.data.error.message || 
-                    (error.response.data.error.code === 'CONCESSION_HAS_MOTORCYCLES' 
-                      ? `Impossible de supprimer la concession car elle possède des motos.` 
-                      : 'Erreur lors de la suppression de la concession'),
+          message:
+            error.response.data.error.message ||
+            (error.response.data.error.code === "CONCESSION_HAS_MOTORCYCLES"
+              ? `Impossible de supprimer la concession car elle possède des motos.`
+              : "Erreur lors de la suppression de la concession"),
           error: {
-            code: error.response.data.error.code,
-            details: error.response.data.error.details,
+            code: "NOT_FOUND",
+            details: error.message,
           },
         };
       }
 
-      // Erreur par défaut si la structure n'est pas celle attendue
+      // Erreur par défaut
       return {
         success: false,
-        message: "Impossible de supprimer la concession",
+        message: error.response.data.message,
         error: {
           code: "INTERNAL_SERVER_ERROR",
-          details: error.message,
+          details: error.response.data.message,
         },
       };
     }

@@ -20,10 +20,9 @@ const useCompanyListHandlers = (
     } catch (error) {
       setState((prevState) => ({
         ...prevState,
-        error:
-          error instanceof Error
-            ? error
-            : new Error("Failed to delete company"),
+        error: error instanceof Error
+          ? error
+          : new Error("Erreur lors de la suppression de l'entreprise")
       }));
     }
   };

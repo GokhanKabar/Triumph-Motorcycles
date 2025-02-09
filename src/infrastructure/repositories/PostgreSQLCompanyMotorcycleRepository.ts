@@ -9,7 +9,7 @@ export class PostgreSQLCompanyMotorcycleRepository
 {
   async save(companyMotorcycle: CompanyMotorcycle): Promise<void> {
     try {
-      const result = await CompanyMotorcycleModel.upsert({
+      const result = await CompanyMotorcycleModel.create({
         id: companyMotorcycle.id,
         companyId: companyMotorcycle.companyId,
         motorcycleId: companyMotorcycle.motorcycleId,

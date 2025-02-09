@@ -60,8 +60,17 @@ export async function seedCompanyMotorcycles(
 
     // Créer les associations dans la base de données
     await CompanyMotorcycleModel.bulkCreate(associations);
+
+    // Mettre à jour le statut des motos assignées
+    for (const association of associations) {
+      await MotorcycleModel.update(
+        { status: "RESERVED" },
+        { where: { id: association.motorcycleId } }
+      );
+    }
+
     console.log(
-      `✅ Created ${associations.length} company-motorcycle associations`
+      `✅ Created ${associations.length} company-motorcycle associations and updated motorcycle statuses`
     );
   } catch (error) {
     console.error("❌ Error seeding company motorcycles:", error);

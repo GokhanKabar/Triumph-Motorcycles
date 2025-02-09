@@ -5,6 +5,7 @@ import {
   CreateCompanyDTO,
   UpdateCompanyDTO,
 } from "../../../application/dtos/CompanyDTO";
+import CompanyMotorcycleModel from "../../../infrastructure/frameworks/postgres/models/CompanyMotorcycleModel";
 
 export class CompanyController {
   private companyRepository: PostgreSQLCompanyRepository;

@@ -21,9 +21,15 @@ const passwordHashingService = new Argon2PasswordHashingService();
 const userRepository = new PostgreSQLUserRepository(passwordHashingService);
 const concessionRepository = new PostgreSQLConcessionRepository();
 const getUserUseCase = new GetUserUseCase(userRepository);
-const updateConcessionUseCase = new UpdateConcessionUseCase(concessionRepository);
-const deleteConcessionUseCase = new DeleteConcessionUseCase(concessionRepository);
-const createConcessionUseCase = new CreateConcessionUseCase(concessionRepository);
+const updateConcessionUseCase = new UpdateConcessionUseCase(
+  concessionRepository
+);
+const deleteConcessionUseCase = new DeleteConcessionUseCase(
+  concessionRepository
+);
+const createConcessionUseCase = new CreateConcessionUseCase(
+  concessionRepository
+);
 
 // Route publique pour récupérer toutes les concessions
 router.get("/", concessionController.getAllConcessions);
@@ -38,39 +44,39 @@ router.post("/", async (req: Request, res: Response) => {
 
     // Validation des données
     if (!name?.trim()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Le nom de la concession est requis",
         error: {
-          code: 'VALIDATION_ERROR',
-          details: 'Le nom ne peut pas être vide'
-        }
+          code: "VALIDATION_ERROR",
+          details: "Le nom ne peut pas être vide",
+        },
       });
     }
 
     if (!address?.trim()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "L'adresse de la concession est requise",
         error: {
-          code: 'VALIDATION_ERROR',
-          details: 'L\'adresse ne peut pas être vide'
-        }
+          code: "VALIDATION_ERROR",
+          details: "L'adresse ne peut pas être vide",
+        },
       });
     }
 
     if (!userId) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "L'ID utilisateur est requis",
         error: {
-          code: 'VALIDATION_ERROR',
-          details: 'Un ID utilisateur valide est nécessaire'
-        }
+          code: "VALIDATION_ERROR",
+          details: "Un ID utilisateur valide est nécessaire",
+        },
       });
     }
 
     // Utiliser le cas d'utilisation pour créer la concession
     const result = await createConcessionUseCase.execute(
-      name.trim(), 
-      address.trim(), 
+      name.trim(),
+      address.trim(),
       userId
     );
 
@@ -79,9 +85,9 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(400).json({
         message: "Erreur lors de la création de la concession",
         error: {
-          code: 'CREATION_ERROR',
-          details: result.message
-        }
+          code: "CREATION_ERROR",
+          details: result.message,
+        },
       });
     }
 
@@ -94,16 +100,16 @@ router.post("/", async (req: Request, res: Response) => {
         address: result.address,
         userId: result.userId,
         createdAt: result.createdAt,
-        updatedAt: result.updatedAt
-      }
+        updatedAt: result.updatedAt,
+      },
     });
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Erreur interne lors de la création de la concession",
       error: {
-        code: 'INTERNAL_SERVER_ERROR',
-        details: error instanceof Error ? error.message : "Erreur inconnue"
-      }
+        code: "INTERNAL_SERVER_ERROR",
+        details: error instanceof Error ? error.message : "Erreur inconnue",
+      },
     });
   }
 });
@@ -116,8 +122,8 @@ router.put("/:id", async (req: Request, res: Response) => {
 
     // Validation des données
     if (!name?.trim() || !address?.trim()) {
-      return res.status(400).json({ 
-        message: "Le nom et l'adresse sont requis pour la mise à jour" 
+      return res.status(400).json({
+        message: "Le nom et l'adresse sont requis pour la mise à jour",
       });
     }
 
@@ -141,9 +147,9 @@ router.put("/:id", async (req: Request, res: Response) => {
 
     return res.json(result);
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Erreur lors de la mise à jour de la concession",
-      error: error instanceof Error ? error.message : "Erreur inconnue"
+      error: error instanceof Error ? error.message : "Erreur inconnue",
     });
   }
 });
@@ -160,9 +166,9 @@ router.delete("/:id", async (req: Request, res: Response) => {
         success: false,
         message: "Concession non trouvée",
         error: {
-          code: 'CONCESSION_NOT_FOUND',
-          details: `La concession avec l'ID ${id} n'existe pas`
-        }
+          code: "CONCESSION_NOT_FOUND",
+          details: `La concession avec l'ID ${id} n'existe pas`,
+        },
       });
     }
 
@@ -172,11 +178,13 @@ router.delete("/:id", async (req: Request, res: Response) => {
     if (result instanceof ConcessionHasMotorcyclesError) {
       return res.status(400).json({
         success: false,
-        message: "Impossible de supprimer la concession car elle possède encore des motos",
+        message:
+          "Impossible de supprimer la concession car elle possède encore des motos",
         error: {
-          code: 'CONCESSION_HAS_MOTORCYCLES',
-          details: "Veuillez d'abord supprimer ou réaffecter toutes les motos de cette concession"
-        }
+          code: "CONCESSION_HAS_MOTORCYCLES",
+          details:
+            "Veuillez d'abord supprimer ou réaffecter toutes les motos de cette concession",
+        },
       });
     }
 
@@ -185,24 +193,24 @@ router.delete("/:id", async (req: Request, res: Response) => {
         success: false,
         message: result.message,
         error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          details: result.message
-        }
+          code: "INTERNAL_SERVER_ERROR",
+          details: result.message,
+        },
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: "Concession supprimée avec succès"
+      message: "Concession supprimée avec succès",
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Erreur lors de la suppression de la concession",
       error: {
-        code: 'INTERNAL_SERVER_ERROR',
-        details: error instanceof Error ? error.message : "Erreur inconnue"
-      }
+        code: "INTERNAL_SERVER_ERROR",
+        details: error instanceof Error ? error.message : "Erreur inconnue",
+      },
     });
   }
 });

@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import MotorcycleList from "../components/motorcycles/MotorcycleList";
 import {
-  CreateMotorcycleDTO,
-  MotorcycleResponseDTO,
-  UpdateMotorcycleDTO,
-  MotorcycleFormDTO,
-} from "@/application/dtos/MotorcycleDTO";
+  Motorcycle,
+  CreateMotorcycleForm,
+  UpdateMotorcycleForm,
+} from "../types/Motorcycle";
 import { motorcycleService } from "../services/api";
 import MotorcycleForm from "../components/motorcycles/MotorcycleForm";
 import { toast } from "react-toastify";
@@ -13,7 +12,7 @@ import { toast } from "react-toastify";
 export default function Motorcycles() {
   const [openForm, setOpenForm] = useState(false);
   const [selectedMotorcycle, setSelectedMotorcycle] = useState<
-    MotorcycleResponseDTO | undefined
+    Motorcycle | undefined
   >();
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -22,7 +21,7 @@ export default function Motorcycles() {
     setOpenForm(true);
   };
 
-  const handleEditMotorcycle = (motorcycle: MotorcycleResponseDTO) => {
+  const handleEditMotorcycle = (motorcycle: Motorcycle) => {
     setSelectedMotorcycle(motorcycle);
     setOpenForm(true);
   };
@@ -41,15 +40,16 @@ export default function Motorcycles() {
     }
   };
 
-  const handleSubmit = async (data: MotorcycleFormDTO) => {
+  const handleSubmit = async (data: CreateMotorcycleForm) => {
     try {
+      console.log("data", data);
       if (selectedMotorcycle) {
-        const updateData: UpdateMotorcycleDTO = {
+        const updateData: UpdateMotorcycleForm = {
           brand: data.brand,
           model: data.model,
           vin: data.vin,
           concessionId: data.concessionId,
-          currentMileage: data.currentMileage,
+          mileage: data.mileage,
         };
         await motorcycleService.updateMotorcycle(
           selectedMotorcycle.id,
@@ -62,7 +62,7 @@ export default function Motorcycles() {
           model: data.model,
           vin: data.vin,
           concessionId: data.concessionId,
-          currentMileage: data.currentMileage,
+          mileage: data.mileage,
         };
         await motorcycleService.createMotorcycle(createData);
         toast.success("Moto créée avec succès");

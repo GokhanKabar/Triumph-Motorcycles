@@ -65,20 +65,10 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
 
   const fetchAvailableMotorcycles = useCallback(async () => {
     try {
-      // Récupérer toutes les motos
-      const allMotorcycles = await motorcycleService.getAllMotorcycles();
-      
-      // Créer un ensemble des IDs des motos déjà assignées
-      const assignedMotorcycleIds = new Set(
-        motorcycles.map(m => m.motorcycleId)
-      );
-
-      // Filtrer les motos qui ne sont pas déjà assignées
-      const availableMotoList = allMotorcycles.filter(
-        motorcycle => !assignedMotorcycleIds.has(motorcycle.id)
-      );
-
-      setAvailableMotorcycles(availableMotoList);
+      // Récupérer uniquement les motos non assignées
+      const unassignedMotos =
+        await motorcycleService.getUnassignedMotorcycles();
+      setAvailableMotorcycles(unassignedMotos);
     } catch (error) {
       setAvailableMotorcycles([]);
       if (isModalVisible) {
@@ -108,7 +98,8 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
       fetchMotorcycles();
     } catch (error) {
       if (error.response?.status === 404) {
-        const errorMessage = error.response?.data?.error || "La moto ou l'entreprise n'existe pas";
+        const errorMessage =
+          error.response?.data?.error || "La moto ou l'entreprise n'existe pas";
         toast.error(errorMessage);
       } else {
         toast.error("Une erreur est survenue lors de l'assignation de la moto");
@@ -118,7 +109,10 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
 
   const handleRemoveMotorcycle = async (motorcycleId: string) => {
     try {
-      await companyMotorcycleService.removeMotorcycle(companyId, motorcycleId);
+      await companyMotorcycleService.removeMotorcycleFromCompany(
+        companyId,
+        motorcycleId
+      );
       toast.success("Moto retirée avec succès");
       fetchMotorcycles();
     } catch (error) {
@@ -206,13 +200,13 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
                   className="transition-colors duration-150 hover:bg-gray-50"
                 >
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
-                    {motorcycle.motorcycle?.brand || 'N/A'}
+                    {motorcycle.motorcycle?.brand || "N/A"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
-                    {motorcycle.motorcycle?.model || 'N/A'}
+                    {motorcycle.motorcycle?.model || "N/A"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
-                    {motorcycle.motorcycle?.year || 'N/A'}
+                    {motorcycle.motorcycle?.year || "N/A"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
                     {new Date(motorcycle.createdAt).toLocaleDateString()}

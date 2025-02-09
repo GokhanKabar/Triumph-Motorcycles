@@ -86,6 +86,22 @@ class CompanyMotorcycleModel
             name: "unique_company_motorcycle",
           },
         ],
+        hooks: {
+          afterCreate: async (association: CompanyMotorcycleModel) => {
+            // Mettre à jour le statut de la moto à RESERVED quand elle est assignée
+            await MotorcycleModel.update(
+              { status: "RESERVED" },
+              { where: { id: association.motorcycleId } }
+            );
+          },
+          afterDestroy: async (association: CompanyMotorcycleModel) => {
+            // Remettre le statut de la moto à AVAILABLE quand elle est désassignée
+            await MotorcycleModel.update(
+              { status: "AVAILABLE" },
+              { where: { id: association.motorcycleId } }
+            );
+          },
+        },
       }
     );
 
@@ -95,23 +111,25 @@ class CompanyMotorcycleModel
       as: "company",
     });
 
+    CompanyModel.hasMany(CompanyMotorcycleModel, {
+      foreignKey: "companyId",
+      as: "companyMotorcycles",
+    });
+
     CompanyMotorcycleModel.belongsTo(MotorcycleModel, {
       foreignKey: "motorcycleId",
       as: "motorcycle",
     });
 
+    MotorcycleModel.hasMany(CompanyMotorcycleModel, {
+      foreignKey: "motorcycleId",
+      as: "companyMotorcycles",
+    });
+
     this.isInitialized = true;
   }
 
-  public static associate(): void {
-    if (!this.sequelizeInstance) {
-      throw new Error(
-        "Cannot associate CompanyMotorcycleModel: sequelize instance is required"
-      );
-    }
-
-    // Les associations seront définies lors de l'initialisation
-  }
+  public static associate(): void {}
 }
 
 export default CompanyMotorcycleModel;
