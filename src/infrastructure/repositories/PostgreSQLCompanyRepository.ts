@@ -99,35 +99,25 @@ export class PostgreSQLCompanyRepository implements ICompanyRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      console.log('DEBUG: Début de la suppression de l\'entreprise:', id);
-      
       // Vérifier d'abord si l'entreprise existe
       const company = await this.findById(id);
       if (!company) {
-        console.log('DEBUG: Entreprise non trouvée');
         throw new CompanyNotFoundError();
       }
 
       // Vérifier si l'entreprise a des motos associées
-      console.log('DEBUG: Vérification des motos associées');
       const motorcycles = await this.getCompanyMotorcycles(id);
-      console.log('DEBUG: Nombre de motos trouvées:', motorcycles.length);
-      
       if (motorcycles.length > 0) {
-        console.log('DEBUG: L\'entreprise a des motos associées');
         const error = new Error('COMPANY_HAS_MOTORCYCLES');
         error.name = 'CompanyHasMotorcyclesError';
         throw error;
       }
 
-      console.log('DEBUG: Tentative de suppression de l\'entreprise');
       await CompanyModel.destroy({
         where: { id },
       });
-      console.log('DEBUG: Entreprise supprimée avec succès');
       
     } catch (error: any) {
-      console.error('DEBUG: Erreur lors de la suppression:', error);
       
       if (error.name === 'CompanyNotFoundError') {
         throw error;
@@ -142,7 +132,6 @@ export class PostgreSQLCompanyRepository implements ICompanyRepository {
       }
       
       // Pour toute autre erreur
-      console.error('DEBUG: Erreur inattendue:', error);
       throw new Error('Une erreur est survenue lors de la suppression de l\'entreprise');
     }
   }
@@ -153,11 +142,8 @@ export class PostgreSQLCompanyRepository implements ICompanyRepository {
       const motorcycles = await CompanyMotorcycleModel.findAll({
         where: { companyId }
       });
-      
-      console.log('DEBUG: Motos trouvées pour l\'entreprise:', motorcycles);
       return motorcycles;
     } catch (error) {
-      console.error('DEBUG: Erreur lors de la récupération des motos:', error);
       return [];
     }
   }

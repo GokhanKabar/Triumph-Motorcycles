@@ -38,7 +38,6 @@ const useMotorcycleListHandlers = (
         isLoading: false,
       }));
     } catch (error: any) {
-      console.error('Erreur lors de la suppression:', error);
 
       // Message d'erreur personnalisé en fonction du type d'erreur
       let errorMessage = 'Une erreur est survenue lors de la suppression';
@@ -82,9 +81,6 @@ export default function MotorcycleList({
         acc[concession.id] = concession.name;
         return acc;
       }, {} as Record<string, string>);
-
-      console.log('Concession Map:', concessionMap);
-
       // Puis récupérer les motos
       const motorcycles = await motorcycleService.getAllMotorcycles();
 
@@ -95,7 +91,6 @@ export default function MotorcycleList({
         isLoading: false,
       }));
     } catch (error) {
-      console.error('Erreur lors de la récupération des données:', error);
       setState((prev) => ({
         ...prev,
         error:
@@ -115,14 +110,14 @@ export default function MotorcycleList({
 
   if (state.isLoading) {
     return (
-      <div className="flex justify-center items-center h-48">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="flex items-center justify-center h-48">
+        <div className="w-12 h-12 border-b-2 border-gray-900 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (state.error) {
-    return <div className="text-red-600 p-4">{state.error}</div>;
+    return <div className="p-4 text-red-600">{state.error}</div>;
   }
 
   return (
@@ -132,49 +127,49 @@ export default function MotorcycleList({
           <tr>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
             >
               Marque
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
             >
               Modèle
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
             >
               Année
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
             >
               VIN
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
             >
               Kilométrage
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
             >
               Statut
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
             >
               Concession
             </th>
             <th
               scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
             >
               Actions
             </th>
@@ -206,16 +201,14 @@ export default function MotorcycleList({
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm text-gray-500">
                   {(() => {
-                    console.log('Motorcycle Concession ID:', motorcycle.concessionId);
-                    console.log('Concession Name:', state.concessions[motorcycle.concessionId]);
                     return state.concessions[motorcycle.concessionId] || "Concession inconnue";
                   })()}
                 </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                 <button
                   onClick={() => onEdit(motorcycle)}
-                  className="text-indigo-600 hover:text-indigo-900 mr-4 focus:outline-none"
+                  className="mr-4 text-indigo-600 hover:text-indigo-900 focus:outline-none"
                 >
                   Modifier
                 </button>

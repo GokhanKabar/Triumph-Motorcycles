@@ -60,16 +60,13 @@ export default function UserList({
   const fetchUsers = useCallback(async () => {
     setState(prevState => ({ ...prevState, isLoading: true }));
     try {
-      console.log('DEBUG: Fetching users with refreshKey:', refreshKey);
       const users = await userService.getAllUsers();
-      console.log('DEBUG: Users fetched:', users);
       setState({
         users,
         isLoading: false,
         error: null
       });
     } catch (error) {
-      console.error('DEBUG: Error fetching users:', error);
       setState({
         users: [],
         isLoading: false,
@@ -85,7 +82,6 @@ export default function UserList({
   );
 
   useEffect(() => {
-    console.log('DEBUG: useEffect triggered with refreshKey:', refreshKey);
     fetchUsers();
   }, [fetchUsers, refreshKey]);
 
@@ -102,7 +98,6 @@ export default function UserList({
       onEdit(user);
       fetchUsers();
     } catch (error) {
-      console.error('Error editing user:', error);
       setState(prevState => ({
         ...prevState,
         error: error instanceof Error ? error : new Error('Failed to edit user')
@@ -112,15 +107,15 @@ export default function UserList({
 
   if (state.isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-b-2 border-gray-900 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (state.error) {
     return (
-      <div className="text-center py-6 text-red-500">
+      <div className="py-6 text-center text-red-500">
         Error: {state.error.message}
       </div>
     );
@@ -129,27 +124,27 @@ export default function UserList({
   return (
     <div className="w-full overflow-hidden bg-white rounded-lg shadow">
       {state.users.length === 0 ? (
-        <div className="text-center py-6 text-gray-500">
+        <div className="py-6 text-center text-gray-500">
           Aucun utilisateur trouvé
         </div>
       ) : (
         <div className="w-full overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 sticky top-0">
+            <thead className="sticky top-0 bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rôle</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Nom</th>
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Email</th>
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Rôle</th>
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {state.users.map((user) => (
                 <tr key={user.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
                     {user.firstName} {user.lastName}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                     {user.email}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -157,10 +152,10 @@ export default function UserList({
                       {user.role}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                     <button 
                       onClick={() => handleEditUser(user)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      className="mr-4 text-indigo-600 hover:text-indigo-900"
                     >
                       Modifier
                     </button>

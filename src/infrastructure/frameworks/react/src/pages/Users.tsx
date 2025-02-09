@@ -140,16 +140,8 @@ export default function Users() {
       }
 
     } catch (error) {
-      console.error('Erreur lors de la soumission du formulaire:', error);
-      
       // Log détaillé de l'erreur Axios
       if (axios.isAxiosError(error)) {
-        console.error('Détails de l\'erreur Axios:', {
-          response: error.response?.data,
-          status: error.response?.status,
-          headers: error.response?.headers
-        });
-
         // Message d'erreur personnalisé
         const errorMessage = error.response?.data?.message || 
           error.response?.data?.errors?.map((err: any) => err.message).join(', ') || 
@@ -213,8 +205,8 @@ export default function Users() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-100">
+      <div className="w-full max-w-5xl overflow-hidden bg-white rounded-lg shadow-lg">
         <header className="px-6 py-4 bg-blue-600">
           <h2 className="text-3xl font-semibold text-white">Gestion des utilisateurs</h2>
         </header>
@@ -222,11 +214,11 @@ export default function Users() {
           <div className="flex justify-end mb-6">
             <button
               onClick={handleCreateUser}
-              className="flex items-center px-5 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors shadow-md"
+              className="flex items-center px-5 py-2 text-white transition-colors bg-green-500 rounded-md shadow-md hover:bg-green-600"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-2"
+                className="w-5 h-5 mr-2"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -276,7 +268,7 @@ export default function Users() {
         )}
         {tempPassword && (
           <div
-            className="fixed bottom-6 right-6 p-4 rounded-lg shadow-lg transition-transform transform bg-blue-500 text-white"
+            className="fixed p-4 text-white transition-transform transform bg-blue-500 rounded-lg shadow-lg bottom-6 right-6"
             role="alert"
           >
             <div className="flex items-center">

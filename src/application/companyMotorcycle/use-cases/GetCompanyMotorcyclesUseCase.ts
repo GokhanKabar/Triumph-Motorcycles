@@ -56,9 +56,7 @@ export class GetCompanyMotorcyclesUseCase {
         updatedAt: cm.updatedAt,
       }));
     } catch (error) {
-      console.error("Erreur dans GetCompanyMotorcyclesUseCase:", error);
-      // En cas d'erreur, retourner un tableau vide au lieu de propager l'erreur
-      return [];
+      throw error;
     }
   }
 }

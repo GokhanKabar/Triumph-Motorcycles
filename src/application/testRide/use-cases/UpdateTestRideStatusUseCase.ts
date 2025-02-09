@@ -11,17 +11,13 @@ export class UpdateTestRideStatusUseCase {
   constructor(private readonly testRideRepository: ITestRideRepository) {}
 
   async execute(updateData: UpdateTestRideStatusDTO): Promise<TestRide> {
-    console.log('Données de mise à jour reçues:', updateData);
 
     // Vérifier si le test ride existe
     const existingTestRide = await this.testRideRepository.findById(updateData.id);
     
     if (!existingTestRide) {
-      console.error('Test ride non trouvé:', updateData.id);
       throw new TestRideNotFoundError(updateData.id);
     }
-
-    console.log('Test ride existant:', existingTestRide);
 
     // Créer une nouvelle instance de TestRide avec le statut mis à jour
     const updatedTestRideOrError = await TestRide.from(
@@ -48,19 +44,14 @@ export class UpdateTestRideStatusUseCase {
 
     // Gérer les erreurs potentielles de validation
     if (updatedTestRideOrError instanceof Error) {
-      console.error('Erreur de validation:', updatedTestRideOrError);
       throw updatedTestRideOrError;
     }
-
-    console.log('Test ride mis à jour:', updatedTestRideOrError);
 
     // Mettre à jour le test ride
     try {
       const savedTestRide = await this.testRideRepository.update(updatedTestRideOrError);
-      console.log('Test ride sauvegardé:', savedTestRide);
       return savedTestRide;
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
       throw error;
     }
   }

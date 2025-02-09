@@ -50,10 +50,6 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
       );
       setMotorcycles(motorcycles);
     } catch (error) {
-      console.error(
-        "Erreur lors du chargement des motos de l'entreprise:",
-        error
-      );
       // Si c'est une erreur qui n'est pas liée à l'absence de motos
       if (
         error.response?.status !== 404 &&
@@ -84,7 +80,6 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
 
       setAvailableMotorcycles(availableMotoList);
     } catch (error) {
-      console.error("Erreur lors du chargement des motos disponibles:", error);
       setAvailableMotorcycles([]);
       if (isModalVisible) {
         toast.error("Erreur lors du chargement des motos disponibles");
@@ -112,7 +107,6 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
       setSelectedMotorcycleId("");
       fetchMotorcycles();
     } catch (error) {
-      console.error("Erreur lors de l'assignation de la moto:", error);
       if (error.response?.status === 404) {
         const errorMessage = error.response?.data?.error || "La moto ou l'entreprise n'existe pas";
         toast.error(errorMessage);
@@ -138,16 +132,16 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-lg space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-6 space-y-6 bg-white rounded-lg shadow-lg">
+      <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-800">Gestion des Motos</h2>
         <button
-          className="px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 flex items-center gap-2 shadow-sm"
+          className="flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           onClick={showModal}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
+            className="w-5 h-5"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -161,23 +155,23 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 shadow">
+      <div className="overflow-hidden border border-gray-200 rounded-lg shadow">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wider">
+              <th className="px-6 py-4 text-sm font-semibold tracking-wider text-left text-gray-900 uppercase">
                 Marque
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wider">
+              <th className="px-6 py-4 text-sm font-semibold tracking-wider text-left text-gray-900 uppercase">
                 Modèle
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wider">
+              <th className="px-6 py-4 text-sm font-semibold tracking-wider text-left text-gray-900 uppercase">
                 Année
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wider">
+              <th className="px-6 py-4 text-sm font-semibold tracking-wider text-left text-gray-900 uppercase">
                 Date d'ajout
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wider">
+              <th className="px-6 py-4 text-sm font-semibold tracking-wider text-left text-gray-900 uppercase">
                 Actions
               </th>
             </tr>
@@ -187,20 +181,20 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
               <tr>
                 <td colSpan={3} className="px-6 py-8 text-center">
                   <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div className="w-8 h-8 border-b-2 border-blue-600 rounded-full animate-spin"></div>
                   </div>
                 </td>
               </tr>
             ) : error ? (
               <tr>
                 <td colSpan={3} className="px-6 py-8 text-center">
-                  <div className="text-red-500 text-sm">{error}</div>
+                  <div className="text-sm text-red-500">{error}</div>
                 </td>
               </tr>
             ) : motorcycles.length === 0 ? (
               <tr>
                 <td colSpan={3} className="px-6 py-8 text-center">
-                  <div className="text-gray-500 text-sm">
+                  <div className="text-sm text-gray-500">
                     Aucune moto assignée
                   </div>
                 </td>
@@ -209,30 +203,30 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
               motorcycles.map((motorcycle) => (
                 <tr
                   key={motorcycle.id}
-                  className="hover:bg-gray-50 transition-colors duration-150"
+                  className="transition-colors duration-150 hover:bg-gray-50"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
                     {motorcycle.motorcycle?.brand || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
                     {motorcycle.motorcycle?.model || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
                     {motorcycle.motorcycle?.year || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
                     {new Date(motorcycle.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <td className="px-6 py-4 text-sm whitespace-nowrap">
                     <button
                       onClick={() =>
                         handleRemoveMotorcycle(motorcycle.motorcycleId)
                       }
-                      className="text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-2 font-medium"
+                      className="flex items-center gap-2 px-3 py-2 font-medium text-red-600 transition-colors duration-150 rounded-md hover:text-red-800 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
+                        className="w-5 h-5"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >
@@ -253,18 +247,18 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
       </div>
 
       {isModalVisible && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full shadow-xl">
-            <div className="flex justify-between items-center mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="w-full max-w-md p-8 bg-white shadow-xl rounded-xl">
+            <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
                 Ajouter une moto
               </h3>
               <button
                 onClick={() => setIsModalVisible(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors duration-150"
+                className="text-gray-400 transition-colors duration-150 hover:text-gray-600"
               >
                 <svg
-                  className="h-6 w-6"
+                  className="w-6 h-6"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -280,7 +274,7 @@ export const CompanyMotorcycleList: React.FC<CompanyMotorcycleListProps> = ({
             </div>
 
             <select
-              className="w-full p-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-6 text-gray-700 bg-white shadow-sm"
+              className="w-full p-3 mb-6 text-base text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               onChange={(e) => setSelectedMotorcycleId(e.target.value)}
               value={selectedMotorcycleId}
             >

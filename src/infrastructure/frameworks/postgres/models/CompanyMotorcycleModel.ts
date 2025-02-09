@@ -30,20 +30,16 @@ class CompanyMotorcycleModel
   }
 
   public static initialize(sequelize: Sequelize): void {
-    console.log("Starting CompanyMotorcycleModel initialization...");
     if (this.isInitialized) {
-      console.log("CompanyMotorcycleModel already initialized");
       return;
     }
 
     if (!sequelize) {
-      console.error("Sequelize instance is null or undefined");
       throw new Error(
         "Cannot initialize CompanyMotorcycleModel: sequelize instance is required"
       );
     }
 
-    console.log("Initializing CompanyMotorcycleModel...");
     this.sequelizeInstance = sequelize;
     CompanyMotorcycleModel.init(
       {
@@ -104,7 +100,6 @@ class CompanyMotorcycleModel
       as: "motorcycle",
     });
 
-    console.log("CompanyMotorcycleModel initialized successfully");
     this.isInitialized = true;
   }
 

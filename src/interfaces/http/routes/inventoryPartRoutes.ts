@@ -45,32 +45,17 @@ router.use(authMiddleware.authenticate.bind(authMiddleware));
 router.use((req: Request, res: Response, next: NextFunction) => {
   // Vérification explicite de l'utilisateur et de son rôle
   if (!req.user) {
-    console.warn(`Utilisateur non authentifié`, {
-      method: req.method,
-      path: req.path
-    });
     return res.status(401).json({ 
       message: 'Authentification requise.'
     });
   }
 
   if (req.user.role !== UserRole.ADMIN) {
-    console.warn(`Tentative d'accès non autorisée aux routes d'inventaire`, {
-      method: req.method,
-      path: req.path,
-      userRole: req.user.role
-    });
     return res.status(403).json({ 
       message: 'Accès refusé. Seuls les administrateurs peuvent accéder à ces ressources.',
       requiredRole: UserRole.ADMIN
     });
   }
-  
-  console.log(`Requête admin pour les pièces d'inventaire`, {
-    method: req.method,
-    path: req.path,
-    userId: req.user.id
-  });
   next();
 });
 
@@ -153,14 +138,6 @@ router.patch('/:id/stock',
 
 // Gestionnaire d'erreurs global pour les routes d'inventaire
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  // Gestion des erreurs avec des vérifications supplémentaires
-  console.error('Erreur dans les routes de pièces d\'inventaire', {
-    error: err?.message || 'Erreur inconnue',
-    stack: err?.stack,
-    method: req?.method,
-    path: req?.path
-  });
-  
   // Réponse d'erreur par défaut
   res.status(err?.status || 500).json({
     message: 'Une erreur est survenue lors du traitement de la requête.',

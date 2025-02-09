@@ -1,5 +1,4 @@
 import { DataTypes, Model, Sequelize } from "sequelize";
-import { sequelize } from "../config/database";
 import UserModel from "./UserModel";
 import CompanyMotorcycleModel from "./CompanyMotorcycleModel";
 
@@ -15,7 +14,6 @@ class CompanyModel extends Model {
 
   static initialize(sequelize: Sequelize): void {
     if (this.sequelizeInstance) {
-      console.log("CompanyModel already initialized");
       return;
     }
 
@@ -58,8 +56,6 @@ class CompanyModel extends Model {
         timestamps: true,
       }
     );
-
-    console.log("CompanyModel initialized successfully");
   }
 
   public static associate(): void {

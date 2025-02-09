@@ -16,7 +16,6 @@ export default function InventoryPartList() {
       setInventoryParts(parts);
       setError(null);
     } catch (err) {
-      console.error('Erreur lors de la récupération des pièces d\'inventaire', err);
       setError('Impossible de charger les pièces d\'inventaire');
     } finally {
       setIsLoading(false);
@@ -53,7 +52,6 @@ export default function InventoryPartList() {
       // Réinitialiser la partie sélectionnée
       setSelectedPart(null);
     } catch (err) {
-      console.error('Erreur lors de la mise à jour de la pièce', err);
       setError('Impossible de mettre à jour la pièce');
     }
   };
@@ -71,7 +69,6 @@ export default function InventoryPartList() {
         )
       );
     } catch (err) {
-      console.error('Erreur lors de la modification du stock', err);
       setError('Impossible de modifier le stock');
     }
   };
@@ -100,7 +97,7 @@ export default function InventoryPartList() {
 
       // Message de succès
       const successToast = document.createElement('div');
-      successToast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg';
+      successToast.className = 'fixed px-4 py-2 text-white bg-green-500 rounded-lg shadow-lg top-4 right-4';
       successToast.textContent = 'Pièce supprimée avec succès';
       document.body.appendChild(successToast);
       
@@ -110,8 +107,6 @@ export default function InventoryPartList() {
       }, 3000);
 
     } catch (err) {
-      console.error('Erreur lors de la suppression de la pièce', err);
-      
       // Gestion des erreurs spécifiques
       if (err.message.includes('stock en inventaire')) {
         setError('Impossible de supprimer une pièce avec du stock en inventaire');
@@ -128,17 +123,17 @@ export default function InventoryPartList() {
   };
 
   if (isLoading) return (
-    <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-blue-500"></div>
+    <div className="flex items-center justify-center h-64">
+      <div className="w-12 h-12 border-t-2 border-blue-500 rounded-full animate-spin"></div>
     </div>
   );
 
   if (error) return (
-    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+    <div className="relative px-4 py-3 text-red-700 bg-red-100 border border-red-400 rounded" role="alert">
       <div className="flex items-center">
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
-          className="h-6 w-6 mr-2" 
+          className="w-6 h-6 mr-2" 
           fill="none" 
           viewBox="0 0 24 24" 
           stroke="currentColor"
@@ -156,14 +151,14 @@ export default function InventoryPartList() {
   );
 
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
+    <div className="overflow-hidden bg-white rounded-lg shadow-md">
       {/* Modal d'édition */}
       {selectedPart && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
             <button 
               onClick={() => setSelectedPart(null)}
-              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
+              className="absolute text-gray-600 top-4 right-4 hover:text-gray-900"
             >
               ✕
             </button>
@@ -183,7 +178,7 @@ export default function InventoryPartList() {
             {['Nom', 'Référence', 'Catégorie', 'Stock Actuel', 'Prix Unitaire', 'Actions'].map((header) => (
               <th 
                 key={header} 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
               >
                 {header}
               </th>
@@ -192,7 +187,7 @@ export default function InventoryPartList() {
         </thead>
         <tbody className="divide-y divide-gray-200">
           {inventoryParts.map((part) => (
-            <tr key={part.id} className="hover:bg-gray-50 transition duration-150">
+            <tr key={part.id} className="transition duration-150 hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap">{part.name}</td>
               <td className="px-6 py-4 whitespace-nowrap">{part.referenceNumber}</td>
               <td className="px-6 py-4 whitespace-nowrap">{part.category}</td>
@@ -200,10 +195,10 @@ export default function InventoryPartList() {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleStockChange(part.id, 1, 'remove')}
-                    className="bg-red-100 text-red-600 p-1 rounded-full hover:bg-red-200 disabled:opacity-50"
+                    className="p-1 text-red-600 bg-red-100 rounded-full hover:bg-red-200 disabled:opacity-50"
                     disabled={part.currentStock <= 0}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clipRule="evenodd" />
                     </svg>
                   </button>
@@ -214,31 +209,31 @@ export default function InventoryPartList() {
                   </span>
                   <button
                     onClick={() => handleStockChange(part.id, 1, 'add')}
-                    className="bg-green-100 text-green-600 p-1 rounded-full hover:bg-green-200"
+                    className="p-1 text-green-600 bg-green-100 rounded-full hover:bg-green-200"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 01-1 1h-3a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
                   </button>
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">{part.unitPrice} €</td>
-              <td className="px-6 py-4 whitespace-nowrap flex space-x-2">
+              <td className="flex px-6 py-4 space-x-2 whitespace-nowrap">
                 <button
                   onClick={() => setSelectedPart(part)}
-                  className="text-blue-600 hover:text-blue-900 transition-colors"
+                  className="text-blue-600 transition-colors hover:text-blue-900"
                   aria-label="Éditer"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                   </svg>
                 </button>
                 <button
                   onClick={() => handleDelete(part.id)}
-                  className="text-red-600 hover:text-red-900 transition-colors"
+                  className="text-red-600 transition-colors hover:text-red-900"
                   aria-label="Supprimer"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
                 </button>
@@ -249,7 +244,7 @@ export default function InventoryPartList() {
       </table>
 
       {inventoryParts.length === 0 && (
-        <div className="text-center py-10 text-gray-500">
+        <div className="py-10 text-center text-gray-500">
           Aucune pièce d'inventaire trouvée
         </div>
       )}

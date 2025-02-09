@@ -22,7 +22,6 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
         setDrivers(fetchedDrivers);
         setIsLoading(false);
       } catch (err) {
-        console.error('Erreur lors de la récupération des conducteurs:', err);
         setError('Impossible de charger les conducteurs');
         setIsLoading(false);
       }
@@ -58,7 +57,6 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
         await fetchDrivers();
         setConfirmDeleteDriver(null);
       } catch (error) {
-        console.error('Erreur lors de la suppression du conducteur:', error);
         alert('Impossible de supprimer le conducteur');
       }
     };
@@ -68,7 +66,6 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
         await driverService.changeDriverStatus(driver.id, newStatus);
         await fetchDrivers();
       } catch (error) {
-        console.error('Erreur lors du changement de statut:', error);
         alert('Impossible de changer le statut du conducteur');
       }
     };
@@ -80,15 +77,15 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
 
     if (isLoading) {
       return (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        <div className="flex items-center justify-center h-64">
+          <div className="w-12 h-12 border-b-2 border-gray-900 rounded-full animate-spin"></div>
         </div>
       );
     }
 
     if (error) {
       return (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <div className="relative px-4 py-3 text-red-700 bg-red-100 border border-red-400 rounded" role="alert">
           <strong className="font-bold">Erreur ! </strong>
           <span className="block sm:inline">{error}</span>
         </div>
@@ -96,8 +93,8 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
     }
 
     return (
-      <div className="bg-white shadow-xl rounded-2xl p-6">
-        <h2 className="text-3xl font-extrabold text-gray-900 mb-6">Liste des Conducteurs</h2>
+      <div className="p-6 bg-white shadow-xl rounded-2xl">
+        <h2 className="mb-6 text-3xl font-extrabold text-gray-900">Liste des Conducteurs</h2>
         {drivers.length === 0 ? (
           <div className="text-center text-gray-500">
             Aucun conducteur trouvé
@@ -108,14 +105,14 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
               return (
                 <div 
                   key={driver.id} 
-                  className="bg-gray-100 rounded-lg p-4 shadow-md hover:shadow-lg transition-all cursor-pointer"
+                  className="p-4 transition-all bg-gray-100 rounded-lg shadow-md cursor-pointer hover:shadow-lg"
                 >
                   <div 
                     onClick={() => handleDriverSelect(driver)}
                     className="flex items-center space-x-4"
                   >
                     <div className="flex-shrink-0">
-                      <div className="h-12 w-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">
+                      <div className="flex items-center justify-center w-12 h-12 font-bold text-white bg-indigo-500 rounded-full">
                         {getInitials(driver.firstName, driver.lastName)}
                       </div>
                     </div>
@@ -128,7 +125,7 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 border-t border-gray-200 pt-4">
+                  <div className="pt-4 mt-4 border-t border-gray-200">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500">Statut :</span>
                       <span 
@@ -143,7 +140,7 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
                         {driver.status || 'N/A'}
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm mt-2">
+                    <div className="flex justify-between mt-2 text-sm">
                       <span className="text-gray-500">Expiration :</span>
                       <span className="text-gray-700">
                         {driver.licenseExpirationDate 
@@ -155,13 +152,13 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
                   <div className="flex justify-between mt-4">
                     <button 
                       onClick={() => handleEditDriver(driver)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition-colors"
+                      className="px-3 py-1 text-white transition-colors bg-yellow-500 rounded hover:bg-yellow-600"
                     >
                       Éditer
                     </button>
                     <button 
                       onClick={() => setConfirmDeleteDriver(driver)}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
+                      className="px-3 py-1 text-white transition-colors bg-red-500 rounded hover:bg-red-600"
                     >
                       Supprimer
                     </button>
@@ -169,7 +166,7 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
                       <select 
                         value={driver.status}
                         onChange={(e) => handleChangeStatus(driver, e.target.value as DriverStatus)}
-                        className="bg-gray-200 text-gray-800 px-2 py-1 rounded"
+                        className="px-2 py-1 text-gray-800 bg-gray-200 rounded"
                       >
                         {Object.values(DriverStatus).map(status => (
                           <option key={status} value={status}>
@@ -188,19 +185,19 @@ export const DriverList = forwardRef<{ refreshDrivers: () => void }, DriverListP
         {/* Modal de confirmation de suppression */}
         {confirmDeleteDriver && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl">
-              <h3 className="text-xl font-bold mb-4">Confirmer la suppression</h3>
+            <div className="p-6 bg-white rounded-lg shadow-xl">
+              <h3 className="mb-4 text-xl font-bold">Confirmer la suppression</h3>
               <p>Voulez-vous vraiment supprimer le conducteur {confirmDeleteDriver.firstName} {confirmDeleteDriver.lastName} ?</p>
               <div className="flex justify-end mt-4">
                 <button 
                   onClick={handleCloseModal}
-                  className="mr-2 bg-gray-300 text-gray-800 px-4 py-2 rounded"
+                  className="px-4 py-2 mr-2 text-gray-800 bg-gray-300 rounded"
                 >
                   Annuler
                 </button>
                 <button 
                   onClick={() => handleDeleteDriver(confirmDeleteDriver)}
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  className="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
                 >
                   Supprimer
                 </button>

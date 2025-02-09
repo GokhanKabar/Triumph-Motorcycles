@@ -11,9 +11,6 @@ export class CreateTestRideUseCase {
   async execute(
     createTestRideDto: CreateTestRideDto
   ): Promise<TestRideDto> {
-    // Log des données reçues pour le débogage
-    console.log('Données reçues pour création de test ride:', createTestRideDto);
-
     try {
       // Créer le test ride avec des valeurs par défaut
       const testRideResult = await TestRide.from(
@@ -40,9 +37,6 @@ export class CreateTestRideUseCase {
 
       // Vérifier s'il y a une erreur de validation
       if (testRideResult instanceof TestRideValidationError) {
-        // Log détaillé des erreurs de validation
-        console.error('Erreurs de validation:', testRideResult.details);
-        
         // Construire un message d'erreur plus informatif
         const errorMessages = Object.entries(testRideResult.details)
           .map(([field, message]) => `${field}: ${message}`)
@@ -54,13 +48,9 @@ export class CreateTestRideUseCase {
         );
       }
 
-      // Log avant la sauvegarde
-      console.log('Tentative de sauvegarde du test ride:', testRideResult);
-
       try {
         // Sauvegarder le test ride
         const savedTestRide = await this.testRideRepository.create(testRideResult);
-        console.log('Test ride sauvegardé avec succès:', savedTestRide);
 
         // Convertir en DTO de réponse
         return {
@@ -85,11 +75,9 @@ export class CreateTestRideUseCase {
           updatedAt: savedTestRide.updatedAt
         };
       } catch (saveError) {
-        console.error('Erreur lors de la sauvegarde du test ride:', saveError);
         throw saveError;
       }
     } catch (error) {
-      console.error('Erreur complète lors de la création du test ride:', error);
       throw error;
     }
   }

@@ -20,7 +20,6 @@ export const CompanyMotorcycles: React.FC = () => {
           setSelectedCompany(response[0].id);
         }
       } catch (error) {
-        console.error("Erreur lors du chargement des entreprises:", error);
       }
     };
 
@@ -32,18 +31,18 @@ export const CompanyMotorcycles: React.FC = () => {
   )?.name;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="space-y-8 w-full">
-        <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white p-8 rounded-2xl shadow-2xl border border-blue-700">
-          <div className="flex flex-col md:flex-row md:items-center gap-6">
+    <div className="p-8 mx-auto max-w-7xl">
+      <div className="w-full space-y-8">
+        <div className="p-8 text-white border border-blue-700 shadow-2xl bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 rounded-2xl">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center">
             <div className="flex-1">
-              <h2 className="text-4xl font-bold mb-3 text-blue-100">
+              <h2 className="mb-3 text-4xl font-bold text-blue-100">
                 Gestion des Motos par Entreprise
               </h2>
               {selectedCompanyName && (
-                <p className="text-blue-200 text-xl">
+                <p className="text-xl text-blue-200">
                   Entreprise sélectionnée :{" "}
-                  <span className="font-bold text-white bg-blue-700 px-3 py-1 rounded-lg">
+                  <span className="px-3 py-1 font-bold text-white bg-blue-700 rounded-lg">
                     {selectedCompanyName}
                   </span>
                 </p>
@@ -51,10 +50,7 @@ export const CompanyMotorcycles: React.FC = () => {
             </div>
             <div className="w-full md:w-96">
               <select
-                className="w-full p-4 text-lg bg-blue-950 border-2 border-blue-600 rounded-xl
-                         focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400
-                         text-white placeholder-blue-300 shadow-lg transition-all duration-200
-                         hover:bg-blue-900 hover:border-blue-500"
+                className="w-full p-4 text-lg text-white placeholder-blue-300 transition-all duration-200 border-2 border-blue-600 shadow-lg bg-blue-950 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 hover:bg-blue-900 hover:border-blue-500"
                 value={selectedCompany}
                 onChange={(e) => setSelectedCompany(e.target.value)}
               >
@@ -76,7 +72,7 @@ export const CompanyMotorcycles: React.FC = () => {
         </div>
 
         {selectedCompany && (
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100">
+          <div className="bg-white border border-gray-100 shadow-lg rounded-xl">
             <CompanyMotorcycleList companyId={selectedCompany} />
           </div>
         )}

@@ -24,8 +24,6 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  console.error('Error:', error);
-
   // Erreurs de validation du nom
   if (error instanceof NameTooShortError || 
       error instanceof NameTooLongError || 

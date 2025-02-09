@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ConcessionList from "../components/concessions/ConcessionList";
 import {
   CreateConcessionDTO,
   ConcessionResponseDTO,
-  UpdateConcessionDTO,
-  ConcessionFormDTO,
-  DeleteConcessionResponseDTO
+  ConcessionFormDTO
 } from "@/application/dtos/ConcessionDTO";
 import { concessionService } from "../services/api";
 import ConcessionForm from "../components/concessions/ConcessionForm";
@@ -28,11 +26,9 @@ export default function Concessions() {
           const user = JSON.parse(userString);
           setCurrentUserId(user.id);
         } else {
-          console.error("Aucun utilisateur trouvé dans le localStorage");
           toast.error("Utilisateur non connecté");
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération de l'utilisateur :", error);
         toast.error("Impossible de récupérer l'utilisateur connecté");
       }
     };
@@ -61,7 +57,6 @@ export default function Concessions() {
       setRefreshKey((prev) => prev + 1);
       setOpenForm(false);
     } catch (error) {
-      console.error("Erreur lors de la mise à jour de la concession:", error);
       toast.error(error instanceof Error ? error.message : "Erreur lors de la mise à jour");
     }
   };
@@ -85,7 +80,6 @@ export default function Concessions() {
         setRefreshKey((prev) => prev + 1);
         setOpenForm(false);
       } catch (error) {
-        console.error("Erreur lors de la création de la concession:", error);
         toast.error(error instanceof Error ? error.message : "Erreur lors de la création");
       }
     }
@@ -98,32 +92,23 @@ export default function Concessions() {
 
   const handleDeleteConcession = async (concessionId: string) => {
     try {
-      console.log('Tentative de suppression de la concession:', concessionId);
       const result = await concessionService.deleteConcession(concessionId);
-      console.log('Résultat de la suppression:', result);
 
       if (result.success) {
         toast.success(result.message);
         setRefreshKey((prev) => prev + 1);
       } else {
-        // Gérer les différents types d'erreurs
-        console.error('Erreur de suppression:', result);
-        
         // Cas spécifique : concession avec des motos
         if (result.error?.code === 'CONCESSION_HAS_MOTORCYCLES') {
           const motorcycleCount = result.error.details?.motorcycleCount || 'plusieurs';
-          const errorMessage = `Impossible de supprimer la concession car elle possède ${motorcycleCount} motos. Veuillez d'abord supprimer ou réaffecter toutes les motos.`;
-          console.warn(errorMessage);
-          toast.error(errorMessage);
+          toast.error(`Impossible de supprimer la concession car elle possède ${motorcycleCount} motos. Veuillez d'abord supprimer ou réaffecter toutes les motos.`);
         } 
         // Autres cas d'erreur
         else {
-          const errorMessage = result.message || 'Erreur lors de la suppression de la concession';
-          toast.error(errorMessage);
+          toast.error(result.message || 'Erreur lors de la suppression de la concession');
         }
       }
     } catch (error) {
-      console.error('Erreur lors de la suppression de la concession:', error);
       const errorMessage = error instanceof Error 
         ? error.message 
         : "Erreur lors de la suppression de la concession";
@@ -132,12 +117,12 @@ export default function Concessions() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container px-4 py-8 mx-auto">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Gestion des Concessions</h1>
         <button
           onClick={handleCreateConcession}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
         >
           Ajouter une concession
         </button>
@@ -158,7 +143,7 @@ export default function Concessions() {
             setSelectedConcession(undefined);
           }}
           onSubmit={handleSubmit}
-          userId={currentUserId} // Passer l'ID utilisateur
+          userId={currentUserId}
         />
       )}
     </div>

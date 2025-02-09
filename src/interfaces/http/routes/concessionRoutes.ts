@@ -98,7 +98,6 @@ router.post("/", async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error("Erreur lors de la création de la concession:", error);
     res.status(500).json({ 
       message: "Erreur interne lors de la création de la concession",
       error: {
@@ -142,7 +141,6 @@ router.put("/:id", async (req: Request, res: Response) => {
 
     return res.json(result);
   } catch (error) {
-    console.error("Erreur lors de la mise à jour de la concession:", error);
     res.status(500).json({ 
       message: "Erreur lors de la mise à jour de la concession",
       error: error instanceof Error ? error.message : "Erreur inconnue"
@@ -198,7 +196,6 @@ router.delete("/:id", async (req: Request, res: Response) => {
       message: "Concession supprimée avec succès"
     });
   } catch (error) {
-    console.error("Erreur lors de la suppression de la concession:", error);
     res.status(500).json({
       success: false,
       message: "Erreur lors de la suppression de la concession",

@@ -33,7 +33,6 @@ export class PostgreSQLMaintenanceRepository implements IMaintenanceRepository {
       return [replacedParts];
     } catch (error) {
       // En cas d'échec, retourner un tableau avec la chaîne originale
-      console.warn('Failed to parse replacedParts:', error);
       return [replacedParts];
     }
   }
@@ -174,58 +173,6 @@ export class PostgreSQLMaintenanceRepository implements IMaintenanceRepository {
     );
   }
 
-  async update(maintenance: Maintenance): Promise<void> {
-    try {
-      console.log('Updating maintenance:', {
-        id: maintenance.id,
-        status: maintenance.status,
-        actualDate: maintenance.actualDate,
-        mileageAtMaintenance: maintenance.mileageAtMaintenance,
-        technicianNotes: maintenance.technicianNotes,
-        replacedParts: maintenance.replacedParts,
-        totalCost: maintenance.totalCost,
-        nextMaintenanceRecommendation: maintenance.nextMaintenanceRecommendation
-      });
-
-      const [updatedRows] = await MaintenanceModel.update({
-        status: maintenance.status,
-        actualDate: maintenance.actualDate,
-        mileageAtMaintenance: maintenance.mileageAtMaintenance,
-        technicianNotes: maintenance.technicianNotes,
-        replacedParts: this.serializeReplacedParts(maintenance.replacedParts),
-        totalCost: maintenance.totalCost ? parseFloat(maintenance.totalCost.toString()) : null,
-        nextMaintenanceRecommendation: maintenance.nextMaintenanceRecommendation,
-        updatedAt: new Date()
-      }, {
-        where: { id: maintenance.id }
-      });
-
-      if (updatedRows === 0) {
-        console.error('No rows updated for maintenance ID:', maintenance.id);
-        throw new MaintenanceNotFoundError(`Maintenance with ID ${maintenance.id} not found`);
-      }
-
-      console.log('Successfully updated maintenance:', maintenance.id);
-    } catch (error) {
-      console.error('Full error during maintenance update:', error);
-      
-      if (error instanceof MaintenanceNotFoundError) {
-        throw error;
-      }
-
-      throw new MaintenanceValidationError(
-        `Failed to update maintenance: ${error.message}. 
-        Details: ${JSON.stringify({
-          id: maintenance.id,
-          status: maintenance.status,
-          actualDate: maintenance.actualDate,
-          mileageAtMaintenance: maintenance.mileageAtMaintenance,
-          replacedParts: maintenance.replacedParts
-        })}`
-      );
-    }
-  }
-
   async update(
     maintenanceId: string, 
     maintenanceData: CreateMaintenanceDTO
@@ -243,20 +190,6 @@ export class PostgreSQLMaintenanceRepository implements IMaintenanceRepository {
         nextMaintenanceRecommendation,
         actualDate
       } = maintenanceData;
-
-      console.log('Updating maintenance:', {
-        maintenanceId,
-        motorcycleId, 
-        type, 
-        scheduledDate, 
-        status, 
-        mileageAtMaintenance, 
-        technicianNotes, 
-        replacedParts, 
-        totalCost, 
-        nextMaintenanceRecommendation,
-        actualDate
-      });
 
       // Trouver la maintenance existante
       const existingMaintenance = await MaintenanceModel.findByPk(maintenanceId);
@@ -298,7 +231,6 @@ export class PostgreSQLMaintenanceRepository implements IMaintenanceRepository {
         actualDate: existingMaintenance.actualDate
       };
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de la maintenance:', error);
       throw error;
     }
   }
@@ -312,15 +244,10 @@ export class PostgreSQLMaintenanceRepository implements IMaintenanceRepository {
       if (deletedRows === 0) {
         throw new MaintenanceNotFoundError(`Maintenance with ID ${id} not found`);
       }
-
-      console.log(`Maintenance ${id} deleted successfully`);
     } catch (error) {
-      console.error('Error deleting maintenance:', error);
-      
       if (error instanceof MaintenanceNotFoundError) {
         throw error;
       }
-
       throw new MaintenanceValidationError(`Failed to delete maintenance: ${error.message}`);
     }
   }
@@ -367,18 +294,6 @@ export class PostgreSQLMaintenanceRepository implements IMaintenanceRepository {
 
     return maintenances.map(m => {
       const motorcycle = m.get('motorcycle');
-      
-      console.log('DEBUG: Maintenance avec moto:', {
-        maintenanceId: m.id,
-        motorcycleId: m.motorcycleId,
-        motorcycleExists: !!motorcycle,
-        motorcycleDetails: motorcycle ? {
-          id: motorcycle.id,
-          brand: motorcycle.brand,
-          model: motorcycle.model
-        } : null
-      });
-
       return Maintenance.from(
         m.id,
         m.motorcycleId,

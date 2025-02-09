@@ -7,8 +7,7 @@ import {
   UpdateTestRideStatusUseCase
 } from '../../../application/testRide';
 import { 
-  TestRideValidationError, 
-  TestRideNotFoundError 
+  TestRideNotFoundError
 } from '../../../domain/testRide';
 import { TestRideStatus, RiderExperience, LicenseType } from '../../../domain/testRide/entities/TestRide';
 
@@ -61,8 +60,6 @@ export class TestRideController {
 
       res.status(201).json(testRide);
     } catch (error: unknown) {
-      console.error('Erreur lors de la création du test ride:', error);
-      
       if (error instanceof Error) {
         // Vérifier si l'erreur contient un message spécifique de validation
         if (error.message.includes('validation')) {
@@ -122,7 +119,6 @@ export class TestRideController {
       const testRides = await this.getAllTestRidesUseCase.execute();
       res.status(200).json(testRides);
     } catch (error: unknown) {
-      console.error('Erreur lors de la récupération des test rides', error);
       res.status(500).json({
         message: 'Erreur lors de la récupération des test rides',
         error: error instanceof Error ? error.message : 'Erreur inconnue'
@@ -145,8 +141,6 @@ export class TestRideController {
         });
         return;
       }
-
-      console.error('Erreur lors de la suppression du test ride', error);
       res.status(500).json({
         message: 'Erreur lors de la suppression du test ride',
         error: error instanceof Error ? error.message : 'Erreur inconnue'
@@ -156,20 +150,10 @@ export class TestRideController {
 
   async updateStatus(req: Request, res: Response): Promise<void> {
     try {
-      console.log('Requête de mise à jour de statut reçue:', {
-        params: req.params,
-        body: req.body,
-        query: req.query
-      });
-
       const { id } = req.params;
       const { status } = req.body;
 
-      console.log('ID extrait:', id);
-      console.log('Statut extrait:', status);
-
       if (!id) {
-        console.error('ID de test ride manquant');
         res.status(400).json({
           message: 'ID de test ride requis'
         });
@@ -177,7 +161,6 @@ export class TestRideController {
       }
 
       if (!status) {
-        console.error('Statut manquant');
         res.status(400).json({
           message: 'Statut de test ride requis'
         });
@@ -191,8 +174,6 @@ export class TestRideController {
 
       res.status(200).json(updatedTestRide);
     } catch (error: unknown) {
-      console.error('Erreur lors de la mise à jour du statut:', error);
-
       if (error instanceof TestRideNotFoundError) {
         res.status(404).json({
           message: error.message

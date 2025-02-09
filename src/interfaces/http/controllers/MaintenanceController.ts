@@ -8,7 +8,6 @@ import { DeleteMaintenanceUseCase } from '../../../application/maintenance/use-c
 import { UpdateMaintenanceUseCase } from '../../../application/maintenance/use-cases/UpdateMaintenanceUseCase';
 import { IMotorcycleRepository } from '../../../domain/motorcycle/repositories/IMotorcycleRepository';
 import { MaintenanceType, MaintenanceStatus } from '../../../domain/maintenance/entities/Maintenance';
-import { UserRole } from '../../../domain/enums/UserRole';
 
 export class MaintenanceController {
   private createMaintenanceUseCase: CreateMaintenanceUseCase;
@@ -38,9 +37,6 @@ export class MaintenanceController {
 
   async createMaintenance(req: Request, res: Response): Promise<void> {
     try {
-      console.log('Requête de création de maintenance reçue');
-      console.log('Corps de la requête:', JSON.stringify(req.body, null, 2));
-
       // Extraction et validation des données
       const { 
         motorcycleId, 
@@ -56,13 +52,11 @@ export class MaintenanceController {
 
       // Validation des champs requis
       if (!motorcycleId) {
-        console.error('motorcycleId manquant');
         res.status(400).json({ message: 'motorcycleId est requis' });
         return;
       }
 
       if (!type) {
-        console.error('type manquant');
         res.status(400).json({ message: 'type est requis' });
         return;
       }
@@ -90,28 +84,21 @@ export class MaintenanceController {
           : undefined
       };
 
-      console.log('Données de maintenance formatées:', JSON.stringify(maintenanceData, null, 2));
-
       // Vérifier que la moto existe (avec gestion d'erreur)
       try {
         const motorcycle = await this.motorcycleRepository.findById(maintenanceData.motorcycleId);
         if (!motorcycle) {
-          console.error('Moto non trouvée');
           res.status(404).json({ message: 'Moto non trouvée' });
           return;
         }
       } catch (error) {
-        console.error('Erreur lors de la recherche de la moto:', error);
         res.status(500).json({ message: 'Erreur lors de la vérification de la moto' });
         return;
       }
 
       const maintenance = await this.createMaintenanceUseCase.execute(maintenanceData);
-      
-      console.log('Maintenance créée avec succès');
       res.status(201).json(maintenance);
     } catch (error) {
-      console.error('Erreur détaillée lors de la création de maintenance:', error);
       res.status(500).json({ 
         message: 'Erreur lors de la création de maintenance',
         error: error.message,
@@ -122,34 +109,19 @@ export class MaintenanceController {
 
   async getAllMaintenances(req: Request, res: Response): Promise<void> {
     try {
-      console.log('DEBUG: getAllMaintenances - DEBUT');
-      console.log('DEBUG: Headers de la requête:', JSON.stringify(req.headers, null, 2));
-      console.log('DEBUG: Utilisateur connecté:', JSON.stringify(req.user, null, 2));
-
       // Vérifier si l'utilisateur est authentifié
       if (!req.user) {
-        console.error('DEBUG: Utilisateur non authentifié');
         res.status(401).json({ message: 'Non authentifié' });
         return;
       }
-
-      // Vérifier explicitement le rôle
-      console.log('DEBUG: Rôle de l\'utilisateur:', req.user.role);
-      console.log('DEBUG: Type du rôle:', typeof req.user.role);
-      console.log('DEBUG: Comparaison avec UserRole.ADMIN:', req.user.role === UserRole.ADMIN);
 
       // Récupérer toutes les maintenances avec l'ID utilisateur
       const maintenances = await this.findAllMaintenancesUseCase.execute(
         req.user.id, 
         req.user.role
       );
-      
-      console.log('DEBUG: Nombre de maintenances récupérées:', maintenances.length);
-      console.log('DEBUG: Détails des maintenances:', JSON.stringify(maintenances, null, 2));
-      
       res.status(200).json(maintenances);
     } catch (error) {
-      console.error('DEBUG: Erreur COMPLETE lors de la récupération des maintenances:', error);
       res.status(500).json({ 
         message: 'Erreur lors de la récupération des maintenances',
         errorMessage: error.message,
@@ -169,7 +141,6 @@ export class MaintenanceController {
       const maintenance = await this.completeMaintenanceUseCase.execute(completeMaintenanceDTO);
       res.status(200).json(maintenance);
     } catch (error) {
-      console.error('Erreur lors de la complétion de maintenance:', error);
       res.status(500).json({ message: 'Erreur lors de la complétion de maintenance' });
     }
   }
@@ -179,7 +150,6 @@ export class MaintenanceController {
       const dueMaintenances = await this.findDueMaintenancesUseCase.execute();
       res.status(200).json(dueMaintenances);
     } catch (error) {
-      console.error('Erreur lors de la récupération des maintenances dues:', error);
       res.status(500).json({ message: 'Erreur lors de la récupération des maintenances dues' });
     }
   }
@@ -190,7 +160,6 @@ export class MaintenanceController {
       await this.deleteMaintenanceUseCase.execute(maintenanceId);
       res.status(204).send(); // No content, successful deletion
     } catch (error) {
-      console.error('Erreur lors de la suppression de maintenance:', error);
       if (error.name === 'MaintenanceNotFoundError') {
         res.status(404).json({ message: 'Maintenance non trouvée' });
       } else {
@@ -227,7 +196,6 @@ export class MaintenanceController {
 
       res.status(200).json(updatedMaintenance);
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de la maintenance:', error);
       res.status(500).json({ 
         message: 'Erreur lors de la mise à jour de la maintenance',
         error: error instanceof Error ? error.message : 'Erreur inconnue'

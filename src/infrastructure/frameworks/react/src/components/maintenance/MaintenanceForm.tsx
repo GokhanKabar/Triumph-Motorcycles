@@ -46,7 +46,6 @@ export function MaintenanceForm({
         setMotorcycles(motorcycleData);
         setInventoryParts(inventoryData);
       } catch (error) {
-        console.error('Erreur lors de la récupération des données', error);
       }
     }
     fetchData();
@@ -152,25 +151,25 @@ export function MaintenanceForm({
   const availableParts = inventoryParts.filter(part => part.currentStock > 0);
 
   return (
-    <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50">
       <form 
         onSubmit={handleSubmit} 
-        className="bg-white shadow-2xl rounded-2xl px-8 pt-6 pb-8 mb-4 w-full max-w-4xl"
+        className="w-full max-w-4xl px-8 pt-6 pb-8 mb-4 bg-white shadow-2xl rounded-2xl"
         aria-labelledby="maintenance-form-title"
       >
         <h2 
           id="maintenance-form-title" 
-          className="text-3xl font-bold text-gray-800 mb-6 text-center border-b pb-4"
+          className="pb-4 mb-6 text-3xl font-bold text-center text-gray-800 border-b"
         >
           {isEditMode ? 'Modification de maintenance' : 'Création d\'une maintenance'}
         </h2>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid gap-6 md:grid-cols-2">
           {/* Motorcycle Selection */}
           <div className="form-group">
             <label 
               htmlFor="motorcycleId" 
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block mb-2 text-sm font-medium text-gray-700"
             >
               Moto
             </label>
@@ -199,7 +198,7 @@ export function MaintenanceForm({
               ))}
             </select>
             {errors.motorcycleId && (
-              <p className="text-red-500 text-xs mt-1">{errors.motorcycleId}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.motorcycleId}</p>
             )}
           </div>
 
@@ -207,7 +206,7 @@ export function MaintenanceForm({
           <div className="form-group">
             <label 
               htmlFor="type" 
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block mb-2 text-sm font-medium text-gray-700"
             >
               Type de maintenance
             </label>
@@ -230,7 +229,7 @@ export function MaintenanceForm({
               <option value={MaintenanceType.CURATIVE}>Maintenance Curative</option>
             </select>
             {errors.type && (
-              <p className="text-red-500 text-xs mt-1">{errors.type}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.type}</p>
             )}
           </div>
 
@@ -238,7 +237,7 @@ export function MaintenanceForm({
           <div className="form-group">
             <label 
               htmlFor="scheduledDate" 
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block mb-2 text-sm font-medium text-gray-700"
             >
               Date programmée
             </label>
@@ -259,7 +258,7 @@ export function MaintenanceForm({
                          }`}
             />
             {errors.scheduledDate && (
-              <p className="text-red-500 text-xs mt-1">{errors.scheduledDate}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.scheduledDate}</p>
             )}
           </div>
 
@@ -267,7 +266,7 @@ export function MaintenanceForm({
           <div className="form-group">
             <label 
               htmlFor="status" 
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block mb-2 text-sm font-medium text-gray-700"
             >
               Statut
             </label>
@@ -292,7 +291,7 @@ export function MaintenanceForm({
               <option value={MaintenanceStatus.CANCELLED}>Annulée</option>
             </select>
             {errors.status && (
-              <p className="text-red-500 text-xs mt-1">{errors.status}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.status}</p>
             )}
           </div>
 
@@ -300,7 +299,7 @@ export function MaintenanceForm({
           <div className="form-group">
             <label 
               htmlFor="mileageAtMaintenance" 
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block mb-2 text-sm font-medium text-gray-700"
             >
               Kilométrage
             </label>
@@ -323,7 +322,7 @@ export function MaintenanceForm({
               placeholder="Kilométrage au moment de la maintenance"
             />
             {errors.mileageAtMaintenance && (
-              <p className="text-red-500 text-xs mt-1">{errors.mileageAtMaintenance}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.mileageAtMaintenance}</p>
             )}
           </div>
 
@@ -331,7 +330,7 @@ export function MaintenanceForm({
           <div className="form-group">
             <label 
               htmlFor="actualDate" 
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block mb-2 text-sm font-medium text-gray-700"
             >
               Date réelle
             </label>
@@ -352,7 +351,7 @@ export function MaintenanceForm({
                          }`}
             />
             {errors.actualDate && (
-              <p className="text-red-500 text-xs mt-1">{errors.actualDate}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.actualDate}</p>
             )}
           </div>
 
@@ -360,7 +359,7 @@ export function MaintenanceForm({
           <div className="form-group">
             <label 
               htmlFor="nextMaintenanceRecommendation" 
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block mb-2 text-sm font-medium text-gray-700"
             >
               Prochaine maintenance
             </label>
@@ -381,7 +380,7 @@ export function MaintenanceForm({
                          }`}
             />
             {errors.nextMaintenanceRecommendation && (
-              <p className="text-red-500 text-xs mt-1">{errors.nextMaintenanceRecommendation}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.nextMaintenanceRecommendation}</p>
             )}
           </div>
 
@@ -389,7 +388,7 @@ export function MaintenanceForm({
           <div className="form-group">
             <label 
               htmlFor="totalCost" 
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block mb-2 text-sm font-medium text-gray-700"
             >
               Coût total
             </label>
@@ -413,16 +412,16 @@ export function MaintenanceForm({
               placeholder="Entrez le coût total"
             />
             {errors.totalCost && (
-              <p className="text-red-500 text-xs mt-1">{errors.totalCost}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.totalCost}</p>
             )}
           </div>
         </div>
 
         {/* Notes du technicien */}
-        <div className="form-group mt-4">
+        <div className="mt-4 form-group">
           <label 
             htmlFor="technicianNotes" 
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block mb-2 text-sm font-medium text-gray-700"
           >
             Notes du technicien
           </label>
@@ -431,27 +430,27 @@ export function MaintenanceForm({
             name="technicianNotes"
             value={formData.technicianNotes || ''}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+            className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             rows={3}
             placeholder="Saisissez des notes supplémentaires"
           />
         </div>
 
         {/* Pièces remplacées */}
-        <div className="form-group mt-4">
+        <div className="mt-4 form-group">
           <label 
             htmlFor="replacedParts" 
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block mb-2 text-sm font-medium text-gray-700"
           >
             Pièces remplacées
           </label>
           
-          <div className="flex space-x-2 mb-2">
+          <div className="flex mb-2 space-x-2">
             <select
               id="newReplacedPart"
               value={newReplacedPart || ''}
               onChange={(e) => setNewReplacedPart(e.target.value)}
-              className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="flex-grow px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Sélectionner une pièce</option>
               {availableParts
@@ -467,9 +466,9 @@ export function MaintenanceForm({
               type="button"
               onClick={handleAddReplacedPart}
               disabled={!newReplacedPart}
-              className="bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
               </svg>
             </button>
@@ -482,7 +481,7 @@ export function MaintenanceForm({
               return (
                 <div 
                   key={part} 
-                  className="flex items-center bg-gray-100 px-2 py-1 rounded-full text-sm"
+                  className="flex items-center px-2 py-1 text-sm bg-gray-100 rounded-full"
                 >
                   {part} {inventoryPart && `(Stock: ${inventoryPart.currentStock})`}
                   <button
@@ -490,7 +489,7 @@ export function MaintenanceForm({
                     onClick={() => handleRemovePart(part)}
                     className="ml-2 text-red-500 hover:text-red-700"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
                   </button>
@@ -500,15 +499,15 @@ export function MaintenanceForm({
           </div>
 
           {errors.replacedParts && (
-            <p className="text-red-500 text-xs mt-1">{errors.replacedParts}</p>
+            <p className="mt-1 text-xs text-red-500">{errors.replacedParts}</p>
           )}
         </div>
 
         {/* Bouton de soumission */}
-        <div className="mt-6 flex justify-center">
+        <div className="flex justify-center mt-6">
           <button
             type="submit"
-            className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-200"
+            className="px-6 py-3 text-white transition duration-200 bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
           >
             {isEditMode ? 'Mettre à jour' : 'Créer'}
           </button>

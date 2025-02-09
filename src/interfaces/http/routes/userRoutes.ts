@@ -47,8 +47,6 @@ router.use(authMiddleware.authenticate.bind(authMiddleware));
 
 router.get('/all', 
   (req, res, next) => {
-    console.log('DEBUG: Route /all appelée');
-    console.log('DEBUG: Utilisateur connecté:', req.user);
     next();
   },
   authMiddleware.adminOnly.bind(authMiddleware), 
@@ -57,8 +55,6 @@ router.get('/all',
 
 router.get('/', 
   (req, res, next) => {
-    console.log('DEBUG: Route / appelée');
-    console.log('DEBUG: Utilisateur connecté:', req.user);
     next();
   },
   authMiddleware.adminOnly.bind(authMiddleware), 

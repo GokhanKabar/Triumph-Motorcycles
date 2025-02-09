@@ -7,11 +7,6 @@ export class GetAllMotorcyclesUseCase {
   async execute(): Promise<MotorcycleDTO[]> {
     const motorcycles = await this.motorcycleRepository.findAll();
     return motorcycles.map(motorcycle => {
-      console.log('DEBUG: Transformation de la moto en DTO:', {
-        id: motorcycle.id,
-        status: motorcycle.status,
-        statusType: typeof motorcycle.status
-      });
 
       return {
         id: motorcycle.id,

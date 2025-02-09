@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { maintenanceService } from '../../services/api';
 import { motorcycleService } from '../../services/api';
 import { MaintenanceResponseDTO } from '@application/maintenance/dtos/MaintenanceResponseDTO';
 import { MaintenanceForm } from './MaintenanceForm';
 import { CreateMaintenanceDTO } from '@application/maintenance/dtos/CreateMaintenanceDTO';
-import { MaintenanceStatus, MaintenanceType } from '@domain/maintenance/entities/Maintenance';
+import { MaintenanceStatus } from '@domain/maintenance/entities/Maintenance';
 
 interface MaintenanceListProps {
   maintenances: MaintenanceResponseDTO[];
@@ -20,11 +20,6 @@ export function MaintenanceList({
   onDelete, 
   onEdit 
 }: MaintenanceListProps) {
-  console.log('DEBUG: Rendu MaintenanceList', { 
-    maintenances, 
-    maintenancesCount: maintenances.length 
-  });
-
   const [extendedMaintenances, setExtendedMaintenances] = useState<MaintenanceResponseDTO[]>(maintenances);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,18 +36,6 @@ export function MaintenanceList({
       error.response?.data?.message || 
       error.message || 
       defaultMessage;
-
-    // Log détaillé de l'erreur
-    console.error(`Erreur lors de ${operationType} de maintenance:`, error);
-    
-    // Log supplémentaire pour les erreurs de réponse
-    if (error.response) {
-      console.error('Détails de la réponse d\'erreur:', {
-        status: error.response.status,
-        data: error.response.data,
-        headers: error.response.headers
-      });
-    }
 
     // Notifications personnalisées selon le type d'opération
     const notificationMap = {
@@ -118,7 +101,6 @@ export function MaintenanceList({
       } catch (fetchError: any) {
         // Si 404, utiliser les données de la liste existante
         if (fetchError.response?.status === 404) {
-          console.warn('Maintenance non trouvée par ID, utilisation des données existantes');
           currentMaintenance = existingMaintenance;
         } else {
           throw fetchError;
@@ -232,16 +214,6 @@ export function MaintenanceList({
       const errorMessage = error.response?.data?.message || 
         error.message || 
         'Erreur lors de l\'édition de la maintenance';
-      
-      console.error('Erreur détaillée lors de l\'édition de la maintenance:', error);
-      
-      // Log l'erreur Axios complète pour le débogage
-      if (error.response) {
-        console.error('Réponse d\'erreur:', error.response.data);
-        console.error('Statut d\'erreur:', error.response.status);
-        console.error('En-têtes d\'erreur:', error.response.headers);
-      }
-      
       setError(errorMessage);
       toast.error(errorMessage);
     }
@@ -334,12 +306,6 @@ export function MaintenanceList({
   };
 
   const renderMaintenanceDetails = (maintenance: MaintenanceResponseDTO) => {
-    console.log('DEBUG: Maintenance details', {
-      maintenanceId: maintenance.id,
-      motorcycle: maintenance.motorcycle,
-      motorcycleId: maintenance.motorcycleId
-    });
-
     const formatDate = (date: Date) => {
       return new Date(date).toLocaleDateString('fr-FR', {
         day: '2-digit',
@@ -376,8 +342,8 @@ export function MaintenanceList({
     };
 
     return (
-      <div className="bg-white shadow-md rounded-lg p-4 mb-4">
-        <div className="flex justify-between items-center mb-4">
+      <div className="p-4 mb-4 bg-white rounded-lg shadow-md">
+        <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold">
             {getMotorcycleName(maintenance)}
           </h3>
@@ -391,7 +357,7 @@ export function MaintenanceList({
             {maintenance.status !== 'COMPLETED' && (
               <button 
                 onClick={() => setSelectedMaintenance(maintenance)}
-                className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200 text-xs"
+                className="px-3 py-1 text-xs text-white transition duration-200 bg-blue-500 rounded-md hover:bg-blue-600"
               >
                 Modifier
               </button>
@@ -399,7 +365,7 @@ export function MaintenanceList({
             {onDelete && (
               <button
                 onClick={() => handleDelete(maintenance.id)}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
+                className="px-3 py-1 text-white transition-colors bg-red-500 rounded hover:bg-red-600"
               >
                 Supprimer
               </button>
@@ -407,7 +373,7 @@ export function MaintenanceList({
             {onEdit && (
               <button
                 onClick={() => handleEditMaintenance(maintenance)}
-                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
+                className="px-3 py-1 text-white transition-colors bg-blue-500 rounded hover:bg-blue-600"
               >
                 Éditer
               </button>
@@ -449,16 +415,16 @@ export function MaintenanceList({
           )}
         </div>
         {maintenance.nextMaintenanceRecommendation && (
-          <div className="mt-4 border-t pt-4">
+          <div className="pt-4 mt-4 border-t">
             <p className="text-gray-600">Prochaine maintenance recommandée</p>
             <p className="font-medium">{formatDate(maintenance.nextMaintenanceRecommendation)}</p>
           </div>
         )}
-        <div className="mt-4 flex space-x-2">
+        <div className="flex mt-4 space-x-2">
           {maintenance.status !== 'COMPLETED' && onComplete && (
             <button
               onClick={() => handleCompleteMaintenance(maintenance.id)}
-              className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors"
+              className="px-3 py-1 text-white transition-colors bg-green-500 rounded hover:bg-green-600"
             >
               Terminer
             </button>
@@ -481,7 +447,6 @@ export function MaintenanceList({
                 motorcycle: motorcycle
               };
             } catch (error) {
-              console.warn(`Impossible de charger les détails de la moto ${maintenance.motorcycleId}:`, error);
               return maintenance;
             }
           }
@@ -491,7 +456,6 @@ export function MaintenanceList({
 
       return updatedMaintenances;
     } catch (error) {
-      console.error('Erreur lors du chargement des détails des motos:', error);
       return maintenances;
     }
   };
@@ -506,7 +470,6 @@ export function MaintenanceList({
           setExtendedMaintenances(updatedMaintenances);
         }
       } catch (err) {
-        console.error('Erreur lors du chargement des détails:', err);
         setError('Impossible de charger les détails des maintenances');
       } finally {
         setIsLoading(false);
@@ -518,15 +481,15 @@ export function MaintenanceList({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="w-32 h-32 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+      <div className="relative px-4 py-3 text-red-700 bg-red-100 border border-red-400 rounded" role="alert">
         {error}
       </div>
     );
@@ -559,11 +522,11 @@ export function MaintenanceList({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold mb-6">Liste des Maintenances</h2>
+    <div className="container px-4 py-8 mx-auto">
+      <h2 className="mb-6 text-2xl font-bold">Liste des Maintenances</h2>
       
       {extendedMaintenances.length === 0 ? (
-        <p className="text-gray-500 text-center">Aucune maintenance trouvée.</p>
+        <p className="text-center text-gray-500">Aucune maintenance trouvée.</p>
       ) : (
         extendedMaintenances.map(maintenance => (
           <div key={maintenance.id}>

@@ -13,10 +13,7 @@ export class FindAllMaintenancesUseCase {
     console.log('DEBUG: FindAllMaintenancesUseCase - Paramètres reçus', { userId, userRole });
 
     try {
-      console.log('DEBUG: Récupération de toutes les maintenances');
       const maintenances = await this.maintenanceRepository.findAll();
-      
-      console.log(`DEBUG: Nombre de maintenances trouvées: ${maintenances.length}`);
 
       return maintenances.map(maintenance => ({
         id: maintenance.id,
@@ -44,7 +41,6 @@ export class FindAllMaintenancesUseCase {
         } : undefined
       }));
     } catch (error) {
-      console.error('DEBUG: Erreur lors de la récupération des maintenances', error);
       throw error;
     }
   }

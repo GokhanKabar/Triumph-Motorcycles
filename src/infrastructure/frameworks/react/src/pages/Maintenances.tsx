@@ -23,7 +23,6 @@ export default function Maintenances() {
         const fetchedMaintenances = await maintenanceService.getAllMaintenances();
         setMaintenances(fetchedMaintenances);
       } catch (err) {
-        console.error('Erreur lors du chargement des maintenances:', err);
         setError('Impossible de charger les maintenances');
       } finally {
         setIsLoading(false);
@@ -44,18 +43,6 @@ export default function Maintenances() {
       error.response?.data?.message || 
       error.message || 
       defaultMessage;
-
-    // Log détaillé de l'erreur
-    console.error(`Erreur lors de ${operationType} de maintenance:`, error);
-    
-    // Log supplémentaire pour les erreurs de réponse
-    if (error.response) {
-      console.error('Détails de la réponse d\'erreur:', {
-        status: error.response.status,
-        data: error.response.data,
-        headers: error.response.headers
-      });
-    }
 
     // Notifications personnalisées selon le type d'opération
     const notificationMap = {
@@ -293,27 +280,27 @@ export default function Maintenances() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Gestion des Maintenances</h1>
+    <div className="container p-4 mx-auto">
+      <h1 className="mb-4 text-2xl font-bold">Gestion des Maintenances</h1>
       
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <div className="relative px-4 py-3 mb-4 text-red-700 bg-red-100 border border-red-400 rounded" role="alert">
           <strong className="font-bold">Erreur: </strong>
           <span className="block sm:inline">{error}</span>
         </div>
       )}
 
       {isLoading && (
-        <div className="flex justify-center items-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="flex items-center justify-center">
+          <div className="w-8 h-8 border-b-2 border-gray-900 rounded-full animate-spin"></div>
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <button 
             onClick={() => setOpenForm(true)} 
-            className="bg-green-500 text-white px-4 py-2 rounded mb-4 hover:bg-green-600"
+            className="px-4 py-2 mb-4 text-white bg-green-500 rounded hover:bg-green-600"
           >
             Nouvelle Maintenance
           </button>

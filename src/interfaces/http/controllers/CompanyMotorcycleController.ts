@@ -24,53 +24,32 @@ export class CompanyMotorcycleController {
 
   async assignMotorcycle(req: Request, res: Response): Promise<void> {
     try {
-      console.log("DEBUG - Controller - Request params:", req.params);
-      console.log("DEBUG - Controller - Request body:", req.body);
-
       const companyId = req.params.companyId;
       const { motorcycleId } = req.body;
 
-      console.log("DEBUG - Controller - Parsed IDs:", {
-        companyId,
-        motorcycleId,
-      });
-
       if (!motorcycleId) {
-        console.log("DEBUG - Controller - Missing motorcycleId");
         res.status(400).json({
           error: "motorcycleId est requis dans le corps de la requête",
         });
         return;
       }
 
-      console.log("DEBUG - Controller - Calling use case with:", {
-        companyId,
-        motorcycleId,
-      });
       await this.assignMotorcycleToCompanyUseCase.execute({
         companyId,
         motorcycleId,
       });
 
-      console.log("DEBUG - Controller - Assignment successful");
       res
         .status(201)
         .json({ message: "Moto assignée avec succès à l'entreprise" });
     } catch (error) {
-      console.error("DEBUG - Controller - Error details:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      });
 
       if (
         error instanceof CompanyNotFoundError ||
         error instanceof MotorcycleNotFoundError
       ) {
-        console.log("DEBUG - Controller - Sending 404 response");
         res.status(404).json({ error: error.message });
       } else {
-        console.log("DEBUG - Controller - Sending 500 response");
         res.status(500).json({
           error: "Erreur interne du serveur",
           details: error.message,
@@ -114,7 +93,6 @@ export class CompanyMotorcycleController {
       if (error instanceof CompanyNotFoundError) {
         res.status(404).json({ error: error.message });
       } else {
-        console.error("Erreur dans getCompanyMotorcycles:", error);
         res.status(500).json({
           error: "Erreur interne du serveur",
           details: error instanceof Error ? error.message : String(error),

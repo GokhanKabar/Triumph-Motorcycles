@@ -82,7 +82,6 @@ export class PostgreSQLInventoryPartRepository implements IInventoryPartReposito
 
       return inventoryPart;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de la pièce:', error);
       throw new InventoryPartValidationError(error.message);
     }
   }
@@ -207,14 +206,10 @@ export class PostgreSQLInventoryPartRepository implements IInventoryPartReposito
         ]
       });
 
-      // Log the number of parts found
-      console.log(`Found ${parts.length} inventory parts`);
-
       // Map Sequelize models to domain entities
       return parts.map(part => {
         // Validate each part before mapping
         if (!part || !part.id) {
-          console.warn('Skipping invalid inventory part:', part);
           return null;
         }
 
@@ -230,13 +225,6 @@ export class PostgreSQLInventoryPartRepository implements IInventoryPartReposito
         ) as InventoryPart;
       }).filter(part => part !== null);
     } catch (error) {
-      // Log the full error details
-      console.error('Error in findAll inventory parts:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
-
       // Rethrow the error to be handled by the caller
       throw error;
     }

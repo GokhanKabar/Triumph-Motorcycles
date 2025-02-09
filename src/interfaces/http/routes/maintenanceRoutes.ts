@@ -9,8 +9,6 @@ import { UpdateMaintenanceUseCase } from '../../../application/maintenance/use-c
 import { PostgreSQLMaintenanceRepository } from '../../../infrastructure/repositories/PostgreSQLMaintenanceRepository';
 import { PostgreSQLMotorcycleRepository } from '../../../infrastructure/repositories/PostgreSQLMotorcycleRepository';
 import { PostgreSQLInventoryPartRepository } from '../../../infrastructure/repositories/PostgreSQLInventoryPartRepository';
-import InventoryPart from '../../../domain/inventory/entities/InventoryPart';
-import { UserRole } from '../../../domain/enums/UserRole';
 import { AuthMiddleware } from '../middlewares/authMiddleware';
 import { JWTTokenService } from '../../../infrastructure/services/TokenService';
 import { GetUserUseCase } from '../../../application/user/use-cases/GetUserUseCase';
@@ -40,7 +38,7 @@ const findDueMaintenancesUseCase = new FindDueMaintenancesUseCase(
 
 const findAllMaintenancesUseCase = new FindAllMaintenancesUseCase(
   maintenanceRepository,
-  motorcycleRepository  // Ajout du repository de moto
+  motorcycleRepository
 );
 
 const deleteMaintenanceUseCase = new DeleteMaintenanceUseCase(
@@ -67,11 +65,8 @@ const maintenanceController = new MaintenanceController(
   findAllMaintenancesUseCase,
   deleteMaintenanceUseCase,
   updateMaintenanceUseCase,
-  motorcycleRepository  // Ajout du repository de moto
+  motorcycleRepository
 );
-
-console.log('DEBUG: Routes de maintenance chargées');
-console.log('DEBUG: Maintenance Controller:', maintenanceController);
 
 // Routes
 router.post('/', 

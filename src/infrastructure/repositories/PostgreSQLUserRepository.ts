@@ -6,7 +6,6 @@ import  UserModel  from '../frameworks/postgres/models/UserModel';
 import { UniqueConstraintError } from 'sequelize';
 import { UserValidationError } from '../../domain/user/entities/User';
 import { MissingRequiredFieldError } from '../../domain/errors/MissingRequiredFieldError';
-import { UserNotFoundError } from '../../domain/errors/UserNotFoundError';
 
 export class PostgreSQLUserRepository implements IUserRepository {
   constructor(private readonly passwordHashingService: IPasswordHashingService) {}
@@ -54,22 +53,10 @@ export class PostgreSQLUserRepository implements IUserRepository {
   }
 
   async findByEmail(email: Email): Promise<User | null> {
-    console.log('Recherche utilisateur avec email:', email.value);
-    
     const userModel = await UserModel.findOne({ where: { email: email.value } });
     if (!userModel) {
-      console.log('Aucun utilisateur trouvé avec cet email');
       return null;
     }
-
-    console.log('Données utilisateur trouvées:', {
-      id: userModel.id,
-      firstName: userModel.firstName,
-      lastName: userModel.lastName,
-      email: userModel.email,
-      role: userModel.role,
-      password: userModel.password
-    });
 
     const user = User.from(
       userModel.id,
@@ -83,12 +70,6 @@ export class PostgreSQLUserRepository implements IUserRepository {
     );
 
     if (user instanceof MissingRequiredFieldError) {
-      console.error('Erreur de validation:', {
-        id: userModel.id,
-        firstName: !!userModel.firstName,
-        lastName: !!userModel.lastName,
-        email: !!userModel.email
-      });
       throw new Error('Données utilisateur corrompues dans la base de données');
     }
 
@@ -127,23 +108,15 @@ export class PostgreSQLUserRepository implements IUserRepository {
   }
 
   async updatePassword(userId: string, hashedPassword: string): Promise<void> {
-    console.log(`PostgreSQLUserRepository - Mise à jour du mot de passe pour l'utilisateur: ${userId}`);
-    console.log(`Nouveau mot de passe haché: ${hashedPassword.substring(0, 10)}...`);
-
     try {
       const result = await UserModel.update(
         { password: hashedPassword },
         { where: { id: userId } }
       );
-
-      console.log('Résultat de la mise à jour:', result);
-
       if (result[0] === 0) {
-        console.error(`Aucun utilisateur mis à jour avec l'ID: ${userId}`);
         throw new Error(`Impossible de mettre à jour le mot de passe pour l'utilisateur ${userId}`);
       }
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du mot de passe:', error);
       throw error;
     }
   }
@@ -170,7 +143,5 @@ export class PostgreSQLUserRepository implements IUserRepository {
 
   async delete(id: string): Promise<void> {
     const result = await UserModel.destroy({ where: { id } });
-    
-    console.log(`Tentative de suppression de l'utilisateur ${id}. Lignes supprimées: ${result}`);
   }
 }

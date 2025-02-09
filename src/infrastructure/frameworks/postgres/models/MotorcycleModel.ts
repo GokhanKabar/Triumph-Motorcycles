@@ -51,55 +51,26 @@ class MotorcycleModel extends Model {
         defaultValue: MotorcycleStatus.AVAILABLE,
         validate: {
           isValidStatus(value: string) {
-            console.log('DEBUG: Validation du statut de moto:', {
-              value,
-              allowedStatuses: Object.values(MotorcycleStatus),
-              isValid: Object.values(MotorcycleStatus).includes(value as MotorcycleStatus)
-            });
-            
             if (!Object.values(MotorcycleStatus).includes(value as MotorcycleStatus)) {
-              console.warn('DEBUG: Statut de moto invalide, utilisation du statut par défaut');
               this.setDataValue('status', MotorcycleStatus.AVAILABLE);
             }
           }
         },
         get() {
           const rawValue = this.getDataValue('status');
-          console.log('DEBUG: Récupération du statut:', {
-            rawValue,
-            isDefault: rawValue === undefined || rawValue === null,
-            stackTrace: new Error().stack
-          });
           
           // Forcer le statut par défaut si undefined ou null
           const finalStatus = rawValue || MotorcycleStatus.AVAILABLE;
           
-          console.log('DEBUG: Statut final:', {
-            finalStatus,
-            isDefault: finalStatus === MotorcycleStatus.AVAILABLE
-          });
-          
           return finalStatus;
         },
         set(value: MotorcycleStatus) {
-          console.log('DEBUG: Définition du statut:', {
-            value,
-            defaultIfNull: value || MotorcycleStatus.AVAILABLE,
-            stackTrace: new Error().stack
-          });
-          
           // Toujours définir un statut valide
           const safeStatus = value || MotorcycleStatus.AVAILABLE;
           this.setDataValue('status', safeStatus);
         },
         toJSON() {
           const status = this.getDataValue('status');
-          console.log('DEBUG: Sérialisation du statut:', {
-            status,
-            serializedStatus: status || MotorcycleStatus.AVAILABLE,
-            stackTrace: new Error().stack
-          });
-          
           // Toujours sérialiser un statut valide
           return status || MotorcycleStatus.AVAILABLE;
         }

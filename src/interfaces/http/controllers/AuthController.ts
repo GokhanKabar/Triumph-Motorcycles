@@ -36,7 +36,6 @@ export class AuthController {
 
   async login(req: Request, res: Response): Promise<void> {
     try {
-      console.log('Données reçues:', req.body);
       const validatedData = await this.validationService.validate<LoginValidationResult>(req.body, 'login');
       
       const result = await this.loginUseCase.execute({
@@ -74,7 +73,6 @@ export class AuthController {
         refreshToken
       });
     } catch (error) {
-      console.error('Erreur lors de la connexion:', error);
       res.status(500).json({ message: 'Erreur serveur' });
     }
   };
@@ -119,7 +117,6 @@ export class AuthController {
         res.status(400).json({ message: error.message });
         return;
       }
-      console.error('Erreur lors de l\'inscription:', error);
       res.status(500).json({ message: 'Erreur serveur' });
     }
   };
@@ -145,7 +142,6 @@ export class AuthController {
         role: userResult.role
       });
     } catch (error) {
-      console.error('Erreur lors de la récupération du profil:', error);
       res.status(500).json({ message: 'Erreur serveur' });
     }
   };
@@ -175,7 +171,6 @@ export class AuthController {
         token: newToken
       });
     } catch (error) {
-      console.error('Erreur lors du rafraîchissement du token:', error);
       res.status(401).json({ message: 'Refresh token invalide ou expiré' });
     }
   };
@@ -222,7 +217,6 @@ export class AuthController {
         }
       });
     } catch (error) {
-      console.error('Erreur lors de la création d\'un utilisateur admin:', error);
       res.status(500).json({ message: 'Erreur serveur' });
     }
   }

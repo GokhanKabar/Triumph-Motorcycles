@@ -41,45 +41,30 @@ export class CompanyController {
 
   createCompany = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log('DEBUG: Création entreprise - Request body:', req.body);
-      console.log('DEBUG: Création entreprise - User:', req.user);
-
       const companyData: CreateCompanyDTO = req.body;
       
       // Vérifier que l'utilisateur est connecté
       if (!req.user || !req.user.id) {
-        console.log('DEBUG: Utilisateur non authentifié');
         res.status(401).json({ message: "Utilisateur non authentifié" });
         return;
       }
 
-      console.log('DEBUG: Création entreprise - Données validées:', {
-        userId: req.user.id,
-        name: companyData.name,
-        address: companyData.address
-      });
-
       const company = Company.from(
-        undefined, // id sera généré automatiquement
-        req.user.id, // userId de l'utilisateur connecté
+        undefined,
+        req.user.id,
         companyData.name,
         companyData.address
       );
 
-      console.log('DEBUG: Création entreprise - Entité créée:', company);
-
       if (company instanceof Error) {
-        console.log('DEBUG: Erreur lors de la création de l\'entité:', company);
         res.status(400).json({ message: company.message });
         return;
       }
 
       await this.companyRepository.save(company);
-      console.log('DEBUG: Entreprise sauvegardée avec succès');
       
       res.status(201).json(company);
     } catch (error) {
-      console.error("Error creating company:", error);
       res
         .status(500)
         .json({ message: "Erreur lors de la création de l'entreprise" });
@@ -88,19 +73,13 @@ export class CompanyController {
 
   updateCompany = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log('DEBUG: Mise à jour entreprise - Request body:', req.body);
-      console.log('DEBUG: Mise à jour entreprise - Params:', req.params);
-
       const companyData: UpdateCompanyDTO = req.body;
       const existingCompany = await this.companyRepository.findById(req.params.id);
 
       if (!existingCompany) {
-        console.log('DEBUG: Entreprise non trouvée');
         res.status(404).json({ message: "Entreprise non trouvée" });
         return;
       }
-
-      console.log('DEBUG: Entreprise existante:', existingCompany);
 
       // Créer une nouvelle instance avec les champs mis à jour
       const updatedCompany = Company.from(
@@ -113,19 +92,12 @@ export class CompanyController {
       );
 
       if (updatedCompany instanceof Error) {
-        console.log('DEBUG: Erreur lors de la mise à jour:', updatedCompany);
         res.status(400).json({ message: updatedCompany.message });
         return;
       }
-
-      console.log('DEBUG: Nouvelle instance créée:', updatedCompany);
-
       await this.companyRepository.update(updatedCompany);
-      console.log('DEBUG: Entreprise mise à jour avec succès');
-
       res.json(updatedCompany);
     } catch (error) {
-      console.error("Error updating company:", error);
       res
         .status(500)
         .json({ message: "Erreur lors de la mise à jour de l'entreprise" });
@@ -134,25 +106,17 @@ export class CompanyController {
 
   deleteCompany = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log('DEBUG: Suppression entreprise - ID:', req.params.id);
-
       // Vérifier d'abord si l'entreprise existe
       const existingCompany = await this.companyRepository.findById(req.params.id);
       if (!existingCompany) {
-        console.log('DEBUG: Entreprise non trouvée');
         res.status(404).json({ message: "Entreprise non trouvée" });
         return;
       }
 
-      console.log('DEBUG: Entreprise trouvée, suppression en cours...');
-
       try {
         await this.companyRepository.delete(req.params.id);
-        console.log('DEBUG: Entreprise supprimée avec succès');
         res.json({ message: "Entreprise supprimée avec succès" });
       } catch (deleteError: any) {
-        console.error('DEBUG: Erreur lors de la suppression:', deleteError);
-        
         if (deleteError.name === 'CompanyHasMotorcyclesError') {
           const motorcycles = await this.companyRepository.getCompanyMotorcycles(req.params.id);
           res.status(400).json({
@@ -162,16 +126,13 @@ export class CompanyController {
           });
           return;
         }
-        
         if (deleteError.message.includes("not found")) {
           res.status(404).json({ message: "Entreprise non trouvée" });
           return;
         }
-        
         throw deleteError;
       }
     } catch (error) {
-      console.error("Error deleting company:", error);
       if (error instanceof Error && error.name === 'CompanyHasMotorcyclesError') {
         const motorcycles = await this.companyRepository.getCompanyMotorcycles(req.params.id);
         res.status(400).json({

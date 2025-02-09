@@ -97,7 +97,6 @@ export class PostgreSQLDriverRepository implements IDriverRepository {
         driver.updatedAt
       ) as Driver;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du conducteur:', error);
       throw new DriverValidationError(error.message);
     }
   }
@@ -152,30 +151,7 @@ export class PostgreSQLDriverRepository implements IDriverRepository {
 
   async findAll(): Promise<Driver[]> {
     const drivers = await DriverModel.findAll();
-
-    console.log('DEBUG: Drivers from database', {
-      driversCount: drivers.length,
-      firstDriver: drivers[0] ? {
-        id: drivers[0].id,
-        firstName: drivers[0].firstName,
-        lastName: drivers[0].lastName,
-        licenseNumber: drivers[0].licenseNumber,
-        licenseType: drivers[0].licenseType,
-        licenseExpirationDate: drivers[0].licenseExpirationDate,
-        status: drivers[0].status,
-        companyId: drivers[0].companyId,
-        currentMotorcycleId: drivers[0].currentMotorcycleId,
-        drivingExperience: drivers[0].drivingExperience
-      } : null
-    });
-
     const mappedDrivers = drivers.map(driver => {
-      console.log('DEBUG: Mapping driver', {
-        driverId: driver.id,
-        firstName: driver.firstName,
-        lastName: driver.lastName
-      });
-
       const driverInstance = Driver.from(
         driver.firstName,
         driver.lastName,
@@ -192,22 +168,11 @@ export class PostgreSQLDriverRepository implements IDriverRepository {
       );
 
       if (driverInstance instanceof Error) {
-        console.error('Erreur lors de la création du conducteur:', driverInstance);
         return null;
       }
 
       return driverInstance;
     }).filter(driver => driver !== null);
-
-    console.log('DEBUG: Mapped Drivers', {
-      mappedDriversCount: mappedDrivers.length,
-      firstMappedDriver: mappedDrivers[0] ? {
-        id: mappedDrivers[0].id,
-        firstName: mappedDrivers[0].firstName,
-        lastName: mappedDrivers[0].lastName
-      } : null
-    });
-
     return mappedDrivers;
   }
 

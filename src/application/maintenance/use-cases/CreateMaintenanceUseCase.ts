@@ -15,8 +15,6 @@ export class CreateMaintenanceUseCase {
   async execute(
     createMaintenanceDTO: CreateMaintenanceDTO
   ): Promise<MaintenanceResponseDTO | MaintenanceValidationError> {
-    console.log('Début de CreateMaintenanceUseCase.execute');
-    console.log('DTO reçu:', JSON.stringify(createMaintenanceDTO, null, 2));
 
     // Conversion et validation du kilométrage
     const mileageValue = typeof createMaintenanceDTO.mileageAtMaintenance === 'string'
@@ -75,33 +73,24 @@ export class CreateMaintenanceUseCase {
       safeMaintenanceDTO.actualDate = new Date();
     }
 
-    console.log('DTO sécurisé:', JSON.stringify(safeMaintenanceDTO, null, 2));
-
     // Validation des champs requis
     if (!safeMaintenanceDTO.motorcycleId) {
-      console.error('motorcycleId manquant');
       return new MaintenanceValidationError('Motorcycle ID is required');
     }
 
     if (!safeMaintenanceDTO.type) {
-      console.error('type manquant');
       return new MaintenanceValidationError('Maintenance type is required');
     }
 
     if (!safeMaintenanceDTO.scheduledDate) {
-      console.error('scheduledDate manquant');
       return new MaintenanceValidationError('Scheduled date is required');
     }
 
-    console.log('Recherche de la moto avec ID:', safeMaintenanceDTO.motorcycleId);
     // Vérifier que la moto existe
     const motorcycle = await this.motorcycleRepository.findById(safeMaintenanceDTO.motorcycleId);
     if (motorcycle instanceof Error) {
-      console.error('Moto non trouvée');
       return new MaintenanceValidationError('Motorcycle not found');
     }
-
-    console.log('Moto trouvée:', JSON.stringify(motorcycle, null, 2));
 
     // Créer l'entretien avec des valeurs par défaut
     const maintenanceResult = Maintenance.from(
@@ -122,18 +111,13 @@ export class CreateMaintenanceUseCase {
       safeMaintenanceDTO.nextMaintenanceRecommendation
     );
 
-    console.log('Résultat de Maintenance.from():', JSON.stringify(maintenanceResult, null, 2));
-
     if (maintenanceResult instanceof MaintenanceValidationError) {
-      console.error('Erreur de validation de maintenance:', maintenanceResult);
       return maintenanceResult;
     }
 
-    console.log('Sauvegarde de la maintenance');
     // Sauvegarder l'entretien
     await this.maintenanceRepository.save(maintenanceResult);
 
-    console.log('Conversion en DTO de réponse');
     // Convertir en DTO de réponse
     const responseDTO = {
       id: maintenanceResult.id,
@@ -147,7 +131,6 @@ export class CreateMaintenanceUseCase {
       updatedAt: maintenanceResult.updatedAt
     };
 
-    console.log('DTO de réponse:', JSON.stringify(responseDTO, null, 2));
     return responseDTO;
   }
 }

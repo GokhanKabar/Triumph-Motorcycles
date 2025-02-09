@@ -94,7 +94,6 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
       await onSubmit(state.formData);
       onClose();
     } catch (error) {
-      console.error("Error submitting form:", error);
     } finally {
       setState((prev) => ({ ...prev, isSubmitting: false }));
     }
@@ -116,9 +115,9 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
-      <div className="relative bg-white rounded-lg shadow-xl p-8 m-4 max-w-xl w-full">
-        <h2 className="text-2xl font-bold mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center w-full h-full overflow-y-auto bg-gray-600 bg-opacity-50">
+      <div className="relative w-full max-w-xl p-8 m-4 bg-white rounded-lg shadow-xl">
+        <h2 className="mb-4 text-2xl font-bold">
           {company ? "Modifier une entreprise" : "Créer une entreprise"}
         </h2>
 
@@ -131,7 +130,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
               type="text"
               value={state.formData.name}
               onChange={handleChange("name")}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white text-gray-900"
+              className="block w-full mt-1 text-gray-900 bg-white border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
             {state.errors.name && (
               <p className="mt-1 text-sm text-red-600">{state.errors.name}</p>
@@ -146,7 +145,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
               type="text"
               value={state.formData.address}
               onChange={handleChange("address")}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white text-gray-900"
+              className="block w-full mt-1 text-gray-900 bg-white border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
             {state.errors.address && (
               <p className="mt-1 text-sm text-red-600">
@@ -155,7 +154,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({
             )}
           </div>
 
-          <div className="flex justify-end space-x-3 mt-6">
+          <div className="flex justify-end mt-6 space-x-3">
             <button
               type="button"
               onClick={onClose}

@@ -11,7 +11,6 @@ const formatDate = (dateString: string | Date | undefined): string => {
     
     // Vérifier si la date est valide
     if (isNaN(date.getTime())) {
-      console.warn('Date invalide:', dateString);
       return 'Date invalide';
     }
     
@@ -21,7 +20,6 @@ const formatDate = (dateString: string | Date | undefined): string => {
       year: 'numeric'
     });
   } catch (error) {
-    console.error('Erreur de formatage de date:', error);
     return 'Date non formatée';
   }
 };
@@ -44,22 +42,9 @@ const TestRidePage: React.FC = () => {
     try {
       setIsLoading(true);
       const rides = await testRideService.getAll();
-      
-      // Log détaillé pour le débogage
-      console.log('Test Rides récupérés:', rides);
-      rides.forEach((ride, index) => {
-        console.log(`Test Ride ${index + 1}:`, {
-          id: ride.id,
-          motorcycleName: ride.motorcycleName,
-          desiredDate: ride.desiredDate,
-          status: ride.status
-        });
-      });
-
       setTestRides(rides);
       setError(null);
     } catch (error) {
-      console.error('Erreur lors de la récupération des test rides', error);
       setError('Impossible de charger les test rides. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
@@ -73,7 +58,6 @@ const TestRidePage: React.FC = () => {
         fetchTestRides();
         setIsDeleteModalOpen(false);
       } catch (error) {
-        console.error('Erreur lors de la suppression du test ride', error);
         setError('Impossible de supprimer le test ride.');
       }
     }
@@ -82,21 +66,17 @@ const TestRidePage: React.FC = () => {
   const handleUpdateStatus = async () => {
     if (selectedTestRide && selectedStatus) {
       try {
-        // Vérification que le statut est une valeur valide de l'enum
         if (!Object.values(TestRideStatus).includes(selectedStatus)) {
           throw new Error('Statut invalide');
         }
 
         const statusData = {
-          status: selectedStatus as TestRideStatus // Cast explicite pour s'assurer que le type est correct
+          status: selectedStatus as TestRideStatus
         };
-        
-        console.log('Envoi du statut:', JSON.stringify(statusData)); // Pour le débogage
         await testRideService.updateStatus(selectedTestRide.id, statusData);
         fetchTestRides();
         setIsStatusModalOpen(false);
       } catch (error) {
-        console.error('Erreur lors de la mise à jour du statut', error);
         setError('Impossible de mettre à jour le statut.');
       }
     }
@@ -136,19 +116,19 @@ const TestRidePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 flex justify-center items-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-blue-500"></div>
+      <div className="container flex items-center justify-center px-4 py-8 mx-auto">
+        <div className="w-32 h-32 border-t-2 border-blue-500 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center text-red-600">
+      <div className="container px-4 py-8 mx-auto text-center text-red-600">
         <p>{error}</p>
         <button 
           onClick={fetchTestRides} 
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="px-4 py-2 mt-4 text-white bg-blue-500 rounded hover:bg-blue-600"
         >
           Réessayer
         </button>
@@ -157,22 +137,22 @@ const TestRidePage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-gray-50 min-h-screen">
-      <h1 className="text-4xl font-bold mb-8 text-gray-800">Gestion des Test Rides</h1>
+    <div className="container min-h-screen px-4 py-8 mx-auto bg-gray-50">
+      <h1 className="mb-8 text-4xl font-bold text-gray-800">Gestion des Test Rides</h1>
       
       {testRides.length === 0 ? (
         <div className="text-center text-gray-600">
           Aucun test ride disponible
         </div>
       ) : (
-        <div className="bg-white shadow-lg rounded-xl overflow-hidden">
+        <div className="overflow-hidden bg-white shadow-lg rounded-xl">
           <table className="w-full">
             <thead className="bg-gray-100 border-b">
               <tr>
                 {['Date', 'Moto', 'Client', 'Concession', 'Statut', 'Actions'].map((header) => (
                   <th 
                     key={header} 
-                    className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase"
                   >
                     {header}
                   </th>
@@ -183,18 +163,18 @@ const TestRidePage: React.FC = () => {
               {testRides.map((testRide, index) => (
                 <tr 
                   key={`${testRide.id}-${index}`} 
-                  className="hover:bg-gray-50 transition-colors duration-200"
+                  className="transition-colors duration-200 hover:bg-gray-50"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
                     {formatDate(testRide.desiredDate)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
                     {testRide.motorcycleName || 'Moto non spécifiée'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
                     {testRide.firstName} {testRide.lastName}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
                     {testRide.concessionName || 'Concession non spécifiée'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -204,23 +184,23 @@ const TestRidePage: React.FC = () => {
                       {testRide.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                     <div className="flex space-x-2">
                       <button 
                         onClick={() => openDetailModal(testRide)}
-                        className="text-blue-600 hover:text-blue-900 transition-colors"
+                        className="text-blue-600 transition-colors hover:text-blue-900"
                       >
                         Détails
                       </button>
                       <button 
                         onClick={() => openStatusModal(testRide)}
-                        className="text-yellow-600 hover:text-yellow-900 transition-colors"
+                        className="text-yellow-600 transition-colors hover:text-yellow-900"
                       >
                         Statut
                       </button>
                       <button 
                         onClick={() => openDeleteModal(testRide)}
-                        className="text-red-600 hover:text-red-900 transition-colors"
+                        className="text-red-600 transition-colors hover:text-red-900"
                       >
                         Supprimer
                       </button>
@@ -235,9 +215,9 @@ const TestRidePage: React.FC = () => {
 
       {/* Modal de détails */}
       {isDetailModalOpen && selectedTestRide && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Détails du Test Ride</h2>
+            <h2 className="mb-6 text-2xl font-bold text-gray-800">Détails du Test Ride</h2>
             <div className="grid grid-cols-2 gap-4">
               <DetailRow label="Nom" value={`${selectedTestRide.firstName} ${selectedTestRide.lastName}`} />
               <DetailRow label="Email" value={selectedTestRide.email} />
@@ -248,10 +228,10 @@ const TestRidePage: React.FC = () => {
               <DetailRow label="Expérience" value={selectedTestRide.riderExperience} />
               <DetailRow label="Type de Permis" value={selectedTestRide.licenseType} />
             </div>
-            <div className="mt-6 flex justify-end space-x-4">
+            <div className="flex justify-end mt-6 space-x-4">
               <button 
                 onClick={closeModals}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 text-gray-800 transition-colors bg-gray-200 rounded-md hover:bg-gray-300"
               >
                 Fermer
               </button>
@@ -262,9 +242,9 @@ const TestRidePage: React.FC = () => {
 
       {/* Modal de changement de statut */}
       {isStatusModalOpen && selectedTestRide && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Changer le statut</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-full max-w-md p-8 bg-white rounded-xl">
+            <h2 className="mb-6 text-2xl font-bold text-gray-800">Changer le statut</h2>
             <div className="space-y-4">
               {Object.values(TestRideStatus).map((status: TestRideStatus) => (
                 <button
@@ -280,10 +260,10 @@ const TestRidePage: React.FC = () => {
                 </button>
               ))}
             </div>
-            <div className="mt-6 flex justify-end space-x-4">
+            <div className="flex justify-end mt-6 space-x-4">
               <button 
                 onClick={closeModals}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 text-gray-800 transition-colors bg-gray-200 rounded-md hover:bg-gray-300"
               >
                 Annuler
               </button>
@@ -305,9 +285,9 @@ const TestRidePage: React.FC = () => {
 
       {/* Modal de confirmation de suppression */}
       {isDeleteModalOpen && selectedTestRide && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4 text-red-600">Confirmer la suppression</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-full max-w-md p-8 bg-white rounded-xl">
+            <h2 className="mb-4 text-2xl font-bold text-red-600">Confirmer la suppression</h2>
             <p className="mb-6 text-gray-700">
               Êtes-vous sûr de vouloir supprimer le test ride pour 
               <span className="font-semibold"> {selectedTestRide.firstName} {selectedTestRide.lastName}</span> ?
@@ -315,13 +295,13 @@ const TestRidePage: React.FC = () => {
             <div className="flex justify-end space-x-4">
               <button 
                 onClick={closeModals}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 text-gray-800 transition-colors bg-gray-200 rounded-md hover:bg-gray-300"
               >
                 Annuler
               </button>
               <button 
                 onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="px-4 py-2 text-white transition-colors bg-red-600 rounded-md hover:bg-red-700"
               >
                 Supprimer
               </button>
@@ -335,8 +315,8 @@ const TestRidePage: React.FC = () => {
 
 // Composant utilitaire pour afficher les détails
 const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div className="bg-gray-100 p-4 rounded-md">
-    <span className="block text-xs text-gray-500 mb-1">{label}</span>
+  <div className="p-4 bg-gray-100 rounded-md">
+    <span className="block mb-1 text-xs text-gray-500">{label}</span>
     <span className="text-sm font-semibold text-gray-800">{value}</span>
   </div>
 );

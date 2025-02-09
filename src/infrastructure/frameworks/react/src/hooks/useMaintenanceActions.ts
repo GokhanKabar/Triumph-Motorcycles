@@ -95,10 +95,6 @@ export const useMaintenanceActions = () => {
           draggable: true,
         });
       }
-      
-      // Log de l'erreur
-      console.error('Erreur lors de la complétion de maintenance:', error);
-      
       throw error;
     } finally {
       setIsLoading(false);

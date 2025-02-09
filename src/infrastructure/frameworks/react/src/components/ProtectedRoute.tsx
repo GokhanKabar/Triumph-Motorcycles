@@ -18,7 +18,6 @@ const ProtectedRoute = () => {
     try {
       user = JSON.parse(userStr);
     } catch (error) {
-      console.error('Erreur lors de la vérification de l\'authentification:', error);
       // En cas d'erreur de parsing, supprimer les données corrompues
       localStorage.removeItem('user');
       localStorage.removeItem('token');

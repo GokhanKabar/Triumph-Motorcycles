@@ -114,7 +114,6 @@ const UserForm: React.FC<UserFormProps> = ({ open, user, onClose, onSubmit }) =>
         onClose();
       }
     } catch (error) {
-      console.error('Submission error:', error);
     } finally {
       setState(prev => ({ ...prev, isSubmitting: false }));
     }
@@ -123,15 +122,15 @@ const UserForm: React.FC<UserFormProps> = ({ open, user, onClose, onSubmit }) =>
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/70 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/70 backdrop-blur-sm">
       <form 
         onSubmit={handleSubmit} 
-        className="bg-white w-full max-w-md mx-auto rounded-2xl shadow-xl p-8 space-y-6"
+        className="w-full max-w-md p-8 mx-auto space-y-6 bg-white shadow-xl rounded-2xl"
         aria-labelledby="user-form-title"
       >
         <h2 
           id="user-form-title" 
-          className="text-2xl font-bold text-gray-800 mb-6 text-center"
+          className="mb-6 text-2xl font-bold text-center text-gray-800"
         >
           {user ? 'Update User' : 'Create User'}
         </h2>
@@ -163,7 +162,7 @@ const UserForm: React.FC<UserFormProps> = ({ open, user, onClose, onSubmit }) =>
             {state.errors.firstName && (
               <span 
                 id="firstName-error" 
-                className="text-red-600 text-sm font-medium"
+                className="text-sm font-medium text-red-600"
                 role="alert"
               >
                 {state.errors.firstName}
@@ -197,7 +196,7 @@ const UserForm: React.FC<UserFormProps> = ({ open, user, onClose, onSubmit }) =>
             {state.errors.lastName && (
               <span 
                 id="lastName-error" 
-                className="text-red-600 text-sm font-medium"
+                className="text-sm font-medium text-red-600"
                 role="alert"
               >
                 {state.errors.lastName}
@@ -231,7 +230,7 @@ const UserForm: React.FC<UserFormProps> = ({ open, user, onClose, onSubmit }) =>
             {state.errors.email && (
               <span 
                 id="email-error" 
-                className="text-red-600 text-sm font-medium"
+                className="text-sm font-medium text-red-600"
                 role="alert"
               >
                 {state.errors.email}
@@ -266,7 +265,7 @@ const UserForm: React.FC<UserFormProps> = ({ open, user, onClose, onSubmit }) =>
               {state.errors.password && (
                 <span 
                   id="password-error" 
-                  className="text-red-600 text-sm font-medium"
+                  className="text-sm font-medium text-red-600"
                   role="alert"
                 >
                   {state.errors.password}
@@ -307,7 +306,7 @@ const UserForm: React.FC<UserFormProps> = ({ open, user, onClose, onSubmit }) =>
             {state.errors.role && (
               <span 
                 id="role-error" 
-                className="text-red-600 text-sm font-medium"
+                className="text-sm font-medium text-red-600"
                 role="alert"
               >
                 {state.errors.role}

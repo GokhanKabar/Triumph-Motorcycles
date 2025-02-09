@@ -88,8 +88,6 @@ const ConcessionForm: React.FC<ConcessionFormProps> = ({
       await onSubmit(state.formData);
       onClose();
     } catch (error) {
-      console.error("Error submitting form:", error);
-      
       // Gérer les erreurs de validation côté serveur
       if (error instanceof Error) {
         const errorMessage = error.message || "Une erreur est survenue lors de la création de la concession";
@@ -125,9 +123,9 @@ const ConcessionForm: React.FC<ConcessionFormProps> = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
-        <h2 className="text-xl font-bold mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-xl">
+        <h2 className="mb-4 text-xl font-bold">
           {concession ? "Modifier la concession" : "Nouvelle concession"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">

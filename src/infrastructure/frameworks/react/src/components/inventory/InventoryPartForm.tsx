@@ -38,7 +38,6 @@ export default function InventoryPartForm({
         const data = await motorcycleService.getAllMotorcycles();
         setMotorcycles(data);
       } catch (error) {
-        console.error('Erreur lors de la récupération des motos', error);
       }
     }
     fetchMotorcycles();
@@ -179,9 +178,9 @@ export default function InventoryPartForm({
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6">
+    <div className="p-6 bg-white rounded-lg shadow-md">
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="flex justify-between items-center border-b pb-4">
+        <div className="flex items-center justify-between pb-4 border-b">
           <h2 className="text-2xl font-semibold text-gray-800">
             {isEditMode ? 'Modifier une pièce' : 'Nouvelle pièce'}
           </h2>
@@ -191,16 +190,16 @@ export default function InventoryPartForm({
               onClick={onCancel}
               className="text-gray-600 hover:text-gray-900"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-700">
               Nom de la pièce
             </label>
             <input
@@ -210,16 +209,16 @@ export default function InventoryPartForm({
               value={formData.name || ''}
               onChange={handleChange}
               required={!isEditMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Ex: Filtre à huile"
             />
             {errors.name && (
-              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.name}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="referenceNumber" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="referenceNumber" className="block mb-2 text-sm font-medium text-gray-700">
               Numéro de référence
             </label>
             <input
@@ -229,18 +228,18 @@ export default function InventoryPartForm({
               value={formData.referenceNumber || ''}
               onChange={handleChange}
               required={!isEditMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Ex: HF204"
             />
             {errors.referenceNumber && (
-              <p className="text-red-500 text-xs mt-1">{errors.referenceNumber}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.referenceNumber}</p>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-700">
               Catégorie
             </label>
             <select
@@ -249,7 +248,7 @@ export default function InventoryPartForm({
               value={formData.category || ''}
               onChange={handleChange}
               required={!isEditMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Sélectionner une catégorie</option>
               {Object.values(PartCategory).map((category) => (
@@ -259,12 +258,12 @@ export default function InventoryPartForm({
               ))}
             </select>
             {errors.category && (
-              <p className="text-red-500 text-xs mt-1">{errors.category}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.category}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="unitPrice" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="unitPrice" className="block mb-2 text-sm font-medium text-gray-700">
               Prix unitaire (€)
             </label>
             <input
@@ -276,18 +275,18 @@ export default function InventoryPartForm({
               min="0"
               step="0.01"
               required={!isEditMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Ex: 24.99"
             />
             {errors.unitPrice && (
-              <p className="text-red-500 text-xs mt-1">{errors.unitPrice}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.unitPrice}</p>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="currentStock" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="currentStock" className="block mb-2 text-sm font-medium text-gray-700">
               Stock actuel
             </label>
             <input
@@ -298,16 +297,16 @@ export default function InventoryPartForm({
               onChange={handleChange}
               min="0"
               required={!isEditMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Ex: 50"
             />
             {errors.currentStock && (
-              <p className="text-red-500 text-xs mt-1">{errors.currentStock}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.currentStock}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="minStockThreshold" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="minStockThreshold" className="block mb-2 text-sm font-medium text-gray-700">
               Seuil de stock minimum
             </label>
             <input
@@ -318,25 +317,25 @@ export default function InventoryPartForm({
               onChange={handleChange}
               min="0"
               required={!isEditMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Ex: 10"
             />
             {errors.minStockThreshold && (
-              <p className="text-red-500 text-xs mt-1">{errors.minStockThreshold}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.minStockThreshold}</p>
             )}
           </div>
         </div>
 
         <div>
-          <label htmlFor="newMotorcycleModel" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="newMotorcycleModel" className="block mb-2 text-sm font-medium text-gray-700">
             Modèles de moto compatibles
           </label>
-          <div className="flex space-x-2 mb-2">
+          <div className="flex mb-2 space-x-2">
             <select
               id="newMotorcycleModel"
               value={newMotorcycleModel}
               onChange={(e) => setNewMotorcycleModel(e.target.value)}
-              className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="flex-grow px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Sélectionner un modèle</option>
               {motorcycles
@@ -352,9 +351,9 @@ export default function InventoryPartForm({
               type="button"
               onClick={handleAddMotorcycleModel}
               disabled={!newMotorcycleModel}
-              className="bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
               </svg>
             </button>
@@ -365,7 +364,7 @@ export default function InventoryPartForm({
             {formData.motorcycleModels?.map(model => (
               <div 
                 key={model} 
-                className="flex items-center bg-gray-100 px-2 py-1 rounded-full text-sm"
+                className="flex items-center px-2 py-1 text-sm bg-gray-100 rounded-full"
               >
                 {model}
                 <button
@@ -373,7 +372,7 @@ export default function InventoryPartForm({
                   onClick={() => handleRemoveMotorcycleModel(model)}
                   className="ml-2 text-red-500 hover:text-red-700"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
                 </button>
@@ -381,7 +380,7 @@ export default function InventoryPartForm({
             ))}
           </div>
           {errors.motorcycleModels && (
-            <p className="text-red-500 text-xs mt-1">{errors.motorcycleModels}</p>
+            <p className="mt-1 text-xs text-red-500">{errors.motorcycleModels}</p>
           )}
         </div>
 
@@ -390,14 +389,14 @@ export default function InventoryPartForm({
             <button
               type="button"
               onClick={onCancel}
-              className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+              className="px-4 py-2 text-gray-800 bg-gray-300 rounded hover:bg-gray-400"
             >
               Annuler
             </button>
           )}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             {isEditMode ? 'Mettre à jour' : 'Créer'}
           </button>

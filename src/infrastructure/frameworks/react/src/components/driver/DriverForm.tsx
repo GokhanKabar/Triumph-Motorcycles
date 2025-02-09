@@ -75,7 +75,6 @@ export const DriverForm: React.FC<DriverFormProps> = ({
           }));
         }
       } catch (error) {
-        console.error('Erreur lors de la récupération des données:', error);
         alert('Impossible de charger les données');
       }
     };
@@ -183,7 +182,6 @@ export const DriverForm: React.FC<DriverFormProps> = ({
       }
     } catch (error) {
       alert(driverToEdit ? 'Erreur lors de la mise à jour du conducteur' : 'Erreur lors de l\'ajout du conducteur');
-      console.error('Erreur:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -191,15 +189,15 @@ export const DriverForm: React.FC<DriverFormProps> = ({
   };
 
   return (
-    <div className="bg-white shadow-xl rounded-2xl p-6">
-      <h2 className="text-3xl font-extrabold text-gray-900 mb-6">
+    <div className="p-6 bg-white shadow-xl rounded-2xl">
+      <h2 className="mb-6 text-3xl font-extrabold text-gray-900">
         {driverToEdit ? 'Modifier un Conducteur' : 'Nouveau Conducteur'}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Champs du formulaire */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+            <label htmlFor="firstName" className="block mb-1 text-sm font-medium text-gray-700">Prénom</label>
             <input
               type="text"
               id="firstName"
@@ -207,17 +205,15 @@ export const DriverForm: React.FC<DriverFormProps> = ({
               value={formData.firstName}
               onChange={handleChange}
               placeholder="Entrez le prénom"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 
-                         bg-white text-gray-900 placeholder-gray-500"
+              className="w-full px-3 py-2 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             {errors.firstName && (
-              <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.firstName}</p>
             )}
           </div>
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+            <label htmlFor="lastName" className="block mb-1 text-sm font-medium text-gray-700">Nom</label>
             <input
               type="text"
               id="lastName"
@@ -225,20 +221,18 @@ export const DriverForm: React.FC<DriverFormProps> = ({
               value={formData.lastName}
               onChange={handleChange}
               placeholder="Entrez le nom"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 
-                         bg-white text-gray-900 placeholder-gray-500"
+              className="w-full px-3 py-2 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             {errors.lastName && (
-              <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.lastName}</p>
             )}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700 mb-1">Numéro de Permis</label>
+            <label htmlFor="licenseNumber" className="block mb-1 text-sm font-medium text-gray-700">Numéro de Permis</label>
             <input
               type="text"
               id="licenseNumber"
@@ -246,25 +240,21 @@ export const DriverForm: React.FC<DriverFormProps> = ({
               value={formData.licenseNumber}
               onChange={handleChange}
               placeholder="Numéro de permis"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 
-                         bg-white text-gray-900 placeholder-gray-500"
+              className="w-full px-3 py-2 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             {errors.licenseNumber && (
-              <p className="text-red-500 text-xs mt-1">{errors.licenseNumber}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.licenseNumber}</p>
             )}
           </div>
           <div>
-            <label htmlFor="licenseType" className="block text-sm font-medium text-gray-700 mb-1">Type de Permis</label>
+            <label htmlFor="licenseType" className="block mb-1 text-sm font-medium text-gray-700">Type de Permis</label>
             <select
               id="licenseType"
               name="licenseType"
               value={formData.licenseType}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 
-                         bg-white text-gray-900"
+              className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="A">A - Moto sans limitation</option>
               <option value="A1">A1 - Moto légère</option>
@@ -275,7 +265,7 @@ export const DriverForm: React.FC<DriverFormProps> = ({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="licenseExpirationDate" className="block text-sm font-medium text-gray-700 mb-1">Date d'Expiration</label>
+            <label htmlFor="licenseExpirationDate" className="block mb-1 text-sm font-medium text-gray-700">Date d'Expiration</label>
             <input
               type="date"
               id="licenseExpirationDate"
@@ -283,17 +273,15 @@ export const DriverForm: React.FC<DriverFormProps> = ({
               value={formData.licenseExpirationDate}
               onChange={handleChange}
               min={new Date().toISOString().split('T')[0]}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 
-                         bg-white text-gray-900"
+              className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             {errors.licenseExpirationDate && (
-              <p className="text-red-500 text-xs mt-1">{errors.licenseExpirationDate}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.licenseExpirationDate}</p>
             )}
           </div>
           <div>
-            <label htmlFor="drivingExperience" className="block text-sm font-medium text-gray-700 mb-1">Expérience de Conduite (années)</label>
+            <label htmlFor="drivingExperience" className="block mb-1 text-sm font-medium text-gray-700">Expérience de Conduite (années)</label>
             <input
               type="number"
               id="drivingExperience"
@@ -302,24 +290,20 @@ export const DriverForm: React.FC<DriverFormProps> = ({
               onChange={handleChange}
               min="0"
               placeholder="Années d'expérience"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 
-                         bg-white text-gray-900 placeholder-gray-500"
+              className="w-full px-3 py-2 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="companyId" className="block text-sm font-medium text-gray-700 mb-1">Entreprise</label>
+            <label htmlFor="companyId" className="block mb-1 text-sm font-medium text-gray-700">Entreprise</label>
             <select
               id="companyId"
               name="companyId"
               value={formData.companyId}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 
-                         bg-white text-gray-900"
+              className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
               {companies.map(company => (
@@ -329,19 +313,17 @@ export const DriverForm: React.FC<DriverFormProps> = ({
               ))}
             </select>
             {errors.companyId && (
-              <p className="text-red-500 text-xs mt-1">{errors.companyId}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.companyId}</p>
             )}
           </div>
           <div>
-            <label htmlFor="currentMotorcycleId" className="block text-sm font-medium text-gray-700 mb-1">Moto Assignée</label>
+            <label htmlFor="currentMotorcycleId" className="block mb-1 text-sm font-medium text-gray-700">Moto Assignée</label>
             <select
               id="currentMotorcycleId"
               name="currentMotorcycleId"
               value={formData.currentMotorcycleId}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 
-                         bg-white text-gray-900"
+              className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Aucune moto assignée</option>
               {motorcycles.map(motorcycle => (
@@ -354,15 +336,13 @@ export const DriverForm: React.FC<DriverFormProps> = ({
         </div>
 
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+          <label htmlFor="status" className="block mb-1 text-sm font-medium text-gray-700">Statut</label>
           <select
             id="status"
             name="status"
             value={formData.status}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md 
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 
-                       bg-white text-gray-900"
+            className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {Object.values(DriverStatus).map(status => (
               <option key={status} value={status}>
@@ -374,7 +354,7 @@ export const DriverForm: React.FC<DriverFormProps> = ({
           </select>
         </div>
 
-        <div className="flex justify-end space-x-4 mt-6">
+        <div className="flex justify-end mt-6 space-x-4">
           <button
             type="submit"
             disabled={isSubmitting}

@@ -12,7 +12,6 @@ export const useAuth = () => {
       login(user, token);
       navigate('/dashboard');
     } catch (error) {
-      console.error('Login failed', error);
       throw error;
     }
   };

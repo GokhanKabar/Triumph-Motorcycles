@@ -76,29 +76,21 @@ export class JWTTokenService implements ITokenService {
 
   async verifyToken(token: string): Promise<TokenPayload> {
     try {
-      console.log('Verifying Token:', token); // Log du token à vérifier
-      console.log('Secret Key:', this.secretKey); // Log de la clé secrète utilisée
-
       const decoded = jwt.verify(token, this.secretKey, {
         audience: 'triumph-motorcycles-api',
         issuer: 'triumph-motorcycles',
       });
 
-      console.log('Decoded Token:', decoded); // Log du token décodé
-
       if (typeof decoded === 'string') {
-        console.log('Decoded token is a string, which is unexpected'); // Log si décodage inattendu
         throw new Error('Token invalide');
       }
 
       if (decoded.type !== 'access') {
-        console.log('Token type is not access:', decoded.type); // Log du type de token
         throw new Error('Type de token invalide');
       }
 
       return decoded as TokenPayload;
     } catch (error) {
-      console.error('Token Verification Error:', error); // Log de l'erreur de vérification
       if (error instanceof jwt.TokenExpiredError) {
         throw new Error('Token expiré');
       }

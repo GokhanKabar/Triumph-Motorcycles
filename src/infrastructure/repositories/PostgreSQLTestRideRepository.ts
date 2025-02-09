@@ -13,22 +13,6 @@ export class PostgreSQLTestRideRepository implements ITestRideRepository {
       const concessionModel = await ConcessionModel.findByPk(testRide.concessionId);
       const concessionName = concessionModel ? concessionModel.name : 'Concession non spécifiée';
 
-      console.log('Création de test ride:', {
-        id: testRide.id,
-        concessionId: testRide.concessionId,
-        motorcycleId: testRide.motorcycleId,
-        motorcycleName: testRide.motorcycleName,
-        firstName: testRide.firstName,
-        lastName: testRide.lastName,
-        email: testRide.email,
-        phoneNumber: testRide.phoneNumber,
-        desiredDate: testRide.desiredDate,
-        status: testRide.status,
-        riderExperience: testRide.riderExperience,
-        licenseType: testRide.licenseType,
-        licenseNumber: testRide.licenseNumber
-      });
-
       const createdTestRide = await TestRideModel.create({
         id: testRide.id || undefined,
         concessionId: testRide.concessionId || 'concession_non_specifiee',
@@ -49,11 +33,6 @@ export class PostgreSQLTestRideRepository implements ITestRideRepository {
         message: testRide.message || '',
         createdAt: testRide.createdAt || new Date(),
         updatedAt: testRide.updatedAt || new Date()
-      });
-
-      console.log('Test ride créé avec succès:', {
-        id: createdTestRide.id,
-        motorcycleName: createdTestRide.motorcycleName
       });
 
       // Retourner un nouvel objet TestRide avec le nom de la concession
@@ -83,7 +62,6 @@ export class PostgreSQLTestRideRepository implements ITestRideRepository {
       if (error instanceof UniqueConstraintError) {
         throw new Error('Une réservation similaire existe déjà');
       }
-      console.error('Erreur lors de la création du test ride:', error);
       throw error;
     }
   }
@@ -126,7 +104,6 @@ export class PostgreSQLTestRideRepository implements ITestRideRepository {
         throw new Error('Données de réservation corrompues dans la base de données');
       }
     } catch (error) {
-      console.error('Erreur lors du traitement d\'un test ride:', error);
       throw new Error('Erreur lors du traitement d\'un test ride');
     }
   }
@@ -169,13 +146,12 @@ export class PostgreSQLTestRideRepository implements ITestRideRepository {
         if (!(testRideOrError instanceof Error)) {
           testRides.push(testRideOrError);
         } else {
-          console.error('Erreur lors de la création d\'un test ride:', testRideOrError);
+          throw new Error(`Erreur lors de la création d\'un test ride: ${testRideOrError}`);
         }
       } catch (error) {
-        console.error('Erreur lors du traitement d\'un test ride:', error);
+        throw new Error(`Erreur lors du traitement d\'un test ride: ${error}`);
       }
     }
-
     return testRides;
   }
 
@@ -217,10 +193,11 @@ export class PostgreSQLTestRideRepository implements ITestRideRepository {
         if (!(testRideOrError instanceof Error)) {
           testRides.push(testRideOrError);
         } else {
-          console.error('Erreur lors de la création d\'un test ride:', testRideOrError);
+          throw new Error(`Erreur lors de la récupération d'une moto : ${testRideOrError}`)
         }
       } catch (error) {
-        console.error('Erreur lors du traitement d\'un test ride:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        throw new Error(errorMessage)
       }
     }
 
@@ -263,10 +240,11 @@ export class PostgreSQLTestRideRepository implements ITestRideRepository {
         if (!(testRideOrError instanceof Error)) {
           testRides.push(testRideOrError);
         } else {
-          console.error('Erreur lors de la création d\'un test ride:', testRideOrError);
+          throw new Error(`Erreur lors de la récupération des motos : ${testRideOrError}`)
         }
       } catch (error) {
-        console.error('Erreur lors du traitement d\'un test ride:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        throw new Error(errorMessage);
       }
     }
 
@@ -287,7 +265,6 @@ export class PostgreSQLTestRideRepository implements ITestRideRepository {
       );
 
       if (affectedCount === 0) {
-        console.error('Aucun test ride mis à jour:', testRide.id);
         throw new TestRideNotFoundError(testRide.id);
       }
 
@@ -295,7 +272,6 @@ export class PostgreSQLTestRideRepository implements ITestRideRepository {
       const updatedTestRideModel = await TestRideModel.findByPk(testRide.id);
       
       if (!updatedTestRideModel) {
-        console.error('Test ride introuvable après mise à jour:', testRide.id);
         throw new TestRideNotFoundError(testRide.id);
       }
 
@@ -328,13 +304,11 @@ export class PostgreSQLTestRideRepository implements ITestRideRepository {
       );
 
       if (updatedTestRideOrError instanceof Error) {
-        console.error('Erreur de validation lors de la mise à jour:', updatedTestRideOrError);
         throw updatedTestRideOrError;
       }
 
       return updatedTestRideOrError;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du test ride:', error);
       if (error instanceof TestRideNotFoundError) {
         throw error;
       }
@@ -417,7 +391,6 @@ export class PostgreSQLTestRideRepository implements ITestRideRepository {
         concessionName: 'Concession non spécifiée'
       }));
     } catch (error) {
-      console.error('Erreur lors de la recherche des test rides:', error);
       throw new Error('Impossible de récupérer les test rides');
     }
   }

@@ -56,7 +56,6 @@ export class DriverController {
         updatedAt: driver.updatedAt
       });
     } catch (error) {
-      console.error('Erreur lors de la création du conducteur:', error);
       res.status(500).json({ message: 'Erreur lors de la création du conducteur' });
     }
   }
@@ -80,7 +79,6 @@ export class DriverController {
       }));
       res.status(200).json(driversDTO);
     } catch (error) {
-      console.error('Erreur lors de la récupération des conducteurs:', error);
       res.status(500).json({ message: 'Erreur lors de la récupération des conducteurs' });
     }
   }
@@ -124,8 +122,6 @@ export class DriverController {
         updatedAt: updatedDriver.updatedAt
       });
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du conducteur:', error);
-      
       if (error instanceof DriverNotFoundError) {
         res.status(404).json({ message: error.message });
       } else if (error instanceof DriverValidationError) {
@@ -158,7 +154,6 @@ export class DriverController {
 
       res.status(200).json({ message: 'Conducteur supprimé avec succès' });
     } catch (error) {
-      console.error('Erreur lors de la suppression du conducteur:', error);
       res.status(500).json({ message: 'Erreur lors de la suppression du conducteur' });
     }
   }
@@ -182,7 +177,6 @@ export class DriverController {
         updatedAt: updatedDriver.updatedAt
       });
     } catch (error) {
-      console.error('Erreur lors de l\'assignation de la moto:', error);
       res.status(500).json({ message: 'Erreur lors de l\'assignation de la moto' });
     }
   }
@@ -206,7 +200,6 @@ export class DriverController {
         updatedAt: updatedDriver.updatedAt
       });
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement de l\'incident:', error);
       res.status(500).json({ message: 'Erreur lors de l\'enregistrement de l\'incident' });
     }
   }
@@ -245,8 +238,6 @@ export class DriverController {
         updatedAt: updatedDriver.updatedAt
       });
     } catch (error) {
-      console.error('Erreur lors du changement de statut du conducteur:', error);
-      
       if (error instanceof DriverNotFoundError) {
         res.status(404).json({ message: error.message });
       } else if (error instanceof DriverValidationError) {

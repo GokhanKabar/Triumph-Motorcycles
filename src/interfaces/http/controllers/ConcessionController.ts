@@ -6,7 +6,6 @@ import {
   CreateConcessionDTO,
   UpdateConcessionDTO,
 } from "../../../application/dtos/ConcessionDTO";
-import { v4 as uuidv4 } from 'uuid';
 
 export class ConcessionController {
   private concessionRepository: PostgreSQLConcessionRepository;
@@ -43,9 +42,6 @@ export class ConcessionController {
 
   createConcession = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log('DEBUG: Création concession - Request body COMPLET:', JSON.stringify(req.body, null, 2));
-      console.log('DEBUG: Création concession - Utilisateur authentifié:', req.user);
-
       const concessionData: CreateConcessionDTO = req.body;
       
       // Validation complète des données d'entrée
@@ -72,7 +68,6 @@ export class ConcessionController {
 
       // Gestion des erreurs de validation
       if (validationErrors.length > 0) {
-        console.log('DEBUG: Erreurs de validation:', validationErrors);
         res.status(400).json({ 
           error: {
             code: 'VALIDATION_ERROR',
@@ -83,22 +78,15 @@ export class ConcessionController {
         return;
       }
 
-      console.log('DEBUG: Création concession - Données validées:', {
-        userId: concessionData.userId,
-        name: concessionData.name,
-        address: concessionData.address
-      });
-
       let concession;
       try {
         concession = Concession.from(
-          undefined, // Forcer la génération d'un nouvel ID
+          undefined,
           concessionData.userId,
           concessionData.name.trim(),
           concessionData.address ? concessionData.address.trim() : "N/A"
         );
       } catch (entityCreationError) {
-        console.error('DEBUG: Erreur lors de la création de l\'entité:', entityCreationError);
         res.status(400).json({ 
           error: {
             code: 'ENTITY_CREATION_ERROR',
@@ -109,10 +97,7 @@ export class ConcessionController {
         return;
       }
 
-      console.log('DEBUG: Création concession - Entité créée:', JSON.stringify(concession, null, 2));
-
       if (concession instanceof Error) {
-        console.log('DEBUG: Erreur lors de la création de l\'entité:', concession);
         res.status(400).json({ 
           error: {
             code: 'ENTITY_CREATION_ERROR',
@@ -124,8 +109,6 @@ export class ConcessionController {
 
       try {
         await this.concessionRepository.save(concession);
-        console.log('DEBUG: Concession sauvegardée avec succès');
-        
         res.status(201).json({
           message: "Concession créée avec succès",
           concession: {
@@ -136,17 +119,6 @@ export class ConcessionController {
           }
         });
       } catch (saveError) {
-        console.error('DEBUG: Erreur lors de la sauvegarde de la concession:', saveError);
-        
-        // Log détaillé de l'erreur
-        if (saveError instanceof Error) {
-          console.error('Détails de l\'erreur:', {
-            name: saveError.name,
-            message: saveError.message,
-            stack: saveError.stack
-          });
-        }
-
         res.status(500).json({ 
           error: {
             code: 'SAVE_ERROR',
@@ -160,17 +132,6 @@ export class ConcessionController {
         });
       }
     } catch (error) {
-      console.error("Erreur complète lors de la création de la concession:", error);
-      
-      // Log détaillé de l'erreur
-      if (error instanceof Error) {
-        console.error('Détails de l\'erreur:', {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
-        });
-      }
-
       res.status(500).json({ 
         error: {
           code: 'INTERNAL_SERVER_ERROR',
@@ -187,19 +148,13 @@ export class ConcessionController {
 
   updateConcession = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log('DEBUG: Mise à jour concession - Request body:', req.body);
-      console.log('DEBUG: Mise à jour concession - Params:', req.params);
-
       const concessionData: UpdateConcessionDTO = req.body;
       const existingConcession = await this.concessionRepository.findById(req.params.id);
 
       if (!existingConcession) {
-        console.log('DEBUG: Concession non trouvée');
         res.status(404).json({ message: "Concession non trouvée" });
         return;
       }
-
-      console.log('DEBUG: Concession existante:', existingConcession);
 
       const updatedConcession = Concession.from(
         existingConcession.id,
@@ -211,19 +166,12 @@ export class ConcessionController {
       );
 
       if (updatedConcession instanceof Error) {
-        console.log('DEBUG: Erreur lors de la mise à jour:', updatedConcession);
         res.status(400).json({ message: updatedConcession.message });
         return;
       }
-
-      console.log('DEBUG: Nouvelle instance créée:', updatedConcession);
-
       await this.concessionRepository.update(updatedConcession);
-      console.log('DEBUG: Concession mise à jour avec succès');
-
       res.json(updatedConcession);
     } catch (error) {
-      console.error("Error updating concession:", error);
       res
         .status(500)
         .json({ message: "Erreur lors de la mise à jour de la concession" });
@@ -232,24 +180,17 @@ export class ConcessionController {
 
   deleteConcession = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log('DEBUG: Suppression concession - ID:', req.params.id);
-
       const existingConcession = await this.concessionRepository.findById(req.params.id);
       if (!existingConcession) {
-        console.log('DEBUG: Concession non trouvée');
         res.status(404).json({ message: "Concession non trouvée" });
         return;
       }
 
-      console.log('DEBUG: Concession trouvée, suppression en cours...');
-
       try {
         await this.concessionRepository.delete(req.params.id);
-        console.log('DEBUG: Concession supprimée avec succès');
         res.json({ message: "Concession supprimée avec succès" });
       } catch (deleteError) {
         if (deleteError instanceof ConcessionHasMotorcyclesError) {
-          console.error('DEBUG: Impossible de supprimer la concession:', deleteError.message);
           const motorcycleCount = await this.concessionRepository.countMotorcycles(req.params.id);
           res.status(400).json({
             error: {
@@ -263,7 +204,6 @@ export class ConcessionController {
           return;
         }
         if (deleteError instanceof Error) {
-          console.error('DEBUG: Erreur lors de la suppression:', deleteError.message);
           if (deleteError.message.includes("not found")) {
             res.status(404).json({ 
               error: {
@@ -289,7 +229,6 @@ export class ConcessionController {
         }
       }
     } catch (error) {
-      console.error("Error deleting concession:", error);
       res
         .status(500)
         .json({ message: "Erreur lors de la suppression de la concession" });
