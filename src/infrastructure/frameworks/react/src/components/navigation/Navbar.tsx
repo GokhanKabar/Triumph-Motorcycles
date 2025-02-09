@@ -43,6 +43,7 @@ const Navbar: React.FC = () => {
     { path: "/companies", label: "Entreprises", adminOnly: true },
     { path: "/concessions", label: "Concessions", adminOnly: true },
     { path: "/motorcycles", label: "Motos", adminOnly: true },
+    { path: "/test-rides", label: "Test Rides", adminOnly: true },
     { path: "/maintenances", label: "Maintenances", adminOnly: true },
     { path: "/inventory-parts", label: "Stock Pièces", adminOnly: true },
     { path: "/drivers", label: "Conducteurs", adminOnly: true },

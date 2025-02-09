@@ -1,6 +1,5 @@
 import express from "express";
 import { ConcessionController } from "../controllers/ConcessionController";
-import { AuthMiddleware } from "../middlewares/authMiddleware";
 import { JWTTokenService } from "../../../infrastructure/services/TokenService";
 import { GetUserUseCase } from "../../../application/user/use-cases/GetUserUseCase";
 import { PostgreSQLUserRepository } from "../../../infrastructure/repositories/PostgreSQLUserRepository";
@@ -15,25 +14,55 @@ const passwordHashingService = new Argon2PasswordHashingService();
 const userRepository = new PostgreSQLUserRepository(passwordHashingService);
 const getUserUseCase = new GetUserUseCase(userRepository);
 
-// Création du middleware d'authentification
-const authMiddleware = new AuthMiddleware(tokenService, getUserUseCase);
-
-// Routes protégées par authentification
-router.use(authMiddleware.authenticate);
-
-// GET /api/concessions - Récupérer toutes les concessions
+// Route publique pour récupérer toutes les concessions
 router.get("/", concessionController.getAllConcessions);
 
-// GET /api/concessions/:id - Récupérer une concession par son ID
+// Route publique pour récupérer une concession par son ID
 router.get("/:id", concessionController.getConcessionById);
 
 // POST /api/concessions - Créer une nouvelle concession
-router.post("/", concessionController.createConcession);
+router.post("/", async (req: Request, res: Response) => {
+  try {
+    const newConcession = await ConcessionModel.create(req.body);
+    res.status(201).json(newConcession);
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la création de la concession" });
+  }
+});
 
 // PUT /api/concessions/:id - Mettre à jour une concession
-router.put("/:id", concessionController.updateConcession);
+router.put("/:id", async (req: Request, res: Response) => {
+  try {
+    const [updated] = await ConcessionModel.update(req.body, {
+      where: { id: req.params.id }
+    });
+
+    if (updated) {
+      const updatedConcession = await ConcessionModel.findByPk(req.params.id);
+      return res.json(updatedConcession);
+    }
+
+    return res.status(404).json({ message: "Concession non trouvée" });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la mise à jour de la concession" });
+  }
+});
 
 // DELETE /api/concessions/:id - Supprimer une concession
-router.delete("/:id", concessionController.deleteConcession);
+router.delete("/:id", async (req: Request, res: Response) => {
+  try {
+    const deleted = await ConcessionModel.destroy({
+      where: { id: req.params.id }
+    });
+
+    if (deleted) {
+      return res.status(204).send();
+    }
+
+    return res.status(404).json({ message: "Concession non trouvée" });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la suppression de la concession" });
+  }
+});
 
 export default router;

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { TestRideForm } from '../components/test-rides/TestRideForm';
 
 const motorcycles = [
   {
@@ -41,29 +42,6 @@ const motorcycles = [
 ];
 
 const Home: React.FC = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    motorcycle: '',
-    date: '',
-    message: ''
-  });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Réservation d\'essai:', formData);
-    // TODO: Ajouter la logique d'envoi du formulaire
-  };
-
   return (
     <div className="bg-gray-100 min-h-screen">
       {/* Navbar */}
@@ -135,95 +113,7 @@ const Home: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-4xl font-bold text-center mb-12">Réservez Votre Essai</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="name" className="block mb-2 text-gray-300">Nom Complet</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email" className="block mb-2 text-gray-300">Email</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
-                  />
-                </div>
-              </div>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="phone" className="block mb-2 text-gray-300">Téléphone</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="motorcycle" className="block mb-2 text-gray-300">Modèle souhaité</label>
-                  <select
-                    id="motorcycle"
-                    name="motorcycle"
-                    value={formData.motorcycle}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
-                  >
-                    <option value="">Sélectionnez un modèle</option>
-                    {motorcycles.map(moto => (
-                      <option key={moto.id} value={moto.name}>{moto.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label htmlFor="date" className="block mb-2 text-gray-300">Date souhaitée</label>
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
-                />
-              </div>
-              <div>
-                <label htmlFor="message" className="block mb-2 text-gray-300">Message supplémentaire (optionnel)</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  rows={4}
-                  className="w-full px-4 py-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
-                ></textarea>
-              </div>
-              <div className="text-center">
-                <button 
-                  type="submit" 
-                  className="bg-red-700 text-white px-10 py-4 rounded-full text-lg font-semibold hover:bg-red-800 transition duration-300"
-                >
-                  Réserver un essai
-                </button>
-              </div>
-            </form>
+            <TestRideForm />
           </div>
         </div>
       </section>

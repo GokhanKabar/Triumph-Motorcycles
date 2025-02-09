@@ -28,6 +28,9 @@ import { CreateInventoryPartUseCase } from "@application/inventory/use-cases/Cre
 import { PostgreSQLInventoryPartRepository } from "../../repositories/PostgreSQLInventoryPartRepository";
 import driverRoutes from "../../../interfaces/http/routes/driverRoutes";
 import companyMotorcycleRouter from "../../../interfaces/http/routes/companyMotorcycleRoutes";
+import TestRideModel from "../postgres/models/TestRideModel";
+import { testRideRoutes } from "../../../interfaces/http/routes/testRideRoutes";
+import { PostgreSQLTestRideRepository } from "../../repositories/PostgreSQLTestRideRepository";
 
 // Charger les variables d'environnement
 config();
@@ -41,6 +44,7 @@ const passwordHashingService = new Argon2PasswordHashingService();
 // Initialisation des repositories
 const userRepository = new PostgreSQLUserRepository(passwordHashingService);
 const inventoryPartRepository = new PostgreSQLInventoryPartRepository();
+const testRideRepository = new PostgreSQLTestRideRepository();
 
 // Middlewares de sécurité et configuration
 app.use(helmet());
@@ -60,11 +64,12 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes); // Route standard
 app.use("/api/companies", companyRoutes);
 app.use("/api", companyMotorcycleRouter); // Routes pour l'association company-motorcycle
-app.use("/api/concessions", concessionRoutes); // Route des entreprises
+app.use("/api/concessions", concessionRoutes); // Route des concessions
 app.use("/api/motorcycles", motorcycleRoutes); // Route des motos
 app.use("/api/maintenances", maintenanceRoutes); // Route des maintenances
 app.use("/api/inventory-parts", inventoryPartRoutes); // Route des pièces d'inventaire
 app.use("/api/drivers", driverRoutes); // Route des conducteurs
+app.use("/api/test-rides", testRideRoutes(testRideRepository)); // Route des réservations d'essai
 
 // Gestion des routes 404
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -105,7 +110,11 @@ async function initializeDatabase() {
     await CompanyMotorcycleModel.initialize(sequelize);
     await sequelize.sync({ force: false }); // Mise à jour incrémentale
 
-    // 6. Seed la base de données
+    // 7. Initialiser le modèle TestRide
+    await TestRideModel.initialize(sequelize);
+    await sequelize.sync({ force: false }); // Mise à jour incrémentale
+
+    // 8. Seed la base de données
     await seedDatabase(sequelize);
 
     console.log("✅ Base de données initialisée avec succès");

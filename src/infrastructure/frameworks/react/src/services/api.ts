@@ -35,6 +35,11 @@ import {
   UpdateMotorcycleDTO,
   MotorcycleResponseDTO,
 } from "@/application/dtos/MotorcycleDTO";
+import {
+  CreateTestRideDTO,
+  TestRideResponseDTO
+} from "@/application/dtos/TestRideDTO";
+import TestRide, { TestRideStatus } from '@domain/testRide/entities/TestRide';
 
 const API_BASE_URL = "http://localhost:3001/api";
 
@@ -45,9 +50,40 @@ const api = axios.create({
   },
 });
 
+// Instance Axios sans intercepteur pour les requêtes publiques
+const publicApi = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 // Intercepteur pour ajouter le token à chaque requête
 api.interceptors.request.use(
   (config) => {
+    // Routes publiques qui ne nécessitent pas de token
+    const publicRoutes = [
+      '/motorcycles',
+      '/concessions',
+      '/users/users', 
+      '/users', 
+      '/users/all'
+    ];
+
+    // Vérifier si la route est publique et si c'est une requête GET
+    const isPublicRoute = publicRoutes.some(route => 
+      config.url?.includes(route) && config.method === 'get'
+    );
+
+    // Ne pas ajouter de token pour les routes publiques GET
+    if (isPublicRoute) {
+      console.log("DEBUG: Route publique, pas de token requis", {
+        url: config.url,
+        method: config.method,
+      });
+      return config;
+    }
+
     // Récupérer directement depuis le localStorage
     const storedAuth = localStorage.getItem("auth-storage");
     const parsedAuth = storedAuth ? JSON.parse(storedAuth) : null;
@@ -79,28 +115,31 @@ api.interceptors.request.use(
   }
 );
 
-// Intercepteur pour gérer les erreurs d'authentification
+// Intercepteur de réponse
 api.interceptors.response.use(
-  (response) => {
-    console.log("DEBUG: Response Interceptor", {
-      url: response.config.url,
-      method: response.config.method,
-      status: response.status,
-      data: response.data,
-    });
-    return response;
-  },
+  (response) => response,
   (error) => {
-    console.error("DEBUG: Response Interceptor Error", {
-      url: error.config?.url,
-      method: error.config?.method,
+    console.warn("DEBUG: Intercepteur Axios - Erreur détectée", {
       status: error.response?.status,
       data: error.response?.data,
       headers: error.config?.headers,
     });
 
-    if (error.response && error.response.status === 401) {
-      // Déconnexion automatique en cas d'erreur d'authentification
+    // Vérifier si la route est publique
+    const publicRoutes = [
+      '/api/concessions', 
+      '/api/motorcycles', 
+      '/api/users/users', 
+      '/api/users', 
+      '/api/users/all'
+    ];
+
+    const isPublicRoute = publicRoutes.some(route => 
+      error.config.url.includes(route)
+    );
+
+    // Ne pas déconnecter pour les routes publiques
+    if (error.response && error.response.status === 401 && !isPublicRoute) {
       console.warn("DEBUG: Unauthorized - Logging out");
       useAuthStore.getState().logout();
       window.location.href = "/login";
@@ -333,27 +372,33 @@ export const companyService = {
 };
 
 export const motorcycleService = {
-  getMotorcycles: async (): Promise<MotorcycleResponseDTO[]> => {
-    const response = await api.get("/motorcycles");
-    return response.data;
+  getMotorcycles: async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/motorcycles`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des motos', error);
+      throw error;
+    }
   },
 
   getMotorcycle: async (id: string): Promise<MotorcycleResponseDTO> => {
-    const response = await api.get(`/motorcycles/${id}`);
-    return response.data;
+    try {
+      const response = await axios.get(`${API_BASE_URL}/motorcycles/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des motos', error);
+      throw error;
+    }
   },
 
-  createMotorcycle: async (
-    data: CreateMotorcycleDTO
-  ): Promise<MotorcycleResponseDTO> => {
+
+  createMotorcycle: async (data: CreateMotorcycleDTO): Promise<MotorcycleResponseDTO> => {
     const response = await api.post("/motorcycles", data);
     return response.data;
   },
 
-  updateMotorcycle: async (
-    id: string,
-    data: UpdateMotorcycleDTO
-  ): Promise<MotorcycleResponseDTO> => {
+  updateMotorcycle: async (id: string, data: UpdateMotorcycleDTO): Promise<MotorcycleResponseDTO> => {
     const response = await api.put(`/motorcycles/${id}`, data);
     return response.data;
   },
@@ -372,44 +417,61 @@ export const motorcycleService = {
 
   getAllMotorcycles: async (): Promise<MotorcycleResponseDTO[]> => {
     try {
-      const response = await api.get<MotorcycleResponseDTO[]>("/motorcycles");
+      const response = await axios.get(`${API_BASE_URL}/motorcycles`);
       return response.data;
     } catch (error) {
       console.error("Error getting all motorcycles", error);
       throw error;
     }
   },
+
+  getMotorcyclesByConcession: async (concessionId: string) => {
+    try {
+      const response = await api.get('/motorcycles', {
+        params: { concessionId }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des motos', error);
+      throw error;
+    }
+  },
 };
 
+
 export const concessionService = {
-  getConcessions(): Promise<ConcessionResponseDTO[]> {
-    return api.get("/concessions").then((response) => response.data);
+  getConcessions: async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/concessions`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des concessions', error);
+      throw error;
+    }
   },
 
-  getConcession(id: string): Promise<ConcessionResponseDTO> {
-    return api.get(`/concessions/${id}`).then((response) => response.data);
+  getConcession: async (id: string) => {
+    try {
+      const response = await api.get(`/concessions/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la concession", error);
+      throw error;
+    }
   },
 
-  createConcession(
-    concession: CreateConcessionDTO
-  ): Promise<ConcessionResponseDTO> {
-    return api
-      .post("/concessions", concession)
+  createConcession(concession: CreateConcessionDTO): Promise<ConcessionResponseDTO> {
+    return api.post("/concessions", concession)
       .then((response) => response.data);
   },
 
-  updateConcession(
-    id: string,
-    concession: UpdateConcessionDTO
-  ): Promise<ConcessionResponseDTO> {
-    return api
-      .put(`/concessions/${id}`, concession)
+  updateConcession(id: string, concession: UpdateConcessionDTO): Promise<ConcessionResponseDTO> {
+    return api.put(`/concessions/${id}`, concession)
       .then((response) => response.data);
   },
 
   deleteConcession(id: string): Promise<{ message: string }> {
-    return api
-      .delete(`/concessions/${id}`)
+    return api.delete(`/concessions/${id}`)
       .then((response) => response.data)
       .catch((error) => {
         if (error.response?.data?.message) {
@@ -907,6 +969,43 @@ export const companyMotorcycleService = {
       throw error;
     }
   },
+};
+
+import { TestRideDto } from '@/application/testRide/dtos/TestRideDto';
+import { TestRideStatus } from '@domain/testRide/entities/TestRide';
+
+export const testRideService = {
+  createTestRide: async (testRideData: CreateTestRideDTO): Promise<TestRideResponseDTO> => {
+    console.log('Envoi des données de test ride sans authentification:', testRideData);
+    
+    try {
+      const response = await publicApi.post<TestRideResponseDTO>('/test-rides', testRideData);
+      console.log('Réponse de création de test ride:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la création du test ride:', error);
+      throw error;
+    }
+  },
+
+  getAllTestRides: async (): Promise<TestRideDto[]> => {
+    const response = await api.get<TestRideDto[]>('/test-rides');
+    return response.data;
+  },
+
+  getTestRideById: async (id: string): Promise<TestRideDto> => {
+    const response = await api.get<TestRideDto>(`/test-rides/${id}`);
+    return response.data;
+  },
+
+  deleteTestRide: async (id: string): Promise<void> => {
+    await api.delete(`/test-rides/${id}`);
+  },
+
+  updateTestRideStatus: async (id: string, status: TestRideStatus): Promise<TestRideDto> => {
+    const response = await api.patch<TestRideDto>(`/test-rides/${id}/status`, { status });
+    return response.data;
+  }
 };
 
 export default api;

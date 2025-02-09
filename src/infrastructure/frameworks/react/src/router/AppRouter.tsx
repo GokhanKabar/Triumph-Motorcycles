@@ -19,6 +19,7 @@ import InventoryParts from "../pages/InventoryParts";
 import Drivers from "../pages/Drivers";
 import { CompanyMotorcycles } from "../pages/CompanyMotorcycles";
 import Home from "../pages/Home";
+import TestRidePage from "../pages/TestRidePage";
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -107,6 +108,14 @@ const AppRouter: React.FC = () => {
             element={
               <AdminRoute>
                 <CompanyMotorcycles />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/test-rides"
+            element={
+              <AdminRoute>
+                <TestRidePage />
               </AdminRoute>
             }
           />

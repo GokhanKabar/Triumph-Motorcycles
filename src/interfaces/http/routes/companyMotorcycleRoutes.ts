@@ -49,10 +49,7 @@ const companyMotorcycleController = new CompanyMotorcycleController(
   getCompanyMotorcyclesUseCase
 );
 
-// Appliquer l'authentification à toutes les routes
-router.use(authMiddleware.authenticate.bind(authMiddleware));
 
-// Routes
 router.post(
   "/companies/:companyId/motorcycles",
   companyMotorcycleController.assignMotorcycle.bind(companyMotorcycleController)

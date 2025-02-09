@@ -34,12 +34,17 @@ export class AuthMiddleware {
       const publicRoutes = [
         { path: '/api/users/users', method: 'POST' },
         { path: '/api/users', method: 'POST' },
-        { path: '/api/users/all', method: 'GET' }  
+        { path: '/api/users/all', method: 'GET' },
+        { path: '/api/concessions', method: '*' },
+        { path: '/api/motorcycles', method: '*' },
+        { path: '/api/test-rides', method: '*' }
       ];
 
       // Vérifier si la route est publique
       const isPublicRoute = publicRoutes.some(
-        route => req.path === route.path && req.method === route.method
+        route => 
+          req.path.startsWith(route.path) && 
+          (route.method === req.method || route.method === '*')
       );
 
       console.log('DEBUG: Route publique ?', {

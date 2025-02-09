@@ -7,6 +7,8 @@ import DriverModel from "../models/DriverModel";
 import MotorcycleModel from "../models/MotorcycleModel";
 import CompanyModel from "../models/CompanyModel";
 import CompanyMotorcycleModel from "../models/CompanyMotorcycleModel";
+import ConcessionModel from "../models/ConcessionModel";
+import TestRideModel from "../models/TestRideModel";
 
 const sequelize = new Sequelize({
   dialect: "postgres",
@@ -38,6 +40,21 @@ async function initializeDatabase() {
       // Initialize Motorcycle
       MotorcycleModel.initialize(sequelize);
 
+      // Initialize Concession
+      ConcessionModel.initialize(sequelize);
+      ConcessionModel.belongsTo(UserModel, { foreignKey: "userId", as: "user" });
+
+      // Initialize TestRide
+      TestRideModel.initialize(sequelize);
+      TestRideModel.belongsTo(ConcessionModel, { 
+        foreignKey: 'concessionId', 
+        as: 'concession' 
+      });
+      ConcessionModel.hasMany(TestRideModel, { 
+        foreignKey: 'concessionId', 
+        as: 'testRides' 
+      });
+
       // Initialize CompanyMotorcycle and its associations
       console.log('Initializing CompanyMotorcycleModel...');
       try {
@@ -52,7 +69,7 @@ async function initializeDatabase() {
 
         // Synchroniser tous les modèles avec la base de données
         console.log('Synchronizing all models with database...');
-        await sequelize.sync();
+        await sequelize.sync({ force: true });
         console.log('Database synchronization complete');
         CompanyMotorcycleModel.belongsTo(CompanyModel, {
           foreignKey: "companyId",
@@ -83,19 +100,13 @@ async function initializeDatabase() {
       throw error;
     }
 
-    // Force sync models to recreate tables
+    // Verify table creation
     console.log("Starting database synchronization...");
     await sequelize.sync({ force: true });
     console.log("✅ Models synchronized successfully.");
     
-    // Verify CompanyMotorcycle table creation
     const tables = await sequelize.getQueryInterface().showAllTables();
     console.log("Available tables:", tables);
-    if (tables.includes('company_motorcycles')) {
-      console.log("✅ CompanyMotorcycle table created successfully");
-    } else {
-      console.log("❌ CompanyMotorcycle table not found");
-    }
 
     // Seed database in development
     if (process.env.NODE_ENV === "development") {
