@@ -31,6 +31,9 @@ import companyMotorcycleRouter from "../../../interfaces/http/routes/companyMoto
 import TestRideModel from "../postgres/models/TestRideModel";
 import { testRideRoutes } from "../../../interfaces/http/routes/testRideRoutes";
 import { PostgreSQLTestRideRepository } from "../../repositories/PostgreSQLTestRideRepository";
+import IncidentModel from "../postgres/models/IncidentModel";
+import { incidentRoutes } from "../../../interfaces/http/routes/incidentRoutes";
+import { PostgreSQLIncidentRepository } from "../../repositories/PostgreSQLIncidentRepository";
 
 // Charger les variables d'environnement
 config();
@@ -45,6 +48,7 @@ const passwordHashingService = new Argon2PasswordHashingService();
 const userRepository = new PostgreSQLUserRepository(passwordHashingService);
 const inventoryPartRepository = new PostgreSQLInventoryPartRepository();
 const testRideRepository = new PostgreSQLTestRideRepository();
+const incidentRepository = new PostgreSQLIncidentRepository();
 
 // Middlewares de sécurité et configuration
 app.use(helmet());
@@ -70,6 +74,7 @@ app.use("/api/maintenances", maintenanceRoutes); // Route des maintenances
 app.use("/api/inventory-parts", inventoryPartRoutes); // Route des pièces d'inventaire
 app.use("/api/drivers", driverRoutes); // Route des conducteurs
 app.use("/api/test-rides", testRideRoutes(testRideRepository)); // Route des réservations d'essai
+app.use("/api/incidents", incidentRoutes(incidentRepository, testRideRepository)); // Route des incidents
 
 // Gestion des routes 404
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -114,7 +119,11 @@ async function initializeDatabase() {
     await TestRideModel.initialize(sequelize);
     await sequelize.sync({ force: false }); // Mise à jour incrémentale
 
-    // 8. Seed la base de données
+    // 8. Initialiser le modèle Incident
+    await IncidentModel.initialize(sequelize);
+    await sequelize.sync({ force: false }); // Mise à jour incrémentale
+
+    // 9. Seed la base de données
     await seedDatabase(sequelize);
 
     console.log("✅ Base de données initialisée avec succès");

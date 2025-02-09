@@ -31,6 +31,7 @@ export function testRideRoutes(
   router.get('/', (req, res) => testRideController.getAll(req, res));
   router.get('/:id', (req, res) => testRideController.getById(req, res));
   router.get('/concession/:concessionId', (req, res) => testRideController.getByConcessionId(req, res));
+  router.get('/:id/details', (req, res) => testRideController.getDetails(req, res));
   router.delete('/:id', (req, res) => testRideController.delete(req, res));
   router.patch('/:id/status', (req, res) => testRideController.updateStatus(req, res));
 

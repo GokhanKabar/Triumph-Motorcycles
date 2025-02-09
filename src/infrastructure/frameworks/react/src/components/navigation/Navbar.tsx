@@ -41,7 +41,8 @@ const Navbar = () => {
     { path: "/concessions", label: "Concessions", adminOnly: true },
     { path: "/inventory-parts", label: "Stock Pièces", adminOnly: true },
     { path: "/drivers", label: "Conducteurs", adminOnly: true },
-    { path: "/test-rides", label: "Essais", adminOnly: true },
+    { path: "/test-rides", label: "Essais", adminOnly: false },
+    { path: '/incidents', label: 'Incidents', adminOnly: true },
   ];
 
   const renderMenuLink = (
