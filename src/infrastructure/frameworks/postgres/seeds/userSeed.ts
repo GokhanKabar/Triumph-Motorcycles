@@ -53,7 +53,7 @@ export class UserSeed {
           lastName: "Principal",
           email: "manager@triumph.com",
           password: "ManagerPassword123!",
-          role: UserRole.MANAGER,
+          role: UserRole.DEALER,
         },
         {
           firstName: "User",

@@ -2,8 +2,11 @@ import express from "express";
 import { Request, Response } from "express";
 import MotorcycleModel from "../../../infrastructure/frameworks/postgres/models/MotorcycleModel";
 import CompanyMotorcycleModel from "../../../infrastructure/frameworks/postgres/models/CompanyMotorcycleModel";
+import ConcessionModel from "../../../infrastructure/frameworks/postgres/models/ConcessionModel";
+import UserModel from "../../../infrastructure/frameworks/postgres/models/UserModel";
 import { PostgreSQLMotorcycleRepository } from "../../../infrastructure/repositories/PostgreSQLMotorcycleRepository";
 import { Op } from "sequelize";
+import { UserRole } from "../../../domain/enums/UserRole";
 
 const router = express.Router();
 
@@ -52,11 +55,35 @@ router.get("/unassigned", async (req: Request, res: Response) => {
 // Routes publiques
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const { concessionId } = req.query;
+    const { concessionId, userId } = req.query;
 
-    const whereCondition = concessionId
-      ? { concessionId: concessionId as string }
-      : {};
+    let whereCondition: any = {};
+
+    if (userId) {
+      // Vérifier si l'utilisateur est un DEALER
+      const user = await UserModel.findOne({
+        where: { id: userId as string },
+        attributes: ['id', 'role']
+      });
+
+      if (user?.role === UserRole.DEALER) {
+        // Pour un DEALER, récupérer sa concession
+        const dealerConcession = await ConcessionModel.findOne({
+          where: { userId: user.id },
+          attributes: ['id']
+        });
+
+        if (dealerConcession) {
+          whereCondition.concessionId = dealerConcession.id;
+        } else {
+          // Si le dealer n'a pas de concession, retourner un tableau vide
+          return res.json([]);
+        }
+      }
+    } else if (concessionId) {
+      // Pour les autres rôles ou si pas d'userId, utiliser le concessionId s'il est fourni
+      whereCondition.concessionId = concessionId;
+    }
 
     const motorcycles = await MotorcycleModel.findAll({
       where: whereCondition,

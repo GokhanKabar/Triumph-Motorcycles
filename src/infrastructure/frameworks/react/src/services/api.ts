@@ -328,7 +328,13 @@ export const userService = {
 export const motorcycleService = {
   getUnassignedMotorcycles: async (): Promise<MotorcycleResponseDTO[]> => {
     try {
-      const response = await api.get("/motorcycles/unassigned");
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      const params = new URLSearchParams();
+      if (user?.id) params.append('userId', user.id);
+
+      const response = await api.get(`/motorcycles/unassigned?${params.toString()}`);
       return response.data.map((moto: any) => ({
         id: moto.id,
         brand: moto.brand || "",
@@ -353,8 +359,14 @@ export const motorcycleService = {
     concessionId?: string
   ): Promise<MotorcycleResponseDTO[]> => {
     try {
-      const url = concessionId ? `/?concessionId=${concessionId}` : "/";
-      const response = await api.get(`/motorcycles${url}`);
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      const params = new URLSearchParams();
+      if (user?.id) params.append('userId', user.id);
+      if (concessionId) params.append('concessionId', concessionId);
+
+      const response = await api.get(`/motorcycles?${params.toString()}`);
 
       // Log des données reçues pour le débogage
       console.log("DEBUG: Données reçues de l'API:", response.data);
@@ -391,9 +403,14 @@ export const motorcycleService = {
 
   getMotorcyclesByConcession: async (concessionId: string) => {
     try {
-      const response = await api.get(
-        `/motorcycles?concessionId=${concessionId}`
-      );
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      const params = new URLSearchParams();
+      if (user?.id) params.append('userId', user.id);
+      params.append('concessionId', concessionId);
+
+      const response = await api.get(`/motorcycles?${params.toString()}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -402,7 +419,13 @@ export const motorcycleService = {
 
   getMotorcycle: async (id: string) => {
     try {
-      const response = await api.get(`/motorcycles/${id}`);
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      const params = new URLSearchParams();
+      if (user?.id) params.append('userId', user.id);
+
+      const response = await api.get(`/motorcycles/${id}?${params.toString()}`);
       return response.data;
     } catch (error) {
       throw error;

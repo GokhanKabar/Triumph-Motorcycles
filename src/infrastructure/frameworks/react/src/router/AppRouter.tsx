@@ -17,7 +17,7 @@ import Drivers from "../pages/Drivers";
 import { CompanyMotorcycles } from "../pages/CompanyMotorcycles";
 import Home from "../pages/Home";
 import TestRidePage from "../pages/TestRidePage";
-import ProtectedRoute from '../components/ProtectedRoute';
+import ProtectedRoute from "../components/ProtectedRoute";
 import { UserRole } from "@domain/enums/UserRole";
 
 interface AdminRouteProps {
@@ -25,9 +25,9 @@ interface AdminRouteProps {
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const userStr = localStorage.getItem('user');
+  const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
-  
+
   if (!user || user.role !== UserRole.ADMIN) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -54,14 +54,7 @@ const AppRouter: React.FC = () => {
               </AdminRoute>
             }
           />
-          <Route
-            path="/motorcycles"
-            element={
-              <AdminRoute>
-                <Motorcycles />
-              </AdminRoute>
-            }
-          />
+          <Route path="/motorcycles" element={<Motorcycles />} />
           <Route
             path="/companies"
             element={
@@ -78,14 +71,7 @@ const AppRouter: React.FC = () => {
               </AdminRoute>
             }
           />
-          <Route
-            path="/maintenances"
-            element={
-              <AdminRoute>
-                <Maintenances />
-              </AdminRoute>
-            }
-          />
+          <Route path="/maintenances" element={<Maintenances />} />
           <Route
             path="/inventory-parts"
             element={
@@ -110,14 +96,7 @@ const AppRouter: React.FC = () => {
               </AdminRoute>
             }
           />
-          <Route
-            path="/test-rides"
-            element={
-              <AdminRoute>
-                <TestRidePage />
-              </AdminRoute>
-            }
-          />
+          <Route path="/test-rides" element={<TestRidePage />} />
         </Route>
 
         {/* Redirection par défaut */}
