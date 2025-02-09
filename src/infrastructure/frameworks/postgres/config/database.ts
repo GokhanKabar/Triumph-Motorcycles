@@ -9,6 +9,7 @@ import CompanyModel from "../models/CompanyModel";
 import CompanyMotorcycleModel from "../models/CompanyMotorcycleModel";
 import ConcessionModel from "../models/ConcessionModel";
 import TestRideModel from "../models/TestRideModel";
+import IncidentModel from "../models/IncidentModel";
 
 const sequelize = new Sequelize({
   dialect: "postgres",
@@ -93,6 +94,17 @@ async function initializeDatabase() {
       MaintenanceModel.initialize(sequelize);
       InventoryPartModel.initialize(sequelize);
       DriverModel.initialize(sequelize);
+
+      // Initialize Incident
+      IncidentModel.initialize(sequelize);
+      IncidentModel.belongsTo(TestRideModel, { 
+        foreignKey: 'testRideId', 
+        as: 'testRide' 
+      });
+      TestRideModel.hasMany(IncidentModel, { 
+        foreignKey: 'testRideId', 
+        as: 'incidents' 
+      });
 
       console.log("All models and associations initialized successfully");
     } catch (error) {

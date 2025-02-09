@@ -14,6 +14,7 @@ import Motorcycles from "../pages/Motorcycles";
 import Maintenances from "../pages/Maintenances";
 import InventoryParts from "../pages/InventoryParts";
 import Drivers from "../pages/Drivers";
+import IncidentsPage from "../pages/IncidentsPage";
 import { CompanyMotorcycles } from "../pages/CompanyMotorcycles";
 import Home from "../pages/Home";
 import TestRidePage from "../pages/TestRidePage";
@@ -97,6 +98,14 @@ const AppRouter: React.FC = () => {
             }
           />
           <Route path="/test-rides" element={<TestRidePage />} />
+          <Route
+            path="/incidents"
+            element={
+              <AdminRoute>
+                <IncidentsPage />
+              </AdminRoute>
+            }
+          />
         </Route>
 
         {/* Redirection par défaut */}

@@ -186,4 +186,41 @@ export class TestRideController {
       }
     }
   }
+
+  async getDetails(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+
+      // Utiliser le cas d'utilisation pour récupérer les détails du test ride
+      const testRide = await this.getTestRideUseCase.getById(id);
+
+      // Retourner les détails du test ride
+      res.status(200).json({
+        id: testRide.id,
+        motorcycleName: testRide.motorcycleName,
+        firstName: testRide.firstName,
+        lastName: testRide.lastName,
+        email: testRide.email,
+        phoneNumber: testRide.phoneNumber,
+        status: testRide.status,
+        riderExperience: testRide.riderExperience,
+        licenseType: testRide.licenseType,
+        desiredDate: testRide.desiredDate
+      });
+    } catch (error) {
+      console.error('Erreur lors de la récupération des détails du test ride :', error);
+      
+      if (error instanceof TestRideNotFoundError) {
+        res.status(404).json({ 
+          message: 'Test ride non trouvé', 
+          error: 'NOT_FOUND' 
+        });
+      } else {
+        res.status(500).json({ 
+          message: 'Erreur lors de la récupération des détails du test ride', 
+          details: error instanceof Error ? error.message : 'Erreur inconnue'
+        });
+      }
+    }
+  }
 }

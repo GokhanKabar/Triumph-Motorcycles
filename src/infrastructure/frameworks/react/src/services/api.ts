@@ -9,6 +9,9 @@ import { MotorcycleResponseDTO } from "@application/motorcycle/dtos/MotorcycleDT
 import { MotorcycleStatus } from "@domain/motorcycle/enums/MotorcycleStatus";
 import { MaintenanceResponseDTO } from "@application/maintenance/dtos/MaintenanceResponseDTO";
 import { MaintenanceStatus } from "@domain/maintenance/entities/Maintenance";
+import { IncidentDto } from '@/application/incident/dto/IncidentDto';
+import { IncidentType } from '@domain/incident/enum/IncidentType';
+import { IncidentStatus } from '@domain/incident/enum/IncidentStatus';
 
 // Configuration de l'instance Axios
 export const api = axios.create({
@@ -971,6 +974,43 @@ export const concessionService = {
       };
     }
   },
+};
+
+// Service pour les incidents
+export const incidentService = {
+  async getAll(): Promise<IncidentDto[]> {
+    const response = await api.get('/incidents');
+    return response.data;
+  },
+
+  async getByTestRideId(testRideId: string): Promise<IncidentDto[]> {
+    const response = await api.get(`/incidents/test-ride/${testRideId}`);
+    return response.data;
+  },
+
+  async getByType(type: IncidentType): Promise<IncidentDto[]> {
+    const response = await api.get(`/incidents/type/${type}`);
+    return response.data;
+  },
+
+  async getByStatus(status: IncidentStatus): Promise<IncidentDto[]> {
+    const response = await api.get(`/incidents/status/${status}`);
+    return response.data;
+  },
+
+  async create(incident: Partial<IncidentDto>): Promise<IncidentDto> {
+    const response = await api.post('/incidents', incident);
+    return response.data;
+  },
+
+  async update(id: string, incident: Partial<IncidentDto>): Promise<IncidentDto> {
+    const response = await api.put(`/incidents/${id}`, incident);
+    return response.data;
+  },
+
+  async delete(id: string): Promise<void> {
+    await api.delete(`/incidents/${id}`);
+  }
 };
 
 export default api;
