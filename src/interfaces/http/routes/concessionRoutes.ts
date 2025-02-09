@@ -174,7 +174,6 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
     // Tenter de supprimer la concession
     const result = await deleteConcessionUseCase.execute(id);
-
     if (result instanceof ConcessionHasMotorcyclesError) {
       return res.status(400).json({
         success: false,

@@ -4,7 +4,7 @@ import ConcessionModel from "../frameworks/postgres/models/ConcessionModel";
 import MotorcycleModel from "../frameworks/postgres/models/MotorcycleModel";
 import { MissingRequiredFieldError } from "../../domain/errors/MissingRequiredFieldError";
 import { ConcessionNotFoundError } from "../../domain/errors/ConcessionNotFoundError";
-import { ConcessionHasMotorcyclesError } from "../../domain/errors/ConcessionHasMotorcyclesError";
+import { ConcessionHasMotorcyclesError } from "../../domain/concession/errors/ConcessionHasMotorcyclesError";
 
 export class PostgreSQLConcessionRepository implements IConcessionRepository {
   async findAll(): Promise<Concession[]> {

@@ -628,7 +628,7 @@ export const companyService = {
         `Erreur lors de la suppression de l'entreprise ${id}:`,
         error
       );
-      throw error;
+      throw error.response?.data?.message;
     }
   },
 };

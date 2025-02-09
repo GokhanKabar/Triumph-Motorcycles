@@ -1,6 +1,6 @@
 import { IConcessionRepository } from "../../../domain/concession/repositories/IConcessionRepository";
 import { ConcessionNotFoundError } from "../../../domain/concession/errors/ConcessionNotFoundError";
-import { ConcessionHasMotorcyclesError } from "../../../domain/errors/ConcessionHasMotorcyclesError";
+import { ConcessionHasMotorcyclesError } from "../../../domain/concession/errors/ConcessionHasMotorcyclesError";
 
 export class DeleteConcessionUseCase {
   constructor(private readonly concessionRepository: IConcessionRepository) {}

@@ -44,7 +44,8 @@ export default function Companies() {
       setRefreshKey((prev) => prev + 1);
       toast.success(result.message || "Entreprise supprimée avec succès");
     } catch (error: any) {
-      toast.error(error.message || "Erreur lors de la suppression de l'entreprise");
+      console.log(error);
+      toast.error(error || "Erreur lors de la suppression de l'entreprise");
     }
   };
 
