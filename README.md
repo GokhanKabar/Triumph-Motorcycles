@@ -60,6 +60,10 @@ Le Système de Gestion Triumph Motorcycles est une application web complète con
 - Gestion des profils des entreprises
 - Assignation des motos aux entreprises
 
+### 9. Gestion des incidents
+- Gestion des incidents pour les utilisateurs qui veulent un test d'essai sur une moto
+
+
 ## 🏗️ Architecture
 
 Le projet suit les principes de l'Architecture Propre / Architecture Hexagonale :
